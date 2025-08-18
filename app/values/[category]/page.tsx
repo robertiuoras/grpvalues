@@ -1,3 +1,4 @@
+// app/values/[category]/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -10,6 +11,7 @@ interface GrandRPItem {
   imageUrl?: string;
 }
 
+// Map buttons to Firestore category IDs
 const maskSlugToCategory: Record<string, string> = {
   desertscarfmask: "desertscarfmask",
   bandanamasks: "bandanamask",
@@ -23,6 +25,7 @@ async function fetchCategoryValues(
   try {
     const response = await fetch(`/api/values/${categorySlug}`);
     if (!response.ok) {
+      // If API returns 404 (no items), return empty array, otherwise throw error
       if (response.status === 404) return [];
       throw new Error(
         `HTTP error ${response.status} for category ${categorySlug}`
@@ -35,7 +38,9 @@ async function fetchCategoryValues(
   }
 }
 
+// Extract the "Extra" number from a name, default to 1000 if missing
 function extractExtraNumber(item: GrandRPItem): number {
+  // Changed type to GrandRPItem
   const match = item.name.match(/Extra\s*(\d+)/i);
   return match ? parseInt(match[1], 10) : 1000;
 }
@@ -43,9 +48,12 @@ function extractExtraNumber(item: GrandRPItem): number {
 export default function CategoryPage({
   params,
 }: {
-  params: { category: string };
+  // FIX: params is a Promise and should be unwrapped with React.use()
+  params: Promise<{ category: string }>;
 }) {
-  const category = params.category.toLowerCase();
+  // FIX: Unwrap params with React.use()
+  const categoryObj = React.use(params);
+  const category = categoryObj.category.toLowerCase();
 
   const maskCategories = [
     {
@@ -70,22 +78,35 @@ export default function CategoryPage({
     },
   ];
 
+  // Determine if the current route is ANY of the mask-related categories (including a generic 'masks' route if it exists)
   const shouldShowMaskSubNav =
     maskCategories.some((mask) => mask.slug === category) ||
     category === "masks";
 
-  const [selectedMask, setSelectedMask] = useState(
-    category === "masks" ? "desertscarfmask" : category
-  );
+  // State to manage the currently selected mask sub-category.
+  // Initialize with 'desertscarfmask' if the route is generic 'masks', otherwise use the actual route category.
+  const [selectedMask, setSelectedMask] = useState(() => {
+    if (category === "masks") {
+      return "desertscarfmask"; // Default to Desert Scarf Masks if on the generic /values/masks route
+    }
+    return category; // Otherwise, use the specific mask category from the URL
+  });
+
+  // useEffect to update selectedMask if the URL's category parameter changes (e.g., from /values/masks to /values/bandanamasks)
+  useEffect(() => {
+    // This effect ensures that if the URL's category changes (e.g., direct navigation or browser back/forward),
+    // the selectedMask state updates accordingly.
+    if (category === "masks") {
+      setSelectedMask("desertscarfmask");
+    } else {
+      setSelectedMask(category);
+    }
+  }, [category]);
+
   const [items, setItems] = useState<GrandRPItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    if (category === "masks") setSelectedMask("desertscarfmask");
-    else setSelectedMask(category);
-  }, [category]);
 
   useEffect(() => {
     async function loadCategoryItems() {
@@ -95,9 +116,32 @@ export default function CategoryPage({
         const categoryId = maskSlugToCategory[selectedMask] || selectedMask;
         const data = await fetchCategoryValues(categoryId);
 
-        const sorted = data.sort(
-          (a, b) => extractExtraNumber(a) - extractExtraNumber(b)
-        );
+        let sorted = data;
+        // Custom sorting for Desert Scarf Masks
+        if (selectedMask === "desertscarfmask") {
+          sorted = data.sort((a, b) => {
+            const nameA = a.name.toLowerCase();
+            const nameB = b.name.toLowerCase();
+
+            const isALuiVi = nameA.includes("lui vi scarf");
+            const isBLuiVi = nameB.includes("lui vi scarf");
+
+            // Prioritize "Lui Vi scarf" items
+            if (isALuiVi && !isBLuiVi) return -1; // A (Lui Vi) comes before B (non-Lui Vi)
+            if (!isALuiVi && isBLuiVi) return 1; // A (non-Lui Vi) comes after B (Lui Vi)
+
+            // If both are Lui Vi or both are non-Lui Vi, sort by extra number
+            const extraA = extractExtraNumber(a); // Pass the whole item for consistent access
+            const extraB = extractExtraNumber(b); // Pass the whole item for consistent access
+            return extraA - extraB;
+          });
+        } else {
+          // Keep original sorting for other categories
+          sorted = data.sort(
+            (a, b) => extractExtraNumber(a) - extractExtraNumber(b) // Pass the whole item for consistent access
+          );
+        }
+
         setItems(sorted);
       } catch {
         setError(`Failed to load items for ${selectedMask}.`);
@@ -106,6 +150,7 @@ export default function CategoryPage({
         setLoading(false);
       }
     }
+
     if (selectedMask) loadCategoryItems();
   }, [selectedMask]);
 
@@ -119,6 +164,7 @@ export default function CategoryPage({
       case "helicopters":
         return <Plane className="w-8 h-8" />;
       default:
+        // Use a generic mask icon for all mask categories
         if (maskCategories.some((m) => m.slug === slug))
           return (
             <img
@@ -134,19 +180,27 @@ export default function CategoryPage({
   const filteredItems = items.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Get formatted name for header display
   const headerName =
-    maskCategories.find((m) => m.slug === selectedMask)?.name || selectedMask;
+    maskCategories.find((m) => m.slug === selectedMask)?.name ||
+    selectedMask.charAt(0).toUpperCase() + selectedMask.slice(1);
+
+  // Get description for the paragraph display
   const paragraphDescription =
     maskCategories.find((m) => m.slug === selectedMask)?.description ||
-    `Browse the current market values for Grand RP ${headerName}.`;
+    `Browse the current market values for Grand RP ${headerName}.`; // Fallback description
 
   return (
+    // FIX: Removed 'w-full px-4 sm:px-8' as these are handled by <main> in layout.tsx.
+    // Keeping only flex-direction, alignment, and top margin.
     <div className="flex flex-col items-center mt-8">
       <h1 className="flex items-center justify-center gap-3 text-5xl font-extrabold text-blue-400 mb-8 drop-shadow-lg capitalize text-center">
         {getCategoryIcon(selectedMask)} {headerName}
       </h1>
 
-      {shouldShowMaskSubNav && (
+      {/* Conditional Sub-navigation for Masks */}
+      {shouldShowMaskSubNav && ( // Buttons now show if it's any mask category OR the generic 'masks' route
         <div className="flex flex-wrap justify-center gap-5 mb-10 p-5 bg-gray-800 rounded-xl shadow-inner">
           {maskCategories.map((mask) => (
             <button
@@ -164,6 +218,7 @@ export default function CategoryPage({
         </div>
       )}
 
+      {/* Dynamic Description Paragraph */}
       <p className="text-xl text-gray-300 mb-8 text-center max-w-2xl">
         {paragraphDescription}
       </p>
@@ -195,16 +250,17 @@ export default function CategoryPage({
               key={item.name}
               className="bg-gray-800 p-6 rounded-3xl shadow-lg hover:shadow-2xl transition-shadow duration-300 border border-gray-700 text-center flex flex-col items-center"
             >
+              {/* Conditional rendering for image (not for cars, and if imageUrl exists) */}
               {selectedMask !== "cars" && item.imageUrl && (
                 <div className="mb-6 flex justify-center items-center w-64 h-64 bg-gray-700 rounded-lg overflow-hidden p-2">
                   <img
                     src={item.imageUrl}
                     alt={item.name}
                     className="w-full h-full object-contain"
-                    onError={(e) =>
-                      (e.currentTarget.src =
-                        "https://placehold.co/400x200/555/FFF?text=Image+Not+Found")
-                    }
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        "https://placehold.co/400x200/555/FFF?text=Image+Not+Found";
+                    }}
                   />
                 </div>
               )}
