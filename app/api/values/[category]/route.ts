@@ -1,30 +1,29 @@
-// app/api/values/[category]/route.ts
 "use server";
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebaseAdmin";
 
+interface Params {
+  category: string;
+}
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { category: string } } // Correct type here
+  { params }: { params: Params }
 ) {
   const { category } = params;
 
-  console.log(`[API Route DEBUG] Request received for category: ${category}`);
-
   if (!category) {
-    console.error("[API Route ERROR] Category parameter is missing.");
     return NextResponse.json(
-      { message: "Category parameter is missing" },
+      { message: "Category parameter is required." },
       { status: 400 }
     );
   }
 
   if (!db) {
-    console.error("[API Route ERROR] Firestore `db` instance is undefined.");
     return NextResponse.json(
-      { message: "Server configuration error: Database not initialized." },
+      { message: "Server error: Firestore not initialized." },
       { status: 500 }
     );
   }
@@ -34,29 +33,24 @@ export async function GET(
       .collection("grpValues")
       .doc(category)
       .collection("items");
-
     const snapshot = await collectionRef.get();
 
-    const values: any[] = [];
-    snapshot.forEach((doc) => values.push(doc.data()));
-
-    if (values.length === 0) {
+    if (snapshot.empty) {
       return NextResponse.json(
         { message: `No values found for category: ${category}` },
         { status: 404 }
       );
     }
 
+    const values = snapshot.docs.map((doc) => doc.data());
+
     return NextResponse.json(values, { status: 200 });
-  } catch (error: any) {
-    console.error(
-      `[API Route ERROR] Failed to fetch values for category ${category}:`,
-      error
-    );
+  } catch (err: any) {
+    console.error(`Error fetching category "${category}":`, err);
     return NextResponse.json(
       {
-        message: `Unexpected server error fetching data for category ${category}.`,
-        error: error.message,
+        message: `Failed to fetch data for category "${category}".`,
+        error: err.message,
       },
       { status: 500 }
     );
