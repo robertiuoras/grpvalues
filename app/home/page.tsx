@@ -14,13 +14,13 @@ export default function HomePage() {
   const categories: CategoryCard[] = [
     {
       name: "Cars",
-      path: "/vehicles/cars",
+      path: "/values/cars",
       description: "Find market values for all types of cars.",
       icon: <Car size={40} className="text-blue-400" />,
     },
     {
       name: "Boats",
-      path: "/vehicles/boats",
+      path: "/values/boats",
       description: "Check values for various boats and yachts.",
       icon: <Ship size={40} className="text-teal-400" />,
     },
@@ -32,19 +32,19 @@ export default function HomePage() {
     },
     {
       name: "Helicopters",
-      path: "/vehicles/helicopters",
+      path: "/values/helicopters",
       description: "Browse values for different helicopter models.",
       icon: <Plane size={40} className="text-purple-400 rotate-90" />,
     },
     {
       name: "Clothing List",
-      path: "/vehicles/clothinglist",
+      path: "/values/clothinglist",
       description: "Explore the market values for various clothing items.",
       icon: <Package size={40} className="text-pink-400" />,
     },
     {
       name: "Desert Scarf Mask",
-      path: "/vehicles/desertscarfmask",
+      path: "/values/desertscarfmask",
       description: "Check values for desert scarf masks.",
       icon: <Glasses size={40} className="text-orange-400" />,
     },
