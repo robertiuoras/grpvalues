@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic"; // Force dynamic rendering for this page
 
 // Removed "next/link" import as it's not resolvable in this environment.
 import { Car, Ship, Plane, Package, Glasses } from "lucide-react";

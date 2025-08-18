@@ -1,4 +1,5 @@
-"use client";
+"use client"; // Must be the very first line
+export const dynamic = "force-dynamic"; // Force dynamic rendering
 
 import React, { useState, useEffect } from "react";
 import { RefreshCcw, Car, Ship, Plane } from "lucide-react";
@@ -27,9 +28,9 @@ function extractExtraNumber(item: GrandRPItem): number {
 export default function CategoryPage({
   params,
 }: {
-  params: Promise<{ category: string }>; // params is now a Promise
+  params: Promise<{ category: string }>;
 }) {
-  // Unwrap the promise using React.use()
+  // Unwrap params using React.use() to avoid the Next.js warning
   const categoryObj = React.use(params);
   const category = categoryObj.category.toLowerCase();
 
