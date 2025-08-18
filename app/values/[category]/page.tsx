@@ -1,8 +1,7 @@
 // app/values/[category]/page.tsx
-"use client";
-
 import React, { useState, useEffect } from "react";
 import { RefreshCcw, Car, Ship, Plane } from "lucide-react";
+import { db } from "@/lib/firebaseAdmin";
 
 interface GrandRPItem {
   name: string;
@@ -19,28 +18,8 @@ const maskSlugToCategory: Record<string, string> = {
   snowboardermasks: "snowboardermask",
 };
 
-async function fetchCategoryValues(
-  categorySlug: string
-): Promise<GrandRPItem[]> {
-  try {
-    const response = await fetch(`/api/values/${categorySlug}`);
-    if (!response.ok) {
-      // If API returns 404 (no items), return empty array, otherwise throw error
-      if (response.status === 404) return [];
-      throw new Error(
-        `HTTP error ${response.status} for category ${categorySlug}`
-      );
-    }
-    return await response.json();
-  } catch (e) {
-    console.error(`Error fetching data for ${categorySlug}:`, e);
-    return [];
-  }
-}
-
-// Extract the "Extra" number from a name, default to 1000 if missing
+// Extract "Extra" number from name for sorting
 function extractExtraNumber(item: GrandRPItem): number {
-  // Changed type to GrandRPItem
   const match = item.name.match(/Extra\s*(\d+)/i);
   return match ? parseInt(match[1], 10) : 1000;
 }
@@ -48,110 +27,63 @@ function extractExtraNumber(item: GrandRPItem): number {
 export default function CategoryPage({
   params,
 }: {
-  // FIX: params is a Promise and should be unwrapped with React.use()
-  params: Promise<{ category: string }>;
+  params: { category: string };
 }) {
-  // FIX: Unwrap params with React.use()
-  const categoryObj = React.use(params);
-  const category = categoryObj.category.toLowerCase();
+  const category = params.category.toLowerCase();
 
   const maskCategories = [
-    {
-      slug: "desertscarfmask",
-      name: "Desert Scarf Masks",
-      description: "Browse current market values for Desert Scarf Masks.",
-    },
-    {
-      slug: "bandanamasks",
-      name: "Bandana Masks",
-      description: "Browse current market values for Bandana Masks.",
-    },
-    {
-      slug: "tightmasks",
-      name: "Tight Masks",
-      description: "Browse current market values for Tight Masks.",
-    },
-    {
-      slug: "snowboardermasks",
-      name: "Snowboarder Masks",
-      description: "Browse current market values for Snowboarder Masks.",
-    },
+    { slug: "desertscarfmask", name: "Desert Scarf Masks" },
+    { slug: "bandanamasks", name: "Bandana Masks" },
+    { slug: "tightmasks", name: "Tight Masks" },
+    { slug: "snowboardermasks", name: "Snowboarder Masks" },
   ];
 
-  // Determine if the current route is ANY of the mask-related categories (including a generic 'masks' route if it exists)
   const shouldShowMaskSubNav =
     maskCategories.some((mask) => mask.slug === category) ||
     category === "masks";
 
-  // State to manage the currently selected mask sub-category.
-  // Initialize with 'desertscarfmask' if the route is generic 'masks', otherwise use the actual route category.
-  const [selectedMask, setSelectedMask] = useState(() => {
-    if (category === "masks") {
-      return "desertscarfmask"; // Default to Desert Scarf Masks if on the generic /values/masks route
-    }
-    return category; // Otherwise, use the specific mask category from the URL
-  });
-
-  // useEffect to update selectedMask if the URL's category parameter changes (e.g., from /values/masks to /values/bandanamasks)
-  useEffect(() => {
-    // This effect ensures that if the URL's category changes (e.g., direct navigation or browser back/forward),
-    // the selectedMask state updates accordingly.
-    if (category === "masks") {
-      setSelectedMask("desertscarfmask");
-    } else {
-      setSelectedMask(category);
-    }
-  }, [category]);
-
+  const [selectedMask, setSelectedMask] = useState(
+    category === "masks" ? "desertscarfmask" : category
+  );
   const [items, setItems] = useState<GrandRPItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    async function loadCategoryItems() {
+    setSelectedMask(category === "masks" ? "desertscarfmask" : category);
+  }, [category]);
+
+  useEffect(() => {
+    async function loadItems() {
       setLoading(true);
       setError(null);
       try {
-        const categoryId = maskSlugToCategory[selectedMask] || selectedMask;
-        const data = await fetchCategoryValues(categoryId);
+        const catId = maskSlugToCategory[selectedMask] || selectedMask;
+        const snapshot = await db
+          .collection("grpValues")
+          .doc(catId)
+          .collection("items")
+          .get();
+        const data: GrandRPItem[] = snapshot.docs.map(
+          (doc) => doc.data() as GrandRPItem
+        );
 
-        let sorted = data;
-        // Custom sorting for Desert Scarf Masks
-        if (selectedMask === "desertscarfmask") {
-          sorted = data.sort((a, b) => {
-            const nameA = a.name.toLowerCase();
-            const nameB = b.name.toLowerCase();
-
-            const isALuiVi = nameA.includes("lui vi scarf");
-            const isBLuiVi = nameB.includes("lui vi scarf");
-
-            // Prioritize "Lui Vi scarf" items
-            if (isALuiVi && !isBLuiVi) return -1; // A (Lui Vi) comes before B (non-Lui Vi)
-            if (!isALuiVi && isBLuiVi) return 1; // A (non-Lui Vi) comes after B (Lui Vi)
-
-            // If both are Lui Vi or both are non-Lui Vi, sort by extra number
-            const extraA = extractExtraNumber(a); // Pass the whole item for consistent access
-            const extraB = extractExtraNumber(b); // Pass the whole item for consistent access
-            return extraA - extraB;
-          });
-        } else {
-          // Keep original sorting for other categories
-          sorted = data.sort(
-            (a, b) => extractExtraNumber(a) - extractExtraNumber(b) // Pass the whole item for consistent access
-          );
-        }
-
+        // Sort by Extra number ascending
+        const sorted = data.sort(
+          (a, b) => extractExtraNumber(a) - extractExtraNumber(b)
+        );
         setItems(sorted);
-      } catch {
-        setError(`Failed to load items for ${selectedMask}.`);
+      } catch (err) {
+        console.error(err);
+        setError(`Failed to load items for ${selectedMask}`);
         setItems([]);
       } finally {
         setLoading(false);
       }
     }
 
-    if (selectedMask) loadCategoryItems();
+    loadItems();
   }, [selectedMask]);
 
   const getCategoryIcon = (slug: string) => {
@@ -164,7 +96,6 @@ export default function CategoryPage({
       case "helicopters":
         return <Plane className="w-8 h-8" />;
       default:
-        // Use a generic mask icon for all mask categories
         if (maskCategories.some((m) => m.slug === slug))
           return (
             <img
@@ -181,26 +112,17 @@ export default function CategoryPage({
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Get formatted name for header display
   const headerName =
     maskCategories.find((m) => m.slug === selectedMask)?.name ||
     selectedMask.charAt(0).toUpperCase() + selectedMask.slice(1);
 
-  // Get description for the paragraph display
-  const paragraphDescription =
-    maskCategories.find((m) => m.slug === selectedMask)?.description ||
-    `Browse the current market values for Grand RP ${headerName}.`; // Fallback description
-
   return (
-    // FIX: Removed 'w-full px-4 sm:px-8' as these are handled by <main> in layout.tsx.
-    // Keeping only flex-direction, alignment, and top margin.
-    <div className="flex flex-col items-center mt-8">
+    <div className="flex flex-col items-center mt-8 px-4 sm:px-8">
       <h1 className="flex items-center justify-center gap-3 text-5xl font-extrabold text-blue-400 mb-8 drop-shadow-lg capitalize text-center">
         {getCategoryIcon(selectedMask)} {headerName}
       </h1>
 
-      {/* Conditional Sub-navigation for Masks */}
-      {shouldShowMaskSubNav && ( // Buttons now show if it's any mask category OR the generic 'masks' route
+      {shouldShowMaskSubNav && (
         <div className="flex flex-wrap justify-center gap-5 mb-10 p-5 bg-gray-800 rounded-xl shadow-inner">
           {maskCategories.map((mask) => (
             <button
@@ -218,11 +140,6 @@ export default function CategoryPage({
         </div>
       )}
 
-      {/* Dynamic Description Paragraph */}
-      <p className="text-xl text-gray-300 mb-8 text-center max-w-2xl">
-        {paragraphDescription}
-      </p>
-
       <input
         type="text"
         placeholder="Search items..."
@@ -232,15 +149,11 @@ export default function CategoryPage({
       />
 
       {loading && (
-        <div className="text-center text-gray-400">
-          Loading {headerName.toLowerCase()} values...
-        </div>
+        <div className="text-center text-gray-400">Loading {headerName}...</div>
       )}
       {error && <div className="text-center text-red-400">{error}</div>}
       {!loading && filteredItems.length === 0 && !error && (
-        <div className="text-center text-gray-400">
-          No {headerName.toLowerCase()} values found.
-        </div>
+        <div className="text-center text-gray-400">No {headerName} found.</div>
       )}
 
       {!loading && filteredItems.length > 0 && (
@@ -250,7 +163,6 @@ export default function CategoryPage({
               key={item.name}
               className="bg-gray-800 p-6 rounded-3xl shadow-lg hover:shadow-2xl transition-shadow duration-300 border border-gray-700 text-center flex flex-col items-center"
             >
-              {/* Conditional rendering for image (not for cars, and if imageUrl exists) */}
               {selectedMask !== "cars" && item.imageUrl && (
                 <div className="mb-6 flex justify-center items-center w-64 h-64 bg-gray-700 rounded-lg overflow-hidden p-2">
                   <img
@@ -264,7 +176,7 @@ export default function CategoryPage({
                   />
                 </div>
               )}
-              <h3 className="text-2xl font-semibold text-blue-300 not-italic mb-2">
+              <h3 className="text-2xl font-semibold text-blue-300 mb-2">
                 {item.name}
               </h3>
               <p className="text-lg text-gray-200 mt-auto">
