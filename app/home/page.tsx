@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
+// Removed "next/link" import as it's not resolvable in this environment.
 import { Car, Ship, Plane, Package, Glasses } from "lucide-react";
+import React from "react"; // Explicitly import React for JSX usage
 
 interface CategoryCard {
   name: string;
@@ -26,7 +27,7 @@ export default function HomePage() {
     },
     {
       name: "Planes",
-      path: "/vehicles/planes",
+      path: "/values/planes", // CHANGED: Now uses /values/planes
       description: "Discover the prices of private planes.",
       icon: <Plane size={40} className="text-emerald-400" />,
     },
@@ -51,6 +52,8 @@ export default function HomePage() {
   ];
 
   return (
+    // This div will be rendered inside the <main> tag from app/layout.tsx
+    // The max-w-7xl and mx-auto are now inside this component to control its content width
     <div className="flex flex-col items-center w-full max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-5xl font-extrabold text-blue-400 mb-6 drop-shadow-lg text-center">
         Welcome to Grand RP Values
@@ -59,9 +62,11 @@ export default function HomePage() {
         Select a category below to explore the current market values.
       </p>
 
+      {/* Grid for category cards - responsive for 1, 2, or 3 columns */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
         {categories.map((category) => (
-          <Link
+          // Replaced Next.js Link with standard <a> tag to fix "next/link" resolution error
+          <a
             key={category.name}
             href={category.path}
             className="flex items-center p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700
@@ -72,7 +77,7 @@ export default function HomePage() {
               <h2 className="text-2xl font-bold text-white">{category.name}</h2>
               <p className="text-gray-300 text-sm">{category.description}</p>
             </div>
-          </Link>
+          </a>
         ))}
       </div>
     </div>
