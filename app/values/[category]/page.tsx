@@ -18,7 +18,7 @@ const maskSlugToCategory: Record<string, string> = {
   snowboardermasks: "snowboardermask",
 };
 
-// Extract Extra number for sorting masks
+// Extract Extra number for sorting
 function extractExtraNumber(item: GrandRPItem): number {
   const match = item.name.match(/Extra\s*(\d+)/i);
   return match ? parseInt(match[1], 10) : 1000;
@@ -27,9 +27,9 @@ function extractExtraNumber(item: GrandRPItem): number {
 export default function CategoryPage({
   params,
 }: {
-  params: Promise<{ category: string }>;
+  params: Promise<{ category: string }>; // params is now a Promise
 }) {
-  // Unwrap params promise safely
+  // Unwrap the promise using React.use()
   const categoryObj = React.use(params);
   const category = categoryObj.category.toLowerCase();
 
@@ -65,7 +65,7 @@ export default function CategoryPage({
         let sorted: GrandRPItem[] = data;
 
         if (selectedMask === "desertscarfmask") {
-          // Custom sorting: Lui Vi scarves first (Extra 0→highest), then normal Desert Scarf Masks (Extra 1→highest)
+          // Lui Vi scarves Extra 0→highest, then normal Desert Scarf Mask Extra 1→highest
           const luiViItems = data
             .filter((item) => /lui vi/i.test(item.name))
             .sort((a, b) => extractExtraNumber(a) - extractExtraNumber(b));
@@ -76,7 +76,6 @@ export default function CategoryPage({
 
           sorted = [...luiViItems, ...normalDesertItems];
         } else {
-          // Default sorting for other masks or categories
           sorted = data.sort(
             (a, b) => extractExtraNumber(a) - extractExtraNumber(b)
           );
