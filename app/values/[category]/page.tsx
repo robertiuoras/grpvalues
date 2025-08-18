@@ -1,4 +1,3 @@
-// app/values/[category]/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -11,6 +10,7 @@ interface GrandRPItem {
   imageUrl?: string;
 }
 
+// Map mask slugs to Firestore categories
 const maskSlugToCategory: Record<string, string> = {
   desertscarfmask: "desertscarfmask",
   bandanamasks: "bandanamask",
@@ -18,6 +18,7 @@ const maskSlugToCategory: Record<string, string> = {
   snowboardermasks: "snowboardermask",
 };
 
+// Extract Extra number for sorting masks
 function extractExtraNumber(item: GrandRPItem): number {
   const match = item.name.match(/Extra\s*(\d+)/i);
   return match ? parseInt(match[1], 10) : 1000;
@@ -26,9 +27,11 @@ function extractExtraNumber(item: GrandRPItem): number {
 export default function CategoryPage({
   params,
 }: {
-  params: { category: string };
+  params: Promise<{ category: string }>;
 }) {
-  const category = params.category.toLowerCase();
+  // Unwrap params promise safely
+  const categoryObj = React.use(params);
+  const category = categoryObj.category.toLowerCase();
 
   const maskCategories = [
     { slug: "desertscarfmask", name: "Desert Scarf Masks" },
@@ -58,9 +61,27 @@ export default function CategoryPage({
         const res = await fetch(`/api/values/${catId}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data: GrandRPItem[] = await res.json();
-        const sorted = data.sort(
-          (a, b) => extractExtraNumber(a) - extractExtraNumber(b)
-        );
+
+        let sorted: GrandRPItem[] = data;
+
+        if (selectedMask === "desertscarfmask") {
+          // Custom sorting: Lui Vi scarves first (Extra 0→highest), then normal Desert Scarf Masks (Extra 1→highest)
+          const luiViItems = data
+            .filter((item) => /lui vi/i.test(item.name))
+            .sort((a, b) => extractExtraNumber(a) - extractExtraNumber(b));
+
+          const normalDesertItems = data
+            .filter((item) => !/lui vi/i.test(item.name))
+            .sort((a, b) => extractExtraNumber(a) - extractExtraNumber(b));
+
+          sorted = [...luiViItems, ...normalDesertItems];
+        } else {
+          // Default sorting for other masks or categories
+          sorted = data.sort(
+            (a, b) => extractExtraNumber(a) - extractExtraNumber(b)
+          );
+        }
+
         setItems(sorted);
       } catch (e) {
         console.error(e);
@@ -70,6 +91,7 @@ export default function CategoryPage({
         setLoading(false);
       }
     }
+
     fetchItems();
   }, [selectedMask]);
 

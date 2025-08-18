@@ -5,21 +5,16 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebaseAdmin";
 
-interface Params {
-  params: {
-    category: string;
-  };
-}
-
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { category: string } } // Correct type here
+) {
   const { category } = params;
 
   console.log(`[API Route DEBUG] Request received for category: ${category}`);
 
   if (!category) {
-    console.error(
-      "[API Route ERROR] Category parameter is missing in request."
-    );
+    console.error("[API Route ERROR] Category parameter is missing.");
     return NextResponse.json(
       { message: "Category parameter is missing" },
       { status: 400 }
@@ -39,41 +34,23 @@ export async function GET(request: NextRequest, { params }: Params) {
       .collection("grpValues")
       .doc(category)
       .collection("items");
-    console.log(
-      `[API Route DEBUG] Querying Firestore path: grpValues/${category}/items`
-    );
 
     const snapshot = await collectionRef.get();
-    console.log(
-      `[API Route DEBUG] Snapshot received. Empty: ${snapshot.empty}, Docs: ${snapshot.size}`
-    );
 
     const values: any[] = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      console.log(
-        `[API Route DEBUG] Doc ID=${doc.id}, Data=${JSON.stringify(data)}`
-      );
-      values.push(data);
-    });
+    snapshot.forEach((doc) => values.push(doc.data()));
 
     if (values.length === 0) {
-      console.log(
-        `[API Route INFO] No items found for category: ${category}. Returning 404.`
-      );
       return NextResponse.json(
         { message: `No values found for category: ${category}` },
         { status: 404 }
       );
     }
 
-    console.log(
-      `[API Route INFO] Successfully fetched ${values.length} items for category: ${category}`
-    );
     return NextResponse.json(values, { status: 200 });
   } catch (error: any) {
     console.error(
-      `[API Route CRITICAL ERROR] Failed to fetch values for category ${category}:`,
+      `[API Route ERROR] Failed to fetch values for category ${category}:`,
       error
     );
     return NextResponse.json(
