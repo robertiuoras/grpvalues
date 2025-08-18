@@ -1,8 +1,7 @@
 "use client";
 
-// Removed "next/link" import as it's not resolvable in this environment.
+import Link from "next/link";
 import { Car, Ship, Plane, Package, Glasses } from "lucide-react";
-import React from "react"; // Explicitly import React for JSX usage
 
 interface CategoryCard {
   name: string;
@@ -15,45 +14,43 @@ export default function HomePage() {
   const categories: CategoryCard[] = [
     {
       name: "Cars",
-      path: "/values/cars",
+      path: "/vehicles/cars",
       description: "Find market values for all types of cars.",
       icon: <Car size={40} className="text-blue-400" />,
     },
     {
       name: "Boats",
-      path: "/values/boats",
+      path: "/vehicles/boats",
       description: "Check values for various boats and yachts.",
       icon: <Ship size={40} className="text-teal-400" />,
     },
     {
       name: "Planes",
-      path: "/values/planes",
+      path: "/vehicles/planes",
       description: "Discover the prices of private planes.",
       icon: <Plane size={40} className="text-emerald-400" />,
     },
     {
       name: "Helicopters",
-      path: "/values/helicopters",
+      path: "/vehicles/helicopters",
       description: "Browse values for different helicopter models.",
       icon: <Plane size={40} className="text-purple-400 rotate-90" />,
     },
     {
       name: "Clothing List",
-      path: "/values/clothinglist",
+      path: "/vehicles/clothinglist",
       description: "Explore the market values for various clothing items.",
       icon: <Package size={40} className="text-pink-400" />,
     },
     {
       name: "Desert Scarf Mask",
-      path: "/values/desertscarfmask",
+      path: "/vehicles/desertscarfmask",
       description: "Check values for desert scarf masks.",
       icon: <Glasses size={40} className="text-orange-400" />,
     },
   ];
 
   return (
-    // This div will be rendered inside the <main> tag from app/layout.tsx
-    // The max-w-7xl and mx-auto are now inside this component to control its content width
     <div className="flex flex-col items-center w-full max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-5xl font-extrabold text-blue-400 mb-6 drop-shadow-lg text-center">
         Welcome to Grand RP Values
@@ -62,11 +59,9 @@ export default function HomePage() {
         Select a category below to explore the current market values.
       </p>
 
-      {/* Grid for category cards - responsive for 1, 2, or 3 columns */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
         {categories.map((category) => (
-          // Replaced Next.js Link with standard <a> tag
-          <a
+          <Link
             key={category.name}
             href={category.path}
             className="flex items-center p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700
@@ -77,7 +72,7 @@ export default function HomePage() {
               <h2 className="text-2xl font-bold text-white">{category.name}</h2>
               <p className="text-gray-300 text-sm">{category.description}</p>
             </div>
-          </a>
+          </Link>
         ))}
       </div>
     </div>
