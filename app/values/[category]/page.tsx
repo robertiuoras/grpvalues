@@ -1,8 +1,8 @@
+// app/values/[category]/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { RefreshCcw, Car, Ship, Plane } from "lucide-react";
-import { db } from "@/lib/firebaseAdmin";
 
 interface GrandRPItem {
   name: string;
@@ -11,7 +11,6 @@ interface GrandRPItem {
   imageUrl?: string;
 }
 
-// Map buttons to Firestore category IDs
 const maskSlugToCategory: Record<string, string> = {
   desertscarfmask: "desertscarfmask",
   bandanamasks: "bandanamask",
@@ -19,7 +18,6 @@ const maskSlugToCategory: Record<string, string> = {
   snowboardermasks: "snowboardermask",
 };
 
-// Extract "Extra" number from name for sorting
 function extractExtraNumber(item: GrandRPItem): number {
   const match = item.name.match(/Extra\s*(\d+)/i);
   return match ? parseInt(match[1], 10) : 1000;
@@ -39,10 +37,6 @@ export default function CategoryPage({
     { slug: "snowboardermasks", name: "Snowboarder Masks" },
   ];
 
-  const shouldShowMaskSubNav =
-    maskCategories.some((mask) => mask.slug === category) ||
-    category === "masks";
-
   const [selectedMask, setSelectedMask] = useState(
     category === "masks" ? "desertscarfmask" : category
   );
@@ -56,35 +50,27 @@ export default function CategoryPage({
   }, [category]);
 
   useEffect(() => {
-    async function loadItems() {
+    async function fetchItems() {
       setLoading(true);
       setError(null);
       try {
         const catId = maskSlugToCategory[selectedMask] || selectedMask;
-        const snapshot = await db
-          .collection("grpValues")
-          .doc(catId)
-          .collection("items")
-          .get();
-        const data: GrandRPItem[] = snapshot.docs.map(
-          (doc) => doc.data() as GrandRPItem
-        );
-
-        // Sort by Extra number ascending
+        const res = await fetch(`/api/values/${catId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: GrandRPItem[] = await res.json();
         const sorted = data.sort(
           (a, b) => extractExtraNumber(a) - extractExtraNumber(b)
         );
         setItems(sorted);
-      } catch (err) {
-        console.error(err);
+      } catch (e) {
+        console.error(e);
         setError(`Failed to load items for ${selectedMask}`);
         setItems([]);
       } finally {
         setLoading(false);
       }
     }
-
-    loadItems();
+    fetchItems();
   }, [selectedMask]);
 
   const getCategoryIcon = (slug: string) => {
@@ -101,8 +87,8 @@ export default function CategoryPage({
           return (
             <img
               src="https://placehold.co/40x40/FF7F50/FFF?text=Mask"
-              alt="Mask Icon"
               className="w-12 h-12 object-contain"
+              alt="Mask"
             />
           );
         return <RefreshCcw className="w-8 h-8" />;
@@ -123,7 +109,7 @@ export default function CategoryPage({
         {getCategoryIcon(selectedMask)} {headerName}
       </h1>
 
-      {shouldShowMaskSubNav && (
+      {category === "masks" && (
         <div className="flex flex-wrap justify-center gap-5 mb-10 p-5 bg-gray-800 rounded-xl shadow-inner">
           {maskCategories.map((mask) => (
             <button
@@ -170,10 +156,10 @@ export default function CategoryPage({
                     src={item.imageUrl}
                     alt={item.name}
                     className="w-full h-full object-contain"
-                    onError={(e) => {
-                      e.currentTarget.src =
-                        "https://placehold.co/400x200/555/FFF?text=Image+Not+Found";
-                    }}
+                    onError={(e) =>
+                      (e.currentTarget.src =
+                        "https://placehold.co/400x200/555/FFF?text=Image+Not+Found")
+                    }
                   />
                 </div>
               )}
