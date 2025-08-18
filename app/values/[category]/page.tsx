@@ -4,6 +4,14 @@ export const dynamic = "force-dynamic"; // Force dynamic rendering
 import React, { useState, useEffect } from "react";
 import { RefreshCcw, Car, Ship, Plane } from "lucide-react";
 
+// Utility to format slugs into human-readable titles
+function formatSlug(slug: string) {
+  return slug
+    .replace(/[-_]/g, " ") // replace hyphens/underscores with spaces
+    .replace(/([a-z])([A-Z])/g, "$1 $2") // add space before capital letters
+    .replace(/\b\w/g, (c) => c.toUpperCase()); // capitalize each word
+}
+
 interface GrandRPItem {
   name: string;
   value: string;
@@ -40,6 +48,19 @@ export default function CategoryPage({
     { slug: "tightmasks", name: "Tight Masks" },
     { slug: "snowboardermasks", name: "Snowboarder Masks" },
   ];
+
+  const clothingSubcategories = [
+    { slug: "accessories", name: "Accessories" },
+    { slug: "headwear", name: "Headwear" },
+    { slug: "watch", name: "Watch" },
+    { slug: "backpacks", name: "Backpacks" },
+    { slug: "sets", name: "Sets" },
+  ];
+
+  const specialCategoryNames: Record<string, string> = {
+    clothinglist: "Clothing List",
+    vehicleslist: "Vehicles List",
+  };
 
   const [selectedMask, setSelectedMask] = useState(
     category === "masks" ? "desertscarfmask" : category
@@ -123,7 +144,9 @@ export default function CategoryPage({
 
   const headerName =
     maskCategories.find((m) => m.slug === selectedMask)?.name ||
-    selectedMask.charAt(0).toUpperCase() + selectedMask.slice(1);
+    clothingSubcategories.find((c) => c.slug === selectedMask)?.name ||
+    specialCategoryNames[selectedMask] ||
+    formatSlug(selectedMask);
 
   return (
     <div className="flex flex-col items-center mt-8 px-4 sm:px-8">
@@ -149,6 +172,25 @@ export default function CategoryPage({
         </div>
       )}
 
+      {(selectedMask === "clothinglist" ||
+        clothingSubcategories.some((sc) => sc.slug === selectedMask)) && (
+        <div className="flex flex-wrap justify-center gap-5 mb-10 p-5 bg-gray-800 rounded-xl shadow-inner">
+          {clothingSubcategories.map((subcat) => (
+            <button
+              key={subcat.slug}
+              onClick={() => setSelectedMask(subcat.slug)}
+              className={`px-7 py-3 rounded-xl text-lg font-semibold transition-all duration-300 ${
+                selectedMask === subcat.slug
+                  ? "bg-blue-600 text-white shadow-lg transform scale-105"
+                  : "bg-gray-700 text-gray-200 hover:bg-gray-600 hover:scale-105"
+              }`}
+            >
+              {subcat.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       <input
         type="text"
         placeholder="Search items..."
@@ -167,33 +209,68 @@ export default function CategoryPage({
 
       {!loading && filteredItems.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full max-w-6xl mx-auto">
-          {filteredItems.map((item) => (
-            <div
-              key={item.name}
-              className="bg-gray-800 p-6 rounded-3xl shadow-lg hover:shadow-2xl transition-shadow duration-300 border border-gray-700 text-center flex flex-col items-center"
-            >
-              {selectedMask !== "cars" && item.imageUrl && (
-                <div className="mb-6 flex justify-center items-center w-64 h-64 bg-gray-700 rounded-lg overflow-hidden p-2">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.name}
-                    className="w-full h-full object-contain"
-                    onError={(e) =>
-                      (e.currentTarget.src =
-                        "https://placehold.co/400x200/555/FFF?text=Image+Not+Found")
-                    }
-                  />
+          {filteredItems.map((item) => {
+            if (
+              selectedMask === "clothinglist" ||
+              clothingSubcategories.some((sc) => sc.slug === selectedMask)
+            ) {
+              // For clothing list and subcategories:
+              // If item.imageUrl is missing, do not render the <img> or its container div
+              return (
+                <div
+                  key={item.name}
+                  className="bg-gray-800 p-6 rounded-3xl shadow-lg hover:shadow-2xl transition-shadow duration-300 border border-gray-700 text-center flex flex-col items-center"
+                >
+                  {item.imageUrl && (
+                    <div className="mb-6 flex justify-center items-center w-64 h-64 bg-gray-700 rounded-lg overflow-hidden p-2">
+                      <img
+                        src={item.imageUrl}
+                        alt=""
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+                  <h3 className="text-2xl font-semibold text-blue-300 mb-2">
+                    {item.name}
+                  </h3>
+                  <p className="text-lg text-gray-200 mt-auto">
+                    Value:{" "}
+                    <span className="font-bold text-emerald-400">
+                      {item.value}
+                    </span>
+                  </p>
                 </div>
-              )}
-              <h3 className="text-2xl font-semibold text-blue-300 mb-2">
-                {item.name}
-              </h3>
-              <p className="text-lg text-gray-200 mt-auto">
-                Value:{" "}
-                <span className="font-bold text-emerald-400">{item.value}</span>
-              </p>
-            </div>
-          ))}
+              );
+            } else {
+              return (
+                <div
+                  key={item.name}
+                  className="bg-gray-800 p-6 rounded-3xl shadow-lg hover:shadow-2xl transition-shadow duration-300 border border-gray-700 text-center flex flex-col items-center"
+                >
+                  {selectedMask !== "cars" &&
+                    selectedMask !== "clothinglist" &&
+                    item.imageUrl && (
+                      <div className="mb-6 flex justify-center items-center w-64 h-64 bg-gray-700 rounded-lg overflow-hidden p-2">
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    )}
+                  <h3 className="text-2xl font-semibold text-blue-300 mb-2">
+                    {item.name}
+                  </h3>
+                  <p className="text-lg text-gray-200 mt-auto">
+                    Value:{" "}
+                    <span className="font-bold text-emerald-400">
+                      {item.value}
+                    </span>
+                  </p>
+                </div>
+              );
+            }
+          })}
         </div>
       )}
     </div>
