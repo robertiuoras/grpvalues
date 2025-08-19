@@ -1,5 +1,6 @@
 import "./globals.css"; // Tailwind and global styles
 import Header from "./components/Header";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata = {
   title: "Grand RP Values",
@@ -24,6 +25,7 @@ export default function RootLayout({
         <footer className="text-sm text-gray-400 mt-8 text-center w-full py-4">
           Data synced daily from Google Sheets.
         </footer>
+        <Analytics /> {/* <- Add this here */}
       </body>
     </html>
   );
