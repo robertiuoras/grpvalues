@@ -44,9 +44,9 @@ export default function HomePage() {
       icon: <Package size={40} className="text-pink-400" />,
     },
     {
-      name: "Desert Scarf Mask",
-      path: "/values/desertscarfmask",
-      description: "Check values for desert scarf masks.",
+      name: "Masks",
+      path: "/values/masks",
+      description: "Browse different types of masks.",
       icon: <Glasses size={40} className="text-orange-400" />,
     },
   ];

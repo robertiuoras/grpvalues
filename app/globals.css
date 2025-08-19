@@ -1,10 +1,28 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Global styles for the app */
+
+/* Dark blue gradient background for HTML */
+html {
+  @apply min-h-screen bg-gradient-to-br from-blue-900 via-blue-950 to-blue-900 text-gray-100;
+  font-family: "Inter", sans-serif;
 }
 
+/* Body inherits styles but keeps background transparent so gradient shows */
+body {
+  @apply min-h-screen text-gray-100;
+  background: transparent;
+  font-family: "Inter", sans-serif;
+}
+
+/* Optional CSS variables for theming */
+:root {
+  --background: #020c2c; /* deep navy */
+  --foreground: #ededed;
+}
+
+/* Inline theme variables (if using a theming system) */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,15 +30,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode overrides */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #010618; /* ultra dark navy */
+    --foreground: #f0f0f0;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
