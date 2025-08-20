@@ -1,4 +1,5 @@
-// app/page.tsx
+// app/page.tsx - This component renders the main content if the user is authenticated.
+// It relies on the useAuth hook for authentication status and redirection.
 "use client";
 
 import {
@@ -7,6 +8,9 @@ import {
   Plane,
   Package,
   Glasses,
+  Shirt, // Re-added Shirt
+  Scissors, // Re-added Scissors
+  // Lock is not needed here as login logic is in app/login/page.tsx
 } from "lucide-react";
 import React from "react"; // Explicitly import React for JSX usage
 import { useAuth } from '../hooks/useAuth'; // Import useAuth hook
@@ -19,7 +23,7 @@ interface CategoryCard {
 }
 
 export default function HomePage() {
-  // Use the authentication hook
+  // Use the authentication hook to get global auth state
   const { isAuthenticated, isLoading } = useAuth(); 
 
   const categories: CategoryCard[] = [
@@ -59,9 +63,27 @@ export default function HomePage() {
       description: "Browse different types of masks.",
       icon: <Glasses size={40} className="text-orange-400" />,
     },
+    {
+      name: "Luminous Shirts",
+      path: "/values/lumitshirt",
+      description: "Check the values for luminous shirts.",
+      icon: <Shirt size={40} className="text-yellow-400" />, // Changed to Shirt
+    },
+    {
+      name: "Luminous Pants",
+      path: "/values/lumipants",
+      description: "Find the values for luminous pants.",
+      icon: <Scissors size={40} className="text-green-400" />, // Changed to Scissors
+    },
+    {
+      name: "Items",
+      path: "/values/items",
+      description: "Explore miscellaneous items and their values.",
+      icon: <Package size={40} className="text-indigo-400" />,
+    },
   ];
 
-  // Show a loading state while authentication is being checked
+  // Show a loading state while authentication is being checked by useAuth
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4">
@@ -71,18 +93,15 @@ export default function HomePage() {
     );
   }
 
-  // If not authenticated, the useAuth hook will handle the redirect to /login.
-  // So, if we reach here and isAuthenticated is false, it means a redirect is
-  // in progress or has just completed, so we can render nothing or a simple
-  // "redirecting" message.
+  // If useAuth determines the user is NOT authenticated, it will handle the redirect to /login.
+  // So, if we reach this point and isAuthenticated is false, it means a redirect is
+  // in progress or has just completed, so we render nothing to avoid flickering.
   if (!isAuthenticated) {
-    return null; // The useAuth hook handles the redirection to /login
+    return null; 
   }
 
   // If authenticated, render the actual home page content
   return (
-    // This div will be rendered inside the <main> tag from app/layout.tsx
-    // The max-w-7xl and mx-auto are now inside this component to control its content width
     <div className="flex flex-col items-center w-full max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-5xl font-extrabold text-blue-400 mb-6 drop-shadow-lg text-center">
         Welcome to Grand RP Values
@@ -94,7 +113,6 @@ export default function HomePage() {
       {/* Grid for category cards - responsive for 1, 2, or 3 columns */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
         {categories.map((category) => (
-          // Replaced Next.js Link with standard <a> tag
           <a
             key={category.name}
             href={category.path}
