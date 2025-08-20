@@ -58,7 +58,7 @@ export function useAuth() {
     const intervalId = setInterval(checkAuthentication, 30 * 1000); // Check every 30 seconds
 
     return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [router, pathname]);
+  }, [router, pathname]); // FIX: Reverted dependencies to only router and pathname
 
   return { isAuthenticated, isLoading, userRole, setIsAuthenticated }; // FIX: Return userRole
 }
