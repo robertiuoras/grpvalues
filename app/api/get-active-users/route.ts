@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       console.warn('Unauthorized access attempt to /api/get-active-users:', {
         isAuthenticated: isAuthenticatedCookie?.value,
         userRole: userRoleCookie?.value,
-        ip: request.ip, // Log IP for security monitoring
+        // ip: request.ip, // FIX: Removed request.ip as it causes a type error on Vercel
       });
       return NextResponse.json(
         { success: false, message: 'Forbidden: You do not have permission to access this resource.' },
