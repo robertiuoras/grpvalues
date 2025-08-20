@@ -1,8 +1,15 @@
+// app/page.tsx
 "use client";
 
-// Removed "next/link" import as it's not resolvable in this environment.
-import { Car, Ship, Plane, Package, Glasses } from "lucide-react";
+import {
+  Car,
+  Ship,
+  Plane,
+  Package,
+  Glasses,
+} from "lucide-react";
 import React from "react"; // Explicitly import React for JSX usage
+import { useAuth } from '../hooks/useAuth'; // Import useAuth hook
 
 interface CategoryCard {
   name: string;
@@ -12,6 +19,9 @@ interface CategoryCard {
 }
 
 export default function HomePage() {
+  // Use the authentication hook
+  const { isAuthenticated, isLoading } = useAuth(); 
+
   const categories: CategoryCard[] = [
     {
       name: "Cars",
@@ -51,6 +61,25 @@ export default function HomePage() {
     },
   ];
 
+  // Show a loading state while authentication is being checked
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mb-4"></div>
+        <p className="text-gray-300">Loading content...</p>
+      </div>
+    );
+  }
+
+  // If not authenticated, the useAuth hook will handle the redirect to /login.
+  // So, if we reach here and isAuthenticated is false, it means a redirect is
+  // in progress or has just completed, so we can render nothing or a simple
+  // "redirecting" message.
+  if (!isAuthenticated) {
+    return null; // The useAuth hook handles the redirection to /login
+  }
+
+  // If authenticated, render the actual home page content
   return (
     // This div will be rendered inside the <main> tag from app/layout.tsx
     // The max-w-7xl and mx-auto are now inside this component to control its content width
@@ -70,7 +99,7 @@ export default function HomePage() {
             key={category.name}
             href={category.path}
             className="flex items-center p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700
-                       hover:bg-gray-700 hover:shadow-2xl transition-all duration-300 cursor-pointer"
+                                 hover:bg-gray-700 hover:shadow-2xl transition-all duration-300 cursor-pointer"
           >
             <div className="mr-4">{category.icon}</div>
             <div className="flex flex-col">

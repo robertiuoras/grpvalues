@@ -3,6 +3,8 @@
 export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useAuth } from '../../../hooks/useAuth'; // Corrected path
+
 import {
   RefreshCcw,
   Car,
@@ -11,7 +13,8 @@ import {
   Shirt,
   Scissors,
   Package,
-} from "lucide-react"; // FIX: Added Package import
+  Glasses, // Ensure Glasses is imported if used for masks
+} from "lucide-react";
 
 // Utility to format slugs into readable titles
 const formatSlug = (slug: string) =>
@@ -103,10 +106,15 @@ export default function CategoryPage({
 }: {
   params: Promise<{ category: string }>;
 }) {
-  const categoryObj = React.use(params);
+  // ALL REACT HOOKS MUST BE CALLED UNCONDITIONALLY AT THE VERY TOP OF THE COMPONENT
+  // This ensures the order of hooks never changes between renders.
+  const { isAuthenticated, isLoading } = useAuth(); // useAuth first
+  
+  // React.use(params) is a Hook and must be called unconditionally.
+  const categoryObj = React.use(params); 
   const category = categoryObj.category.toLowerCase();
 
-  // States
+  // States - all defined unconditionally
   const [selectedMainCategory, setSelectedMainCategory] = useState(
     category === "masks" ? "desertscarfmask" : category // Default mask category
   );
@@ -124,23 +132,7 @@ export default function CategoryPage({
     "value-asc" | "value-desc" | "alpha-asc" | "alpha-desc" | null
   >(null);
 
-  // Reset states on category change
-  useEffect(() => {
-    setSelectedMainCategory(
-      category === "masks" ? "desertscarfmask" : category
-    );
-    // Only reset gender/subcat for clothinglist categories if the category isn't clothinglist
-    // or if the category is clothinglist but a new gender/subcat hasn't been chosen yet
-    if (category !== "clothinglist") {
-      setSelectedGender(null);
-      setSelectedClothingSubcatSlug(null);
-    }
-    setItems([]);
-    setSearchTerm("");
-    setSortOption(null);
-  }, [category]);
-
-  // Fetch clothinglist items
+  // UseCallbacks - all defined unconditionally
   const fetchClothingItems = useCallback(
     async (gender: string, heading: string | null) => {
       if (!heading) {
@@ -177,7 +169,6 @@ export default function CategoryPage({
     []
   );
 
-  // Fetch general items
   const fetchGeneralItems = useCallback(async () => {
     if (!selectedMainCategory) return;
     setLoading(true);
@@ -221,32 +212,7 @@ export default function CategoryPage({
     }
   }, [selectedMainCategory]); // Depend on selectedMainCategory
 
-  useEffect(() => {
-    if (category === "clothinglist") {
-      if (selectedGender && selectedClothingSubcatSlug) {
-        fetchClothingItems(selectedGender, selectedClothingSubcatSlug);
-      } else {
-        setItems([]); // Clear items when no subcategory is selected
-        setLoading(false); // Explicitly set loading to false here
-      }
-    } else {
-      if (category === "masks" && !selectedMainCategory) {
-        setSelectedMainCategory("desertscarfmask");
-      }
-      if (selectedMainCategory) {
-        fetchGeneralItems();
-      }
-    }
-  }, [
-    category,
-    selectedMainCategory,
-    selectedGender,
-    selectedClothingSubcatSlug,
-    fetchClothingItems,
-    fetchGeneralItems,
-  ]);
-
-  // Filter & sort
+  // useMemo hooks - all defined unconditionally
   const filteredAndSortedItems = useMemo(() => {
     const filtered = items.filter((item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -275,7 +241,80 @@ export default function CategoryPage({
     }
   }, [items, searchTerm, sortOption]);
 
-  // Header icon
+  const clothingHeadingsForDisplay = useMemo(
+    () =>
+      selectedGender
+        ? allClothingSubcategories.filter(
+            (subcat) => subcat.gender === selectedGender
+          )
+        : [],
+    [selectedGender]
+  );
+
+  // useEffect hooks - all defined unconditionally
+  // This useEffect depends on 'category' and other states to trigger data fetching
+  useEffect(() => {
+    setSelectedMainCategory(
+      category === "masks" ? "desertscarfmask" : category
+    );
+    // Only reset gender/subcat for clothinglist categories if the category isn't clothinglist
+    // or if the category is clothinglist but a new gender/subcat hasn't been chosen yet
+    if (category !== "clothinglist") {
+      setSelectedGender(null);
+      setSelectedClothingSubcatSlug(null);
+    }
+    setItems([]);
+    setSearchTerm("");
+    setSortOption(null);
+  }, [category]); // This useEffect is now at the top level
+
+  useEffect(() => {
+    if (category === "clothinglist") {
+      if (selectedGender && selectedClothingSubcatSlug) {
+        fetchClothingItems(selectedGender, selectedClothingSubcatSlug);
+      } else {
+        setItems([]); // Clear items when no subcategory is selected
+        setLoading(false); // Explicitly set loading to false here
+      }
+    } else {
+      if (category === "masks" && !selectedMainCategory) {
+        setSelectedMainCategory("desertscarfmask");
+      }
+      if (selectedMainCategory) {
+        fetchGeneralItems();
+      }
+    }
+  }, [
+    category,
+    selectedMainCategory,
+    selectedGender,
+    selectedClothingSubcatSlug,
+    fetchClothingItems,
+    fetchGeneralItems,
+  ]);
+
+
+  // Now, the conditional returns come after all hooks are declared.
+
+  // Show a loading state while authentication is being checked
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mb-4"></div>
+        <p className="text-gray-300">Loading content...</p>
+      </div>
+    );
+  }
+
+  // If not authenticated, the useAuth hook will handle the redirect to /login.
+  // So, if we reach here and isAuthenticated is false, it means a redirect is
+  // in progress or has just completed, so we can render nothing or a simple
+  // "redirecting" message.
+  if (!isAuthenticated) {
+    return null; // Or a brief "Redirecting to login..." message if desired
+  }
+
+  // Header icon - This is a helper function, not a hook. Its position is flexible.
   const getHeaderIcon = (slug: string) => {
     const mask = maskCategories.find((m) => m.slug === slug);
     if (mask)
@@ -319,22 +358,11 @@ export default function CategoryPage({
     }
   };
 
-  // Determine current header name
+  // Determine current header name - This is a regular variable assignment.
   const currentHeaderName =
     specialCategoryNames[selectedMainCategory.toLowerCase()] ||
     formatSlug(selectedMainCategory);
   const currentHeaderIconSlug = selectedMainCategory;
-
-  // Clothing subcategories for display
-  const clothingHeadingsForDisplay = useMemo(
-    () =>
-      selectedGender
-        ? allClothingSubcategories.filter(
-            (subcat) => subcat.gender === selectedGender
-          )
-        : [],
-    [selectedGender]
-  );
 
   const getSortButtonClass = (option: typeof sortOption) => `
     px-4 py-2 rounded-lg font-semibold transition
@@ -346,7 +374,7 @@ export default function CategoryPage({
   `;
 
   return (
-    <div className="flex flex-col items-center mt-8 px-4 sm:px-8">
+    <div className="flex flex-col items-center mt-8 px-4 sm:px-8 pb-8"> {/* Added pb-8 here */}
       {/* Main Header */}
       <h1 className="relative flex flex-col items-center justify-center text-5xl font-extrabold text-blue-400 mb-12 drop-shadow-lg text-center">
         {getHeaderIcon(currentHeaderIconSlug)}

@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
+import Link from "next/link"; // Re-enabled Link import
+import { usePathname } from "next/navigation"; // Import usePathname
 
 export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const pathname = usePathname(); // Get current pathname
 
   const categories = [
     { name: "Cars", path: "/values/cars" },
@@ -23,31 +25,46 @@ export default function Header() {
     { name: "Items", path: "/values/items" },
   ];
 
+  // Helper to render a link that prevents navigation if already on the same page
+  const renderHomeLink = (content: React.ReactNode, className: string) => {
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (pathname === '/') {
+        e.preventDefault(); // Prevent default navigation if already on the homepage
+      }
+      setIsDropdownOpen(false); // Close dropdown on click, even if not navigating
+    };
+
+    return (
+      <Link href="/" className={className} onClick={handleClick}>
+        {content}
+      </Link>
+    );
+  };
+
   return (
     <header className="bg-blue-950 text-gray-100 p-4 shadow-md sticky top-0 z-50 font-sans">
-      <div className="container mx-auto flex items-center justify-between relative">
-        {/* Left: Logo */}
-        <Link
-          href="/"
-          className="text-3xl font-bold text-blue-400 hover:text-blue-300 transition-colors duration-300"
-        >
-          Grand RP Values
-        </Link>
+      <div className="max-w-7xl mx-auto flex items-center justify-between relative px-8">
+        {/* Left: Logo - Now uses renderHomeLink */}
+        <div className="flex-shrink-0 min-w-fit">
+          {renderHomeLink(
+            "Grand RP Values",
+            "text-3xl font-bold text-blue-400 hover:text-blue-300 transition-colors duration-300"
+          )}
+        </div>
 
-        {/* Center: Home button */}
-        <Link
-          href="/"
-          className="absolute left-1/2 transform -translate-x-1/2 text-lg md:text-xl font-semibold px-5 py-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300"
-          onClick={() => setIsDropdownOpen(false)} // close dropdown if open
-        >
-          Home
-        </Link>
+        {/* Center: Home button - Now uses renderHomeLink */}
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          {renderHomeLink(
+            "Home",
+            "text-lg md:text-xl font-semibold px-5 py-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all duration-300 whitespace-nowrap"
+          )}
+        </div>
 
         {/* Right: Categories dropdown */}
-        <div className="flex justify-end items-center relative">
+        <div className="flex-shrink-0 relative min-w-fit">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="px-3 py-2 rounded-lg bg-blue-900 hover:bg-blue-800 text-white font-semibold transition duration-200 flex items-center gap-2 shadow-sm text-sm md:text-base"
+            className="px-4 py-2 rounded-lg bg-blue-900 hover:bg-blue-800 text-white font-semibold transition duration-200 flex items-center gap-2 shadow-sm text-sm md:text-base"
           >
             <span>Categories</span>
             <svg
