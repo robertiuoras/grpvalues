@@ -4,7 +4,8 @@ import type { NextRequest } from 'next/server';
 import { cookies } from 'next/headers'; // Import cookies for server-side access
 
 export async function GET(request: NextRequest) {
-  const cookieStore = cookies();
+  // FIX: Await cookies() to resolve the Promise<ReadonlyRequestCookies> type error
+  const cookieStore = await cookies();
 
   // Clear all relevant authentication cookies
   cookieStore.delete('isAuthenticated');
