@@ -7,7 +7,8 @@ import { cookies } from 'next/headers'; // Import cookies for server-side access
 export async function GET(request: NextRequest) {
   try {
     // --- Backend RBAC Check ---
-    const cookieStore = cookies();
+    // FIX: Await cookies() to resolve the Promise<ReadonlyRequestCookies> type error
+    const cookieStore = await cookies(); 
     const isAuthenticatedCookie = cookieStore.get('isAuthenticated');
     const userRoleCookie = cookieStore.get('userRole');
 
