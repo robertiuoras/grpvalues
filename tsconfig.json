@@ -10,7 +10,7 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler", // Or "node" depending on your Next.js version
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -20,9 +20,10 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".", // This is crucial: sets the base for paths
+    "baseUrl": ".", // Crucial: sets the base for paths
     "paths": {
-      "@lib/*": ["lib/*"] // This maps @lib to your lib folder
+      "@lib/*": ["lib/*"],   // Alias for your lib folder
+      "@hooks/*": ["hooks/*"] // FIX: Added alias for your hooks folder
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

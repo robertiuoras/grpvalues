@@ -11,7 +11,7 @@ import {
   // Removed Shirt, Scissors, Lock as they are not used directly in this version
 } from "lucide-react";
 import React from "react"; // Explicitly import React for JSX usage
-import { useAuth } from '../hooks/useAuth'; // Import useAuth hook
+import { useAuth } from '../../hooks/useAuth'; // Import useAuth hook
 
 interface CategoryCard {
   name: string;

@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { Lock } from "lucide-react";
 import Cookies from 'js-cookie';
-import { useAuth } from '../../hooks/useAuth'; // Corrected path to useAuth
+import { useAuth } from '@hooks/useAuth'; // FIX: Changed to use @hooks alias
 
 export default function LoginPage() {
   const [accessCode, setAccessCode] = useState("");
