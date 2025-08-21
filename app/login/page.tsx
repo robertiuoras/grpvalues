@@ -58,7 +58,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-gray-800 rounded-xl shadow-2xl border border-gray-700 p-8 transform transition-all duration-300 scale-95 md:scale-100">
         <div className="text-center mb-8">
           <Lock size={60} className="text-blue-400 mx-auto mb-5 animate-bounce" />
-          <h1 className="text-4xl font-extrabold text-white mb-3 tracking-wide">Secure Access</h1>
+          <h1 className="text-4xl font-extrabold text-white mb-3 tracking-wide">Early Access</h1>
           <p className="text-gray-300 text-lg">
             Please enter your access code to proceed.
           </p>
@@ -105,7 +105,7 @@ export default function LoginPage() {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500">
-            Forgot your code or need assistance? Contact support.
+            Forgot your code or need assistance? Contact robthemaster on Discord.
           </p>
         </div>
       </div>
