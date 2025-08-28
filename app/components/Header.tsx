@@ -23,6 +23,7 @@ export default function Header() {
     { name: "Cropped Collection Shirts", path: "/values/croppcollectionshirt" },
     { name: "Denim Jackets", path: "/values/denimjacket" },
     { name: "Items", path: "/values/items" },
+    { name: "LifeInvader", path: "/lifeinvader" }
   ];
 
   // Helper to render a link that prevents navigation if already on the same page
