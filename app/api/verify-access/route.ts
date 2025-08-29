@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@lib/firebaseAdmin";
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers"; // Ensure cookies is imported for setting cookies
 
 export async function POST(request: NextRequest) {
   console.log("API: /api/verify-access POST request received.");
@@ -26,7 +27,6 @@ export async function POST(request: NextRequest) {
 
     // --- Step 1: Efficiently find the correct document ---
 
-    // Option A: Try to find by 'accessCode' field (requires Firestore index on 'accessCode' field)
     console.log("API: Attempting to find document by 'accessCode' field...");
     const plainCodeQuerySnapshot = await db
       .collection("playerAccessCodes")
@@ -41,8 +41,6 @@ export async function POST(request: NextRequest) {
         `API: Document found by 'accessCode' field: ${playerDocRef.id}`
       );
     } else {
-      // Option B: If not found by 'accessCode' field, try to find by document ID
-      // This is efficient if the document ID itself is the access code (or a derivative)
       console.log(
         "API: Document not found by 'accessCode' field. Attempting to get by document ID..."
       );
@@ -52,7 +50,6 @@ export async function POST(request: NextRequest) {
         .get();
 
       if (docById.exists) {
-        // If document found by ID, it might contain a hashedCode or even a plain accessCode field
         playerDocRef = docById.ref;
         matchedCodeData = docById.data();
         console.log(`API: Document found by ID: ${playerDocRef.id}`);
@@ -71,15 +68,12 @@ export async function POST(request: NextRequest) {
     // --- Step 2: Perform cryptographic comparison and transaction on the identified document ---
     let isCodeMatched = false;
 
-    // Check against plain access code field (if it exists and was the primary match)
     if (
       matchedCodeData?.accessCode &&
       matchedCodeData.accessCode.replace(/\s+/g, "") === cleanedCode
     ) {
       isCodeMatched = true;
-    }
-    // If not matched by plain field, and a hashed code exists, compare against it
-    else if (matchedCodeData?.hashedCode) {
+    } else if (matchedCodeData?.hashedCode) {
       try {
         const isMatch = await bcrypt.compare(
           cleanedCode,
@@ -93,7 +87,6 @@ export async function POST(request: NextRequest) {
           `API: Error during bcrypt.compare for doc ${playerDocRef.id}:`,
           hashError
         );
-        // Treat comparison failure as no match
         isCodeMatched = false;
       }
     }
@@ -108,12 +101,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If the code is matched, proceed with the transaction to update its status
     console.log(
       `API: Code matched. Starting Firestore transaction for document ID: ${playerDocRef.id}`
     );
     const transactionResult = await db.runTransaction(async (transaction) => {
-      // Re-fetch the document within the transaction to ensure up-to-date data
       const doc = await transaction.get(playerDocRef!);
       console.log(
         `API: Inside transaction. Document get for ID: ${playerDocRef.id}`
@@ -139,7 +130,6 @@ export async function POST(request: NextRequest) {
         };
       }
 
-      // If all checks pass, update document to mark as in use
       transaction.update(playerDocRef!, {
         is_in_use: true,
         usageCount: (codeData.usageCount || 0) + 1,
@@ -160,14 +150,36 @@ export async function POST(request: NextRequest) {
         userRole: transactionResult.userRole,
       });
 
-      response.cookies.set("accessCode", playerDocRef!.id, {
+      const cookieOptions = {
         path: "/",
-        httpOnly: true,
-        sameSite: "strict",
+        // IMPORTANT: httpOnly: false for cookies read by client-side useAuth
+        // secure: true is good practice in production for all cookies
         secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24,
+        sameSite: "strict" as "strict" | "lax" | "none", // Ensure correct type for sameSite
+        maxAge: 60 * 60, // 1 hour for session cookies as per useAuth expiry
+      };
+
+      // Cookies for client-side useAuth hook (NOT httpOnly)
+      response.cookies.set("isAuthenticated", "true", {
+        ...cookieOptions,
+        httpOnly: false,
       });
-      console.log("API: Login successful. Response and cookie set.");
+      response.cookies.set("authTimestamp", new Date().getTime().toString(), {
+        ...cookieOptions,
+        httpOnly: false,
+      });
+      response.cookies.set("userRole", transactionResult.userRole, {
+        ...cookieOptions,
+        httpOnly: false,
+      });
+
+      // AccessCode cookie for server-side logout (CAN be httpOnly)
+      response.cookies.set("accessCode", playerDocRef!.id, {
+        ...cookieOptions,
+        httpOnly: true,
+      });
+
+      console.log("API: Login successful. Response and cookies set.");
       return response;
     } else {
       console.log(

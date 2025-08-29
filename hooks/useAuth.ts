@@ -13,7 +13,7 @@ export function useAuth() {
   const pathname = usePathname();
 
   useEffect(() => {
-    console.log("useAuth: useEffect triggered."); // Added log
+    console.log("useAuth: useEffect triggered.");
     const checkAuthentication = () => {
       const authStatus = Cookies.get("isAuthenticated");
       const authTimestamp = Cookies.get("authTimestamp");
@@ -26,7 +26,7 @@ export function useAuth() {
         authTimestamp,
         "userRole:",
         roleCookie
-      ); // Added log
+      );
 
       let userIsAuthenticated = false;
       let role = null;
@@ -36,19 +36,17 @@ export function useAuth() {
         const authTime = parseInt(authTimestamp);
         const hoursSinceAuth = (now - authTime) / (1000 * 60 * 60);
 
-        console.log("useAuth: Hours since last auth:", hoursSinceAuth); // Added log
+        console.log("useAuth: Hours since last auth:", hoursSinceAuth);
 
-        // Check if the session has expired (e.g., after 1 hour)
         if (hoursSinceAuth < 1) {
           // Current session expiry is 1 hour
           userIsAuthenticated = true;
           role = roleCookie || null;
-          console.log("useAuth: Session is active."); // Added log
+          console.log("useAuth: Session is active.");
         } else {
-          // Session expired, clear cookies
           console.log(
             "useAuth: Client-side session expired after 1 hour. Clearing cookies."
-          ); // Added log
+          );
           Cookies.remove("isAuthenticated");
           Cookies.remove("authTimestamp");
           Cookies.remove("userRole");
@@ -56,7 +54,7 @@ export function useAuth() {
       } else {
         console.log(
           "useAuth: No valid authentication cookies found (authStatus or authTimestamp missing/invalid)."
-        ); // Added log
+        );
       }
 
       setIsAuthenticated(userIsAuthenticated);
@@ -69,23 +67,30 @@ export function useAuth() {
         role,
         "isLoading:",
         false
-      ); // Added log
+      );
 
       // Redirect if not authenticated AND not already on the login page
+      // Added a small setTimeout to mitigate race conditions on Vercel deployment
       if (!userIsAuthenticated && pathname !== "/login") {
         console.log(
-          "useAuth: Not authenticated and not on login page. Redirecting to /login."
-        ); // Added log
-        router.replace("/login");
+          "useAuth: Not authenticated and not on login page. Scheduling redirect to /login."
+        );
+        setTimeout(() => {
+          router.replace("/login");
+        }, 50); // Small delay
       }
       // If authenticated and on the login page, redirect to home
       else if (userIsAuthenticated && pathname === "/login") {
-        console.log("useAuth: Authenticated on login page. Redirecting to /."); // Added log
-        router.replace("/");
+        console.log(
+          "useAuth: Authenticated on login page. Scheduling redirect to /."
+        );
+        setTimeout(() => {
+          router.replace("/");
+        }, 50); // Small delay
       } else {
         console.log(
           "useAuth: No redirect needed based on current state and path."
-        ); // Added log
+        );
       }
     };
 
@@ -94,7 +99,7 @@ export function useAuth() {
     const intervalId = setInterval(checkAuthentication, 30 * 1000); // Check every 30 seconds
 
     return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [router]); // Removed 'pathname' from dependencies
+  }, [router, pathname]); // Re-added 'pathname' to dependencies
 
   return { isAuthenticated, isLoading, userRole, setIsAuthenticated };
 }
