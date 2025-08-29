@@ -8,12 +8,10 @@ import {
   Plane,
   Package,
   Glasses,
-  Shirt, // Re-added Shirt
-  Scissors, // Re-added Scissors
-  // Lock is not needed here as login logic is in app/login/page.tsx
+  Shirt, // Re-added Shirt icon for Luminous Clothing
 } from "lucide-react";
 import React from "react"; // Explicitly import React for JSX usage
-import { useAuth } from '../hooks/useAuth'; // Import useAuth hook
+import { useAuth } from "../hooks/useAuth"; // Import useAuth hook - FIXED PATH
 
 interface CategoryCard {
   name: string;
@@ -24,7 +22,7 @@ interface CategoryCard {
 
 export default function HomePage() {
   // Use the authentication hook to get global auth state
-  const { isAuthenticated, isLoading } = useAuth(); 
+  const { isAuthenticated, isLoading } = useAuth();
 
   const categories: CategoryCard[] = [
     {
@@ -64,16 +62,10 @@ export default function HomePage() {
       icon: <Glasses size={40} className="text-orange-400" />,
     },
     {
-      name: "Luminous Shirts",
-      path: "/values/lumitshirt",
-      description: "Check the values for luminous shirts.",
-      icon: <Shirt size={40} className="text-yellow-400" />, // Changed to Shirt
-    },
-    {
-      name: "Luminous Pants",
-      path: "/values/lumipants",
-      description: "Find the values for luminous pants.",
-      icon: <Scissors size={40} className="text-green-400" />, // Changed to Scissors
+      name: "Luminous Clothing", // NEW: Merged category name
+      path: "/values/luminousclothing", // NEW: Path to the merged page
+      description: "Check values for luminous shirts and pants.", // NEW: Updated description
+      icon: <Shirt size={40} className="text-yellow-400" />, // NEW: Using Shirt icon
     },
     {
       name: "Items",
@@ -97,7 +89,7 @@ export default function HomePage() {
   // So, if we reach this point and isAuthenticated is false, it means a redirect is
   // in progress or has just completed, so we render nothing to avoid flickering.
   if (!isAuthenticated) {
-    return null; 
+    return null;
   }
 
   // If authenticated, render the actual home page content

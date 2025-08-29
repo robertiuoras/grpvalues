@@ -52,7 +52,7 @@ export async function GET(
   let collectionRef;
 
   try {
-    // NEW: Explicitly disallow direct access to old luminous clothing pages
+    // Explicitly disallow direct access to old luminous clothing pages
     if (category === "lumitshirt" || category === "lumipants") {
       console.log(
         `[API Info] Direct access to old category '${category}' is disallowed. Returning 404.`
@@ -99,14 +99,17 @@ export async function GET(
           { status: 400 }
         );
       }
-      // CORRECTED Path: grpValues/luminousclothing/{type}/items
-      // Assuming {type} ("shirts" or "pants") is a DOCUMENT under "luminousclothing" collection,
-      // and "items" is a SUBCOLLECTION under that {type} document.
+
+      // FIX: Map luminousType to the original lumitshirt/lumipants documents
+      // This assumes your Firestore structure has documents "lumitshirt" and "lumipants"
+      // directly under "grpValues", and each has an "items" subcollection.
+      const targetLuminousDoc =
+        luminousType === "shirts" ? "lumitshirt" : "lumipants";
+
       collectionRef = db
         .collection("grpValues")
-        .doc("luminousclothing") // This is a document
-        .collection(luminousType) // This will be a collection 'shirts' or 'pants'
-        .collection("items"); // This will be a subcollection 'items' inside 'shirts' or 'pants' collection, this is allowed.
+        .doc(targetLuminousDoc) // Use 'lumitshirt' or 'lumipants' as the document ID
+        .collection("items"); // Access the 'items' subcollection within that document
     } else {
       // Consistent path for ALL other categories: grpValues/{category}/items
       collectionRef = db
