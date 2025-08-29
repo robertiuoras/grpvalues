@@ -1,15 +1,15 @@
-// app/components/Header.tsx
 "use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation"; // Import useRouter
 import { useAuth } from "../../hooks/useAuth"; // Corrected import path for useAuth hook
 
 export function Header() {
   // This must be a named export to match ClientLayoutWrapper's import
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter(); // Initialize useRouter
   const { isAuthenticated, isLoading, userRole } = useAuth(); // Get auth state and userRole
 
   const categories = [
@@ -49,6 +49,46 @@ export function Header() {
     );
   };
 
+  const handleLogout = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault(); // Prevent default Link navigation
+    setIsDropdownOpen(false); // Close dropdown immediately
+    console.log("Client: Initiating logout process...");
+    try {
+      // Make a direct fetch request to the server-side logout API route
+      // Set redirect to 'follow' to allow fetch to follow 3xx responses
+      const response = await fetch("/api/logout", {
+        method: "GET",
+        redirect: "follow",
+      });
+      console.log(
+        `Client: Logout API response status: ${response.status}, redirected: ${response.redirected}`
+      );
+
+      // If the server successfully redirected (response.redirected is true)
+      // or if the final response after redirect was OK (response.ok is true for 2xx status)
+      if (response.redirected || response.ok) {
+        console.log("Client: Logout successful via server redirect.");
+        // The browser will have already navigated due to 'redirect: follow'
+        // and the server's redirect. This client-side push acts as a strong
+        // guarantee and ensures the client-side router state is consistent.
+        router.push("/login");
+      } else {
+        // If it was not redirected and not 'ok', then it's a failure.
+        const errorText = await response.text();
+        console.error(
+          "Client: Logout API failed, no redirect or non-ok status:",
+          errorText
+        );
+        alert("Logout failed. Please try again."); // Using alert for critical error feedback
+      }
+    } catch (error) {
+      console.error("Client: Error during logout fetch:", error);
+      alert(
+        "An error occurred during logout. Please check your network and try again."
+      ); // Using alert for critical error feedback
+    }
+  };
+
   // Only render header if authenticated (or still loading to avoid flicker)
   // If not authenticated, useAuth will handle redirect, so header might not be needed anyway.
   if (isLoading) {
@@ -65,11 +105,11 @@ export function Header() {
       <div className="max-w-7xl mx-auto flex flex-row items-center justify-between relative px-8">
         {/* Left: Log Out button and Logo */}
         <div className="flex items-center gap-4">
-          {/* Log Out Button */}
+          {/* Log Out Button - now a Link element that calls handleLogout */}
           <Link
-            href="/logout"
+            href="#" // Set to # or / to prevent default client-side routing
+            onClick={handleLogout}
             className="text-sm md:text-base font-medium px-3 py-1 rounded-full bg-red-600/80 text-white hover:bg-red-700 transition-colors duration-300 whitespace-nowrap"
-            onClick={() => setIsDropdownOpen(false)}
           >
             Log Out
           </Link>
