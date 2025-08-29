@@ -1,12 +1,13 @@
+// app/components/Header.tsx
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link"; // Re-enabled Link import
-import { usePathname } from "next/navigation"; // Import usePathname
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const pathname = usePathname(); // Get current pathname
+  const pathname = usePathname();
 
   const categories = [
     { name: "Cars", path: "/values/cars" },
@@ -15,24 +16,22 @@ export default function Header() {
     { name: "Helicopters", path: "/values/helicopters" },
     { name: "Clothing List", path: "/values/clothinglist" },
     { name: "Masks", path: "/values/masks" },
-    { name: "Luminous Shirts", path: "/values/lumitshirt" },
-    { name: "Luminous Pants", path: "/values/lumipants" },
+    { name: "Luminous Clothing", path: "/values/luminousclothing" }, // Merged Luminous Shirts and Pants
     { name: "Motorcycles", path: "/values/motorcycles" },
     { name: "Bunker Help", path: "/values/bunkerhelp" },
     { name: "Illegal Items", path: "/values/illegalitems" },
     { name: "Cropped Collection Shirts", path: "/values/croppcollectionshirt" },
     { name: "Denim Jackets", path: "/values/denimjacket" },
     { name: "Items", path: "/values/items" },
-    { name: "LifeInvader", path: "/lifeinvader" }
+    { name: "LifeInvader", path: "/lifeinvader" },
   ];
 
-  // Helper to render a link that prevents navigation if already on the same page
   const renderHomeLink = (content: React.ReactNode, className: string) => {
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (pathname === '/') {
-        e.preventDefault(); // Prevent default navigation if already on the homepage
+      if (pathname === "/") {
+        e.preventDefault();
       }
-      setIsDropdownOpen(false); // Close dropdown on click, even if not navigating
+      setIsDropdownOpen(false);
     };
 
     return (
@@ -44,16 +43,24 @@ export default function Header() {
 
   return (
     <header className="bg-blue-950 text-gray-100 p-4 shadow-md sticky top-0 z-50 font-sans">
-      <div className="max-w-7xl mx-auto flex items-center justify-between relative px-8">
-        {/* Left: Logo - Now uses renderHomeLink */}
-        <div className="flex-shrink-0 min-w-fit">
+      <div className="max-w-7xl mx-auto flex flex-row items-center justify-between relative px-8">
+        {/* Left: Log Out button and Logo */}
+        <div className="flex items-center gap-4">
+          {/* Log Out Button */}
+          <Link
+            href="/logout"
+            className="text-sm md:text-base font-medium px-3 py-1 rounded-full bg-red-600/80 text-white hover:bg-red-700 transition-colors duration-300 whitespace-nowrap"
+            onClick={() => setIsDropdownOpen(false)}
+          >
+            Log Out
+          </Link>
           {renderHomeLink(
             "Grand RP Values",
             "text-3xl font-bold text-blue-400 hover:text-blue-300 transition-colors duration-300"
           )}
         </div>
 
-        {/* Center: Home button - Now uses renderHomeLink */}
+        {/* Center: Home button */}
         <div className="absolute left-1/2 transform -translate-x-1/2">
           {renderHomeLink(
             "Home",
@@ -62,12 +69,12 @@ export default function Header() {
         </div>
 
         {/* Right: School Event button and Categories dropdown */}
-        <div className="flex-shrink-0 relative min-w-fit flex items-center gap-4">
+        <div className="flex-shrink-0 relative flex items-center gap-4">
           {/* New School Event Button */}
           <Link
             href="/events/school"
             className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition duration-200 shadow-sm text-sm md:text-base whitespace-nowrap"
-            onClick={() => setIsDropdownOpen(false)} // Close dropdown if open, though it's a separate button
+            onClick={() => setIsDropdownOpen(false)}
           >
             School Event
           </Link>

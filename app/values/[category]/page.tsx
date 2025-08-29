@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useAuth } from '../../../hooks/useAuth'; // Corrected path
+import { useAuth } from "../../../hooks/useAuth"; // Corrected path
 
 import {
   RefreshCcw,
@@ -86,19 +86,19 @@ const extractExtraNumber = (item: GrandRPItem): number => {
 const specialCategoryNames: Record<string, string> = {
   clothinglist: "Clothing List",
   vehicleslist: "Vehicles List", // Assuming vehicleslist exists in your Header or somewhere else
-  lumitshirt: "Luminous Shirts",
-  lumipants: "Luminous Pants",
+  lumitshirt: "Luminous Shirts", // Kept for backward compatibility if needed, though now "luminousclothing" is primary
+  lumipants: "Luminous Pants", // Kept for backward compatibility if needed
+  luminousclothing: "Luminous Clothing", // NEW: Merged category
   illegalitems: "Illegal Items",
-  denimjacket: "Denim Jackets", // FIX: Corrected key to 'denimjacket' (singular)
+  denimjacket: "Denim Jackets",
   croppcollectionshirt: "Cropped Collection Shirts",
-  desertscarfmask: "Desert Scarf Masks", // FIX: Added for correct heading
-  bandanamask: "Bandana Masks", // FIX: Added for correct heading
-  tightmask: "Tight Masks", // FIX: Added for correct heading
-  snowboardermask: "Snowboarder Masks", // FIX: Added for correct heading
-  motorcycles: "Motorcycles", // FIX: Added for correct heading
-  bunkerhelp: "Bunker Help", // FIX: Added for correct heading
-  items: "Items", // FIX: Added for correct heading if it's a top-level category
-  // Assuming cars, boats, planes, helicopters are handled by formatSlug if not explicitly here
+  desertscarfmask: "Desert Scarf Masks",
+  bandanamask: "Bandana Masks",
+  tightmask: "Tight Masks",
+  snowboardermask: "Snowboarder Masks",
+  motorcycles: "Motorcycles",
+  bunkerhelp: "Bunker Help",
+  items: "Items",
 };
 
 export default function CategoryPage({
@@ -106,17 +106,13 @@ export default function CategoryPage({
 }: {
   params: Promise<{ category: string }>;
 }) {
-  // ALL REACT HOOKS MUST BE CALLED UNCONDITIONALLY AT THE VERY TOP OF THE COMPONENT
-  // This ensures the order of hooks never changes between renders.
-  const { isAuthenticated, isLoading } = useAuth(); // useAuth first
-  
-  // React.use(params) is a Hook and must be called unconditionally.
-  const categoryObj = React.use(params); 
+  const { isAuthenticated, isLoading } = useAuth();
+
+  const categoryObj = React.use(params);
   const category = categoryObj.category.toLowerCase();
 
-  // States - all defined unconditionally
   const [selectedMainCategory, setSelectedMainCategory] = useState(
-    category === "masks" ? "desertscarfmask" : category // Default mask category
+    category === "masks" ? "desertscarfmask" : category
   );
   const [selectedGender, setSelectedGender] = useState<"men" | "women" | null>(
     null
@@ -124,6 +120,10 @@ export default function CategoryPage({
   const [selectedClothingSubcatSlug, setSelectedClothingSubcatSlug] = useState<
     string | null
   >(null);
+  // NEW STATE for luminous clothing subcategories
+  const [selectedLuminousSubcategory, setSelectedLuminousSubcategory] =
+    useState<"shirts" | "pants" | null>(null);
+
   const [items, setItems] = useState<GrandRPItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,12 +132,11 @@ export default function CategoryPage({
     "value-asc" | "value-desc" | "alpha-asc" | "alpha-desc" | null
   >(null);
 
-  // UseCallbacks - all defined unconditionally
   const fetchClothingItems = useCallback(
     async (gender: string, heading: string | null) => {
       if (!heading) {
         setItems([]);
-        setLoading(false); // Ensure loading is false if no heading to fetch
+        setLoading(false);
         return;
       }
       setLoading(true);
@@ -210,9 +209,35 @@ export default function CategoryPage({
     } finally {
       setLoading(false);
     }
-  }, [selectedMainCategory]); // Depend on selectedMainCategory
+  }, [selectedMainCategory]);
 
-  // useMemo hooks - all defined unconditionally
+  // NEW: Fetch function for luminous clothing
+  const fetchLuminousItems = useCallback(async (type: "shirts" | "pants") => {
+    setLoading(true);
+    setError(null);
+    try {
+      // The API endpoint for luminous clothing will need to be created/updated
+      // to handle the 'type' parameter and fetch data for shirts or pants.
+      const res = await fetch(`/api/values/luminousclothing?type=${type}`);
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
+      }
+      const data: GrandRPItem[] = await res.json();
+      setItems(
+        data.sort((a, b) => extractExtraNumber(a) - extractExtraNumber(b))
+      );
+    } catch (e: any) {
+      console.error("Error fetching luminous items:", e);
+      setError(
+        `Failed to load luminous clothing: ${e.message || "Unknown error"}`
+      );
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const filteredAndSortedItems = useMemo(() => {
     const filtered = items.filter((item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -251,30 +276,54 @@ export default function CategoryPage({
     [selectedGender]
   );
 
-  // useEffect hooks - all defined unconditionally
-  // This useEffect depends on 'category' and other states to trigger data fetching
+  // Main useEffect to manage category changes and reset states
   useEffect(() => {
-    setSelectedMainCategory(
-      category === "masks" ? "desertscarfmask" : category
-    );
-    // Only reset gender/subcat for clothinglist categories if the category isn't clothinglist
-    // or if the category is clothinglist but a new gender/subcat hasn't been chosen yet
-    if (category !== "clothinglist") {
+    if (category === "masks") {
+      setSelectedMainCategory("desertscarfmask");
       setSelectedGender(null);
       setSelectedClothingSubcatSlug(null);
+      setSelectedLuminousSubcategory(null); // Reset for other categories
+    } else if (category === "clothinglist") {
+      setSelectedMainCategory(category);
+      setSelectedLuminousSubcategory(null); // Reset for other categories
+      // Keep selectedGender and selectedClothingSubcatSlug if they exist
+    } else if (category === "luminousclothing") {
+      // Handle new luminousclothing category
+      setSelectedMainCategory(category);
+      setSelectedGender(null);
+      setSelectedClothingSubcatSlug(null);
+      if (!selectedLuminousSubcategory) {
+        // Set default luminous subcategory if not already set
+        setSelectedLuminousSubcategory("shirts");
+      }
+    } else {
+      // Generic category
+      setSelectedMainCategory(category);
+      setSelectedGender(null);
+      setSelectedClothingSubcatSlug(null);
+      setSelectedLuminousSubcategory(null); // Reset for other categories
     }
     setItems([]);
     setSearchTerm("");
     setSortOption(null);
-  }, [category]); // This useEffect is now at the top level
+  }, [category]);
 
+  // useEffect to trigger data fetching based on selected states
   useEffect(() => {
     if (category === "clothinglist") {
       if (selectedGender && selectedClothingSubcatSlug) {
         fetchClothingItems(selectedGender, selectedClothingSubcatSlug);
       } else {
-        setItems([]); // Clear items when no subcategory is selected
-        setLoading(false); // Explicitly set loading to false here
+        setItems([]);
+        setLoading(false);
+      }
+    } else if (category === "luminousclothing") {
+      // NEW: Logic for luminous clothing fetching
+      if (selectedLuminousSubcategory) {
+        fetchLuminousItems(selectedLuminousSubcategory);
+      } else {
+        setItems([]);
+        setLoading(false);
       }
     } else {
       if (category === "masks" && !selectedMainCategory) {
@@ -289,10 +338,11 @@ export default function CategoryPage({
     selectedMainCategory,
     selectedGender,
     selectedClothingSubcatSlug,
+    selectedLuminousSubcategory, // NEW: Add this dependency
     fetchClothingItems,
     fetchGeneralItems,
+    fetchLuminousItems, // NEW: Add this dependency
   ]);
-
 
   // Now, the conditional returns come after all hooks are declared.
 
@@ -337,10 +387,10 @@ export default function CategoryPage({
         return <Plane className="w-16 h-16" />;
       case "clothinglist":
         return <Shirt className="w-16 h-16" />;
-      case "lumitshirt":
-        return <Shirt className="w-16 h-16" />;
-      case "lumipants":
-        return <Scissors className="w-16 h-16" />;
+      case "lumitshirt": // Kept for individual category handling if needed
+      case "lumipants": // Kept for individual category handling if needed
+      case "luminousclothing": // NEW: Icon for the merged category
+        return <Shirt className="w-16 h-16" />; // Using Shirt as a generic luminous icon
       case "denimjacket":
         return <Shirt className="w-16 h-16" />;
       case "croppcollectionshirt":
@@ -374,7 +424,7 @@ export default function CategoryPage({
   `;
 
   return (
-    <div className="flex flex-col items-center mt-8 px-4 sm:px-8 pb-8"> {/* Added pb-8 here */}
+    <div className="flex flex-col items-center mt-8 px-4 sm:px-8 pb-8">
       {/* Main Header */}
       <h1 className="relative flex flex-col items-center justify-center text-5xl font-extrabold text-blue-400 mb-12 drop-shadow-lg text-center">
         {getHeaderIcon(currentHeaderIconSlug)}
@@ -395,6 +445,7 @@ export default function CategoryPage({
                   setSelectedMainCategory(mask.slug);
                   setSelectedGender(null);
                   setSelectedClothingSubcatSlug(null);
+                  setSelectedLuminousSubcategory(null); // Reset
                   setItems([]);
                   setSearchTerm("");
                   setSortOption(null);
@@ -413,6 +464,48 @@ export default function CategoryPage({
         </div>
       )}
 
+      {/* Luminous Clothing Buttons (NEW) */}
+      {category === "luminousclothing" && (
+        <div className="flex flex-col items-center w-full max-w-6xl mb-8">
+          <div className="flex flex-wrap justify-center gap-4 mb-4">
+            <button
+              onClick={() => {
+                if (selectedLuminousSubcategory === "shirts") return;
+                setSelectedLuminousSubcategory("shirts");
+                setItems([]); // Clear items to show loading state
+                setSearchTerm("");
+                setSortOption(null);
+                setLoading(true); // Indicate loading for new fetch
+              }}
+              className={`px-6 py-3 rounded-xl font-semibold text-lg transition-all duration-300 ${
+                selectedLuminousSubcategory === "shirts"
+                  ? "bg-blue-600 text-white shadow-lg transform scale-105"
+                  : "bg-gray-700 text-gray-200 hover:bg-blue-600 hover:text-white"
+              }`}
+            >
+              Shirts
+            </button>
+            <button
+              onClick={() => {
+                if (selectedLuminousSubcategory === "pants") return;
+                setSelectedLuminousSubcategory("pants");
+                setItems([]); // Clear items to show loading state
+                setSearchTerm("");
+                setSortOption(null);
+                setLoading(true); // Indicate loading for new fetch
+              }}
+              className={`px-6 py-3 rounded-xl font-semibold text-lg transition-all duration-300 ${
+                selectedLuminousSubcategory === "pants"
+                  ? "bg-blue-600 text-white shadow-lg transform scale-105"
+                  : "bg-gray-700 text-gray-200 hover:bg-blue-600 hover:text-white"
+              }`}
+            >
+              Pants
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Clothing List Navigation */}
       {category === "clothinglist" && (
         <>
@@ -422,10 +515,10 @@ export default function CategoryPage({
                 onClick={() => {
                   setSelectedGender("men");
                   setSelectedClothingSubcatSlug(null);
+                  setSelectedLuminousSubcategory(null); // Reset
                   setItems([]);
                   setSearchTerm("");
                   setSortOption(null);
-                  // FIX: Removed setLoading(true) here
                 }}
                 className="w-48 px-8 py-6 text-2xl font-bold rounded-3xl bg-blue-600 text-white shadow-lg hover:scale-105 transition text-center"
               >
@@ -435,10 +528,10 @@ export default function CategoryPage({
                 onClick={() => {
                   setSelectedGender("women");
                   setSelectedClothingSubcatSlug(null);
+                  setSelectedLuminousSubcategory(null); // Reset
                   setItems([]);
                   setSearchTerm("");
                   setSortOption(null);
-                  // FIX: Removed setLoading(true) here
                 }}
                 className="w-48 px-8 py-6 text-2xl font-bold rounded-3xl bg-pink-600 text-white shadow-lg hover:scale-105 transition text-center"
               >
@@ -487,7 +580,7 @@ export default function CategoryPage({
                         setItems([]);
                         setSearchTerm("");
                         setSortOption(null);
-                        setLoading(true); // FIX: Keep setLoading(true) here as a fetch is about to happen
+                        setLoading(true);
                       }}
                       className={`px-7 py-3 rounded-xl text-lg font-semibold transition-all duration-300 ${
                         selectedClothingSubcatSlug === subcat.slug
@@ -511,7 +604,8 @@ export default function CategoryPage({
       {!loading &&
         !error &&
         (category !== "clothinglist" ||
-          (selectedGender && selectedClothingSubcatSlug)) && (
+          (selectedGender && selectedClothingSubcatSlug)) &&
+        (category !== "luminousclothing" || selectedLuminousSubcategory) && ( // NEW: Added condition for luminous clothing
           <div className="flex flex-col items-center w-full max-w-6xl mb-8">
             <input
               type="text"
@@ -561,7 +655,8 @@ export default function CategoryPage({
         filteredAndSortedItems.length === 0 &&
         !error &&
         (category !== "clothinglist" ||
-          (selectedGender && selectedClothingSubcatSlug)) && (
+          (selectedGender && selectedClothingSubcatSlug)) &&
+        (category !== "luminousclothing" || selectedLuminousSubcategory) && ( // NEW: Added condition for luminous clothing
           <div className="text-center text-gray-400">
             No items found for {currentHeaderName}.
           </div>

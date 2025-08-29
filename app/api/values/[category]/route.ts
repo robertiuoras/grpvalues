@@ -8,11 +8,12 @@ export async function GET(
 ) {
   const { category } = await context.params;
   const url = new URL(request.url);
-  const gender = url.searchParams.get("gender"); // "men" or "women"
-  const heading = url.searchParams.get("heading"); // e.g., "accessory", "top"
+  const gender = url.searchParams.get("gender"); // "men" or "women" for clothinglist
+  const heading = url.searchParams.get("heading"); // e.g., "accessory", "top" for clothinglist
+  const luminousType = url.searchParams.get("type"); // "shirts" or "pants" for luminousclothing
 
   console.log(
-    `[API Request] Incoming: Category=${category}, Gender=${gender}, Heading=${heading}`
+    `[API Request] Incoming: Category=${category}, Gender=${gender}, Heading=${heading}, LuminousType=${luminousType}`
   );
 
   if (!category) {
@@ -51,6 +52,19 @@ export async function GET(
   let collectionRef;
 
   try {
+    // NEW: Explicitly disallow direct access to old luminous clothing pages
+    if (category === "lumitshirt" || category === "lumipants") {
+      console.log(
+        `[API Info] Direct access to old category '${category}' is disallowed. Returning 404.`
+      );
+      return NextResponse.json(
+        {
+          message: `Category '${category}' not found. Please use '/values/luminousclothing'.`,
+        },
+        { status: 404 }
+      );
+    }
+
     if (category === "clothinglist") {
       if (!gender || !heading) {
         console.log(
@@ -68,10 +82,33 @@ export async function GET(
         .collection(gender) // 'men' or 'women' subcollection
         .doc(heading) // Specific clothing type document (e.g., 'accessory')
         .collection("items"); // 'items' subcollection under that document
+    } else if (category === "luminousclothing") {
+      // Handle luminousclothing category
+      if (
+        !luminousType ||
+        (luminousType !== "shirts" && luminousType !== "pants")
+      ) {
+        console.log(
+          `[API Info] Luminousclothing request missing or invalid 'type' parameter. Returning 400.`
+        );
+        return NextResponse.json(
+          {
+            message:
+              "Missing or invalid type for luminousclothing (must be 'shirts' or 'pants')",
+          },
+          { status: 400 }
+        );
+      }
+      // CORRECTED Path: grpValues/luminousclothing/{type}/items
+      // Assuming {type} ("shirts" or "pants") is a DOCUMENT under "luminousclothing" collection,
+      // and "items" is a SUBCOLLECTION under that {type} document.
+      collectionRef = db
+        .collection("grpValues")
+        .doc("luminousclothing") // This is a document
+        .collection(luminousType) // This will be a collection 'shirts' or 'pants'
+        .collection("items"); // This will be a subcollection 'items' inside 'shirts' or 'pants' collection, this is allowed.
     } else {
-      // FIX: Consistent path for ALL non-'clothinglist' categories based on new understanding.
-      // All these categories are documents under 'grpValues' that contain an 'items' subcollection.
-      // Path: grpValues/{category}/items
+      // Consistent path for ALL other categories: grpValues/{category}/items
       collectionRef = db
         .collection("grpValues")
         .doc(category)
