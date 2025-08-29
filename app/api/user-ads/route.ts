@@ -239,10 +239,8 @@ export async function PUT(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error(
-      `[API/user-ads] PUT: Error updating user ad ${searchParams.get("adId")}:`,
-      error
-    );
+    // FIX: Use 'adId' variable here
+    console.error(`[API/user-ads] PUT: Error updating user ad ${adId}:`, error);
     return NextResponse.json(
       { message: "Failed to update user ad", error: (error as Error).message },
       { status: 500 }
@@ -280,10 +278,9 @@ export async function DELETE(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
+    // FIX: Use 'adId' variable here
     console.error(
-      `[API/user-ads] DELETE: Error deleting user ad ${searchParams.get(
-        "adId"
-      )}:`,
+      `[API/user-ads] DELETE: Error deleting user ad ${adId}:`,
       error
     );
     return NextResponse.json(
