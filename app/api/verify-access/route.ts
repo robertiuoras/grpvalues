@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@lib/firebaseAdmin";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers"; // Ensure cookies is imported for setting cookies
+import { cookies } from "next/headers";
 
 export async function POST(request: NextRequest) {
   console.log("API: /api/verify-access POST request received.");
@@ -18,14 +18,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Clean the access code (remove spaces, convert to uppercase)
     const cleanedCode = accessCode.trim().toUpperCase().replace(/\s+/g, "");
     console.log(`API: Cleaned access code: ${cleanedCode}`);
 
     let playerDocRef = null;
     let matchedCodeData: any = null;
-
-    // --- Step 1: Efficiently find the correct document ---
 
     console.log("API: Attempting to find document by 'accessCode' field...");
     const plainCodeQuerySnapshot = await db
@@ -63,9 +60,7 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-    // --- End Step 1 ---
 
-    // --- Step 2: Perform cryptographic comparison and transaction on the identified document ---
     let isCodeMatched = false;
 
     if (
@@ -150,36 +145,57 @@ export async function POST(request: NextRequest) {
         userRole: transactionResult.userRole,
       });
 
-      const cookieOptions = {
+      // Determine the cookie domain dynamically for Vercel deployment consistency
+      let cookieDomain = "";
+      if (
+        process.env.NODE_ENV === "production" &&
+        request.headers.get("host")
+      ) {
+        // For production, get the host from the request headers
+        // Remove port number if present, and ensure it's a valid domain format
+        cookieDomain = request.headers
+          .get("host")!
+          .replace(/:\d+$/, "")
+          .replace(/^www\./, "");
+        // For development, keep it empty (localhost)
+      }
+
+      const baseCookieOptions = {
         path: "/",
-        // IMPORTANT: httpOnly: false for cookies read by client-side useAuth
-        // secure: true is good practice in production for all cookies
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict" as "strict" | "lax" | "none", // Ensure correct type for sameSite
+        sameSite: "lax" as "strict" | "lax" | "none", // Changed to 'lax' for better cross-site behavior on navigation
         maxAge: 60 * 60, // 1 hour for session cookies as per useAuth expiry
       };
 
       // Cookies for client-side useAuth hook (NOT httpOnly)
       response.cookies.set("isAuthenticated", "true", {
-        ...cookieOptions,
+        ...baseCookieOptions,
         httpOnly: false,
+        ...(cookieDomain && { domain: cookieDomain }), // Conditionally add domain
       });
       response.cookies.set("authTimestamp", new Date().getTime().toString(), {
-        ...cookieOptions,
+        ...baseCookieOptions,
         httpOnly: false,
+        ...(cookieDomain && { domain: cookieDomain }),
       });
       response.cookies.set("userRole", transactionResult.userRole, {
-        ...cookieOptions,
+        ...baseCookieOptions,
         httpOnly: false,
+        ...(cookieDomain && { domain: cookieDomain }),
       });
 
       // AccessCode cookie for server-side logout (CAN be httpOnly)
       response.cookies.set("accessCode", playerDocRef!.id, {
-        ...cookieOptions,
+        ...baseCookieOptions,
         httpOnly: true,
+        ...(cookieDomain && { domain: cookieDomain }),
       });
 
       console.log("API: Login successful. Response and cookies set.");
+      console.log("API: Set cookies with options:", {
+        ...baseCookieOptions,
+        ...(cookieDomain && { domain: cookieDomain }),
+      });
       return response;
     } else {
       console.log(
