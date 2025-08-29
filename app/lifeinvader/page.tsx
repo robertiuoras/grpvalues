@@ -13,6 +13,7 @@ import { useAuth } from "../../hooks/useAuth"; // Corrected import path for useA
 
 // Define the interface for a template item
 interface Template {
+  id?: string; // Add optional id for consistent keying, will be absent for CSVs
   name: string;
   description: string;
   type: string;
@@ -780,7 +781,14 @@ export default function App() {
       );
       setMySavedAds([]); // Clear ads if not authenticated or userId is invalid
     }
-  }, [isAuthenticated, userId, fetchMySavedAds, showMyAds, authLoading]); // Added authLoading to dependencies
+  }, [
+    isAuthenticated,
+    userId,
+    fetchMySavedAds,
+    showMyAds,
+    authLoading,
+    loading,
+  ]); // Added authLoading, loading to dependencies
 
   // Effect to update `templates` when `activeCategory` changes (when search is empty)
   useEffect(() => {
@@ -1032,6 +1040,7 @@ export default function App() {
                   return null;
                 }
                 // Also ensure t.id is a string before passing to key or handleDeleteAd
+                // This now works because Template interface has optional 'id'
                 const itemId =
                   typeof t.id === "string" && t.id !== ""
                     ? t.id
