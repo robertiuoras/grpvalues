@@ -61,8 +61,18 @@ export default function Header() {
           )}
         </div>
 
-        {/* Right: Categories dropdown */}
-        <div className="flex-shrink-0 relative min-w-fit">
+        {/* Right: School Event button and Categories dropdown */}
+        <div className="flex-shrink-0 relative min-w-fit flex items-center gap-4">
+          {/* New School Event Button */}
+          <Link
+            href="/events/school"
+            className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition duration-200 shadow-sm text-sm md:text-base whitespace-nowrap"
+            onClick={() => setIsDropdownOpen(false)} // Close dropdown if open, though it's a separate button
+          >
+            School Event
+          </Link>
+
+          {/* Existing Categories button */}
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="px-4 py-2 rounded-lg bg-blue-900 hover:bg-blue-800 text-white font-semibold transition duration-200 flex items-center gap-2 shadow-sm text-sm md:text-base"
