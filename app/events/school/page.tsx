@@ -125,11 +125,12 @@ export default function ColorMixerPage() {
       setFoundMix({ color1, color2 });
       setFeedbackMessage(`To get ${cleanedTargetColor}, mix:`);
     } else {
-      const availableMixableColorNames = Object.keys(reverseMixingRules)
-        .sort()
-        .join(", ");
+      const formattedColorName =
+        cleanedTargetColor.charAt(0).toUpperCase() +
+        cleanedTargetColor.slice(1).toLowerCase();
+      // const availableMixableColorNames = Object.keys(reverseMixingRules).sort().join(', '); // Removed this for brevity as requested
       setFeedbackMessage(
-        `Sorry, I don't know how to make ${cleanedTargetColor}. Try one of these mixable colors: ${availableMixableColorNames}.`
+        `Sorry, I don't know how to make ${formattedColorName}. Are you sure you spelt it correctly?`
       );
       setFoundMix(null);
     }
@@ -172,9 +173,13 @@ export default function ColorMixerPage() {
           />
         </div>
 
+        {/* SHOW MIX BUTTON */}
         <button
           onClick={handleFindMix}
-          className="relative z-10 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-4 px-10 rounded-full text-xl shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-400 mb-8"
+          className="relative z-10 bg-gradient-to-r from-blue-500 to-indigo-500
+                     hover:from-blue-600 hover:to-indigo-600 text-white font-bold
+                     py-4 px-10 rounded-full text-xl transition-opacity duration-300 hover:opacity-90
+                     focus:outline-none focus:ring-4 focus:ring-blue-400 mb-8"
         >
           SHOW MIX
         </button>
@@ -222,7 +227,6 @@ export default function ColorMixerPage() {
           </div>
         )}
       </main>
-      {/* Removed the custom style block for animate-float as it's no longer needed */}
     </div>
   );
 }

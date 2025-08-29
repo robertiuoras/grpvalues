@@ -63,19 +63,25 @@ export async function POST(request: NextRequest) {
 
     let isCodeMatched = false;
 
+    // Check for plain text accessCode first
     if (
       matchedCodeData?.accessCode &&
       matchedCodeData.accessCode.replace(/\s+/g, "") === cleanedCode
     ) {
       isCodeMatched = true;
+      console.log("API: Plain text access code matched.");
     } else if (matchedCodeData?.hashedCode) {
+      // If no plain text match, try bcrypt comparison with hashedCode
       try {
         const isMatch = await bcrypt.compare(
           cleanedCode,
-          matchedCodeData.hashedCode
+          matchedCodeData.hashedCode // FIX: Corrected typo from `matchedData` to `matchedCodeData`
         );
         if (isMatch) {
           isCodeMatched = true;
+          console.log("API: Hashed access code matched.");
+        } else {
+          console.log("API: bcrypt.compare failed for hashed code.");
         }
       } catch (hashError) {
         console.error(
@@ -88,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     if (!isCodeMatched) {
       console.log(
-        "API: Code found, but cryptographic comparison failed (401)."
+        "API: Code found, but cryptographic comparison failed or plain text mismatch (401)."
       );
       return NextResponse.json(
         { success: false, message: "Invalid access code" },
@@ -131,18 +137,23 @@ export async function POST(request: NextRequest) {
         lastUsed: new Date(),
       });
       console.log("API: Transaction update prepared: marking code as in use.");
-      return { success: true, userRole: codeData.role || "user" };
+      return {
+        success: true,
+        userRole: codeData.role || "user",
+        userId: playerDocRef!.id,
+      }; // FIX: Added userId to transactionResult
     });
 
     if (transactionResult.success) {
       console.log(
-        `API: Access granted. User role: ${transactionResult.userRole}`
+        `API: Access granted. User role: ${transactionResult.userRole}, User ID: ${transactionResult.userId}`
       );
 
       const response = NextResponse.json({
         success: true,
         message: "Access granted",
         userRole: transactionResult.userRole,
+        userId: transactionResult.userId, // FIX: Include userId in the API response
       });
 
       // Determine the cookie domain dynamically for Vercel deployment consistency
@@ -179,6 +190,12 @@ export async function POST(request: NextRequest) {
         ...(cookieDomain && { domain: cookieDomain }),
       });
       response.cookies.set("userRole", transactionResult.userRole, {
+        ...baseCookieOptions,
+        httpOnly: false,
+        ...(cookieDomain && { domain: cookieDomain }),
+      });
+      response.cookies.set("userId", transactionResult.userId, {
+        // FIX: Set userId cookie
         ...baseCookieOptions,
         httpOnly: false,
         ...(cookieDomain && { domain: cookieDomain }),

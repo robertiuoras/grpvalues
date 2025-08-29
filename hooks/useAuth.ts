@@ -1,4 +1,3 @@
-// hooks/useAuth.ts
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,6 +8,7 @@ export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null); // New state for userId
   const router = useRouter();
   const pathname = usePathname();
 
@@ -18,6 +18,7 @@ export function useAuth() {
       const authStatus = Cookies.get("isAuthenticated");
       const authTimestamp = Cookies.get("authTimestamp");
       const roleCookie = Cookies.get("userRole");
+      const idCookie = Cookies.get("userId"); // Read userId from cookie
 
       console.log(
         "useAuth: Cookie values - isAuthenticated:",
@@ -25,13 +26,17 @@ export function useAuth() {
         "authTimestamp:",
         authTimestamp,
         "userRole:",
-        roleCookie
+        roleCookie,
+        "userId:", // Log userId cookie value
+        idCookie
       );
 
       let userIsAuthenticated = false;
       let role = null;
+      let currentUserId = null; // Variable to hold the userId
 
-      if (authStatus === "true" && authTimestamp) {
+      if (authStatus === "true" && authTimestamp && idCookie) {
+        // Check for userId cookie too
         const now = new Date().getTime();
         const authTime = parseInt(authTimestamp);
         const hoursSinceAuth = (now - authTime) / (1000 * 60 * 60);
@@ -42,6 +47,7 @@ export function useAuth() {
           // Current session expiry is 1 hour
           userIsAuthenticated = true;
           role = roleCookie || null;
+          currentUserId = idCookie; // Set userId if session is active
           console.log("useAuth: Session is active.");
         } else {
           console.log(
@@ -50,21 +56,25 @@ export function useAuth() {
           Cookies.remove("isAuthenticated");
           Cookies.remove("authTimestamp");
           Cookies.remove("userRole");
+          Cookies.remove("userId"); // Clear userId cookie on expiry
         }
       } else {
         console.log(
-          "useAuth: No valid authentication cookies found (authStatus or authTimestamp missing/invalid)."
+          "useAuth: No valid authentication cookies found (authStatus, authTimestamp, or userId missing/invalid)."
         );
       }
 
       setIsAuthenticated(userIsAuthenticated);
       setUserRole(role);
+      setUserId(currentUserId); // Update userId state
       setIsLoading(false);
       console.log(
         "useAuth: State updated - isAuthenticated:",
         userIsAuthenticated,
         "userRole:",
         role,
+        "userId:", // Log updated userId state
+        currentUserId,
         "isLoading:",
         false
       );
@@ -101,5 +111,5 @@ export function useAuth() {
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [router, pathname]); // Re-added 'pathname' to dependencies
 
-  return { isAuthenticated, isLoading, userRole, setIsAuthenticated };
+  return { isAuthenticated, isLoading, userRole, userId, setIsAuthenticated }; // Return userId
 }

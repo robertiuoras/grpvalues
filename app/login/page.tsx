@@ -49,6 +49,16 @@ export default function LoginPage() {
           expires: 1,
         });
         Cookies.set("userRole", data.userRole, { expires: 1 });
+
+        // NEW: Set the userId cookie from the API response
+        if (data.userId) {
+          // Assuming your /api/verify-access returns data.userId
+          Cookies.set("userId", data.userId, { expires: 1 });
+          console.log("Client: userId cookie set:", data.userId); // ADDED LOG for userId
+        } else {
+          console.warn("Client: API response missing userId during login.");
+        }
+
         localStorage.setItem("lastAccessCode", accessCode.trim()); // Save the code for future visits
         window.location.href = "/";
       } else {
