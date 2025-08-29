@@ -160,10 +160,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  let userId: string | null = null; // Declare with let outside try block
+  let adId: string | null = null; // Declare with let outside try block
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-    const adId = searchParams.get("adId");
+    userId = searchParams.get("userId"); // Assign inside try block
+    adId = searchParams.get("adId"); // Assign inside try block
 
     if (!userId || !adId) {
       console.error("[API/user-ads] PUT: Missing userId or adId parameter.");
@@ -239,7 +241,7 @@ export async function PUT(request: NextRequest) {
       );
     }
   } catch (error) {
-    // FIX: Use 'adId' variable here
+    // FIX: Use 'adId' variable here, it's now guaranteed to be in scope (though possibly null)
     console.error(`[API/user-ads] PUT: Error updating user ad ${adId}:`, error);
     return NextResponse.json(
       { message: "Failed to update user ad", error: (error as Error).message },
@@ -249,10 +251,12 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  let userId: string | null = null; // Declare with let outside try block
+  let adId: string | null = null; // Declare with let outside try block
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-    const adId = searchParams.get("adId");
+    userId = searchParams.get("userId"); // Assign inside try block
+    adId = searchParams.get("adId"); // Assign inside try block
 
     if (!userId || !adId) {
       console.error("[API/user-ads] DELETE: Missing userId or adId parameter.");
@@ -278,7 +282,7 @@ export async function DELETE(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    // FIX: Use 'adId' variable here
+    // FIX: Use 'adId' variable here, it's now guaranteed to be in scope (though possibly null)
     console.error(
       `[API/user-ads] DELETE: Error deleting user ad ${adId}:`,
       error
