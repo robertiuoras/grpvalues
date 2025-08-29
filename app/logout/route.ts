@@ -8,7 +8,8 @@ export async function GET(request: NextRequest) {
   // This is a GET request handler
   console.log("API: /logout GET request received.");
   try {
-    const cookieStore = cookies();
+    // FIX: Await cookies() to resolve the Promise<ReadonlyRequestCookies> type error
+    const cookieStore = await cookies();
     const accessCodeCookie = cookieStore.get("accessCode");
 
     console.log("API: Clearing authentication cookies...");
