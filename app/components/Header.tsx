@@ -66,8 +66,8 @@ export function Header() {
       Cookies.remove("authTimestamp", { path: "/" });
       Cookies.remove("userRole", { path: "/" });
       Cookies.remove("userId", { path: "/" }); // Ensure userId is also removed client-side
-      localStorage.removeItem("lastAccessCode"); // Also clear any saved code
-      console.log("Client: Cleared client-side cookies and local storage.");
+      // Removed: localStorage.removeItem("lastAccessCode"); // This line was causing the popup not to show
+      console.log("Client: Cleared client-side cookies.");
 
       // If the server successfully redirected (response.redirected is true)
       // or if the final response after redirect was OK (response.ok is true for 2xx status)

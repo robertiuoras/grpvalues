@@ -101,6 +101,74 @@ const specialCategoryNames: Record<string, string> = {
   items: "Items",
 };
 
+/**
+ * Parses a currency string into a number, handling various thousands/decimal separators.
+ * This function prioritizes decimal detection and then removes thousands separators.
+ * @param value The currency string (e.g., "1.000.000", "1,000,000", "1,234.56", "1.234,56").
+ * @returns The parsed number, or 0 if parsing fails.
+ */
+const parseValueToNumber = (value: string): number => {
+  if (!value) return 0;
+
+  let cleaned = value.trim();
+
+  // Step 1: Remove any non-digit, non-dot, non-comma character
+  cleaned = cleaned.replace(/[^0-9.,]/g, "");
+
+  const dotCount = (cleaned.match(/\./g) || []).length;
+  const commaCount = (cleaned.match(/,/g) || []).length;
+  const lastDotIndex = cleaned.lastIndexOf(".");
+  const lastCommaIndex = cleaned.lastIndexOf(",");
+
+  let numberToParse = cleaned;
+
+  // Case 1: European format (thousands with dots, decimal with comma e.g., "1.234.567,89")
+  if (commaCount === 1 && dotCount >= 1 && lastCommaIndex > lastDotIndex) {
+    numberToParse = numberToParse.replace(/\./g, "").replace(",", ".");
+  }
+  // Case 2: American format (thousands with commas, decimal with dot e.g., "1,234,567.89")
+  else if (dotCount === 1 && commaCount >= 1 && lastDotIndex > lastCommaIndex) {
+    numberToParse = numberToParse.replace(/,/g, "");
+  }
+  // Case 3: Only dots or only commas, need to determine if it's thousands or decimal
+  else if (dotCount > 0 && commaCount === 0) {
+    // Only dots present
+    // If only one dot and followed by 1 or 2 digits, assume decimal (e.g., "1.23")
+    if (dotCount === 1 && /\.\d{1,2}$/.test(cleaned)) {
+      // Keep as is, it's already parseFloat compatible for decimal
+    } else {
+      // Assume dots are thousands separators (e.g., "1.000.000")
+      numberToParse = numberToParse.replace(/\./g, "");
+    }
+  } else if (commaCount > 0 && dotCount === 0) {
+    // Only commas present
+    // If only one comma and followed by 1 or 2 digits, assume decimal (e.g., "1,23")
+    if (commaCount === 1 && /,\d{1,2}$/.test(cleaned)) {
+      numberToParse = numberToParse.replace(",", "."); // Convert to dot decimal for parseFloat
+    } else {
+      // Assume commas are thousands separators (e.g., "1,000,000")
+      numberToParse = numberToParse.replace(/,/g, "");
+    }
+  }
+  // Case 4: No separators, already a plain number string.
+
+  const parsed = parseFloat(numberToParse);
+  return isNaN(parsed) ? 0 : parsed;
+};
+
+/**
+ * Formats a number with commas as thousands separators.
+ * @param num The number or string representing a number.
+ * @returns A formatted string (e.g., "1,234,567"). Returns original if invalid.
+ */
+const formatNumberWithCommas = (num: number | string): string => {
+  const number = typeof num === "string" ? parseValueToNumber(num) : num;
+  if (typeof number !== "number" || isNaN(number)) {
+    return String(num); // Return original string if it's not a valid number
+  }
+  return number.toLocaleString("en-US"); // Use 'en-US' locale for comma as thousands separator
+};
+
 export default function CategoryPage({
   params,
 }: {
@@ -247,15 +315,11 @@ export default function CategoryPage({
     switch (sortOption) {
       case "value-asc":
         return copy.sort(
-          (a, b) =>
-            (parseFloat((a.value ?? "").replace(/[^0-9.]/g, "")) || 0) -
-            (parseFloat((b.value ?? "").replace(/[^0-9.]/g, "")) || 0)
+          (a, b) => parseValueToNumber(a.value) - parseValueToNumber(b.value)
         );
       case "value-desc":
         return copy.sort(
-          (a, b) =>
-            (parseFloat((b.value ?? "").replace(/[^0-9.]/g, "")) || 0) -
-            (parseFloat((a.value ?? "").replace(/[^0-9.]/g, "")) || 0)
+          (a, b) => parseValueToNumber(b.value) - parseValueToNumber(a.value)
         );
       case "alpha-asc":
         return copy.sort((a, b) => a.name.localeCompare(b.name));
@@ -687,7 +751,7 @@ export default function CategoryPage({
               <p className="text-lg text-gray-200 mt-auto">
                 Value:{" "}
                 <span className="font-bold text-emerald-400">
-                  {item.value || "N/A"}
+                  {formatNumberWithCommas(item.value) || "N/A"}
                 </span>
               </p>
             </div>
