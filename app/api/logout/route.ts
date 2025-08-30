@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   // This is a GET request handler
   console.log("API: /logout GET request received.");
   try {
-    const cookieStore = await cookies();
+    const cookieStore = cookies(); // No need to await here directly for getting, as it's a synchronous function from next/headers
     const accessCodeCookie = cookieStore.get("accessCode");
 
     // --- Start Cookie Domain Logic (ensuring consistent domain for deletion) ---
@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Base options for cookie deletion (maxAge: 0 to expire immediately)
+    // These options will be used with cookieStore.set() to force deletion.
     const cookieDeleteOptions = {
       path: "/",
       secure: process.env.NODE_ENV === "production",
@@ -33,15 +34,17 @@ export async function GET(request: NextRequest) {
     };
     // --- End Cookie Domain Logic ---
 
-    console.log("API: Clearing authentication cookies...");
-    // Pass the options to the delete method to ensure correct cookie targeting
-    cookieStore.delete("isAuthenticated", cookieDeleteOptions);
-    cookieStore.delete("authTimestamp", cookieDeleteOptions);
-    cookieStore.delete("userRole", cookieDeleteOptions);
-    cookieStore.delete("userId", cookieDeleteOptions); // Also delete the userId cookie
-    cookieStore.delete("accessCode", cookieDeleteOptions); // Delete the accessCode cookie itself
     console.log(
-      "API: Cookies cleared on server-side with options:",
+      "API: Clearing authentication cookies by setting maxAge to 0..."
+    );
+    // To delete a cookie with specific options (like domain/path), you must re-set it with maxAge: 0.
+    cookieStore.set("isAuthenticated", "", cookieDeleteOptions);
+    cookieStore.set("authTimestamp", "", cookieDeleteOptions);
+    cookieStore.set("userRole", "", cookieDeleteOptions);
+    cookieStore.set("userId", "", cookieDeleteOptions);
+    cookieStore.set("accessCode", "", cookieDeleteOptions);
+    console.log(
+      "API: Cookies marked for deletion on server-side with options:",
       cookieDeleteOptions
     );
 
@@ -51,12 +54,19 @@ export async function GET(request: NextRequest) {
         `API: Access code cookie found: '${accessCodeDocId}'. Attempting to unlock Firestore document.`
       );
 
-      if (!db || typeof db.collection !== "function") {
+      // --- CRITICAL Debugging Checks for 'db' instance (re-added for robustness) ---
+      if (!db) {
         console.error(
-          "API: Firestore DB object is not properly initialized in logout_route!"
+          "[API Error] Firestore 'db' instance is undefined or null upon entry. Check Firebase Admin SDK initialization in lib/firebaseAdmin.js."
+        );
+        // Log this error but continue the logout flow (cookies are already cleared)
+      } else if (typeof db.collection !== "function") {
+        console.error(
+          "[API Error] 'db' object does not appear to be a valid Firestore instance. Missing 'collection' method."
         );
         // Log this error but continue the logout flow (cookies are already cleared)
       } else {
+        // --- End Debug Logging ---
         try {
           const codeRef = db
             .collection("playerAccessCodes")
