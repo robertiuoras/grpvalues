@@ -2,15 +2,15 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation"; // Import useRouter
-import { useAuth } from "../../hooks/useAuth"; // Corrected import path for useAuth hook
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "../../hooks/useAuth";
+import Cookies from "js-cookie"; // Import js-cookie to remove client-side cookies
 
 export function Header() {
-  // This must be a named export to match ClientLayoutWrapper's import
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter(); // Initialize useRouter
-  const { isAuthenticated, isLoading, userRole } = useAuth(); // Get auth state and userRole
+  const router = useRouter();
+  const { isAuthenticated, isLoading, userRole } = useAuth();
 
   const categories = [
     { name: "Cars", path: "/values/cars" },
@@ -19,7 +19,7 @@ export function Header() {
     { name: "Helicopters", path: "/values/helicopters" },
     { name: "Clothing List", path: "/values/clothinglist" },
     { name: "Masks", path: "/values/masks" },
-    { name: "Luminous Clothing", path: "/values/luminousclothing" }, // Merged Luminous Shirts and Pants
+    { name: "Luminous Clothing", path: "/values/luminousclothing" },
     { name: "Motorcycles", path: "/values/motorcycles" },
     { name: "Bunker Help", path: "/values/bunkerhelp" },
     { name: "Illegal Items", path: "/values/illegalitems" },
@@ -29,10 +29,7 @@ export function Header() {
     { name: "LifeInvader", path: "/lifeinvader" },
   ];
 
-  const adminLinks = [
-    { name: "Admin Panel", path: "/admin/active-users" }, // Example admin link
-    // Add other admin-specific links here
-  ];
+  const adminLinks = [{ name: "Admin Panel", path: "/admin/active-users" }];
 
   const renderHomeLink = (content: React.ReactNode, className: string) => {
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -50,12 +47,11 @@ export function Header() {
   };
 
   const handleLogout = async (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault(); // Prevent default Link navigation
-    setIsDropdownOpen(false); // Close dropdown immediately
+    e.preventDefault();
+    setIsDropdownOpen(false);
     console.log("Client: Initiating logout process...");
     try {
-      // Make a direct fetch request to the server-side logout API route
-      // Set redirect to 'follow' to allow fetch to follow 3xx responses
+      // Step 1: Call the server-side logout API
       const response = await fetch("/api/logout", {
         method: "GET",
         redirect: "follow",
@@ -64,38 +60,45 @@ export function Header() {
         `Client: Logout API response status: ${response.status}, redirected: ${response.redirected}`
       );
 
+      // Step 2: Also remove client-side cookies set by js-cookie,
+      // as server-side deletion might miss them due to domain/path nuances on Vercel.
+      Cookies.remove("isAuthenticated", { path: "/" });
+      Cookies.remove("authTimestamp", { path: "/" });
+      Cookies.remove("userRole", { path: "/" });
+      Cookies.remove("userId", { path: "/" }); // Ensure userId is also removed client-side
+      localStorage.removeItem("lastAccessCode"); // Also clear any saved code
+      console.log("Client: Cleared client-side cookies and local storage.");
+
       // If the server successfully redirected (response.redirected is true)
       // or if the final response after redirect was OK (response.ok is true for 2xx status)
       if (response.redirected || response.ok) {
-        console.log("Client: Logout successful via server redirect.");
-        // The browser will have already navigated due to 'redirect: follow'
-        // and the server's redirect. This client-side push acts as a strong
-        // guarantee and ensures the client-side router state is consistent.
-        router.push("/login");
+        console.log(
+          "Client: Server logout process successful. Redirecting to /login."
+        );
+        // Use router.replace to ensure the browser history is clean and user can't go back to authenticated page
+        router.replace("/login");
       } else {
-        // If it was not redirected and not 'ok', then it's a failure.
         const errorText = await response.text();
         console.error(
           "Client: Logout API failed, no redirect or non-ok status:",
           errorText
         );
-        alert("Logout failed. Please try again."); // Using alert for critical error feedback
+        alert("Logout failed. Please try again. (Server error)");
+        router.replace("/login"); // Force redirect to login even on apparent server failure
       }
     } catch (error) {
       console.error("Client: Error during logout fetch:", error);
       alert(
-        "An error occurred during logout. Please check your network and try again."
-      ); // Using alert for critical error feedback
+        "An error occurred during logout. Please check your network and try again. (Network error)"
+      );
+      router.replace("/login"); // Force redirect to login on client-side fetch error
     }
   };
 
-  // Only render header if authenticated (or still loading to avoid flicker)
-  // If not authenticated, useAuth will handle redirect, so header might not be needed anyway.
   if (isLoading) {
-    return null; // Or a simple loading spinner if you want something to show
+    return null;
   }
 
-  // If not authenticated and no longer loading, header should not render
   if (!isAuthenticated) {
     return null;
   }
@@ -103,11 +106,9 @@ export function Header() {
   return (
     <header className="bg-blue-950 text-gray-100 p-4 shadow-md sticky top-0 z-50 font-sans">
       <div className="max-w-7xl mx-auto flex flex-row items-center justify-between relative px-8">
-        {/* Left: Log Out button and Logo */}
         <div className="flex items-center gap-4">
-          {/* Log Out Button - now a Link element that calls handleLogout */}
           <Link
-            href="#" // Set to # or / to prevent default client-side routing
+            href="#"
             onClick={handleLogout}
             className="text-sm md:text-base font-medium px-3 py-1 rounded-full bg-red-600/80 text-white hover:bg-red-700 transition-colors duration-300 whitespace-nowrap"
           >
@@ -119,7 +120,6 @@ export function Header() {
           )}
         </div>
 
-        {/* Center: Home button */}
         <div className="absolute left-1/2 transform -translate-x-1/2">
           {renderHomeLink(
             "Home",
@@ -127,9 +127,7 @@ export function Header() {
           )}
         </div>
 
-        {/* Right: School Event button and Categories/Admin dropdown */}
         <div className="flex-shrink-0 relative flex items-center gap-4">
-          {/* New School Event Button */}
           <Link
             href="/events/school"
             className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition duration-200 shadow-sm text-sm md:text-base whitespace-nowrap"
@@ -138,13 +136,11 @@ export function Header() {
             School Event
           </Link>
 
-          {/* Categories/Admin Dropdown */}
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="px-4 py-2 rounded-lg bg-blue-900 hover:bg-blue-800 text-white font-semibold transition duration-200 flex items-center gap-2 shadow-sm text-sm md:text-base"
           >
             <span>{userRole === "owner" ? "Admin" : "Categories"}</span>{" "}
-            {/* Dynamic button text */}
             <svg
               className={`w-4 h-4 transition-transform duration-200 ${
                 isDropdownOpen ? "rotate-180" : ""
@@ -163,7 +159,7 @@ export function Header() {
           </button>
           {isDropdownOpen && (
             <div className="absolute right-0 top-14 mt-2 py-2 w-56 bg-blue-900 rounded-lg shadow-xl border border-blue-700 z-50">
-              {userRole === "owner" // Show admin links if owner
+              {userRole === "owner"
                 ? adminLinks.map((link) => (
                     <Link
                       key={link.name}
@@ -174,8 +170,7 @@ export function Header() {
                       {link.name}
                     </Link>
                   ))
-                : // Otherwise show categories
-                  categories.map((category) => (
+                : categories.map((category) => (
                     <Link
                       key={category.name}
                       href={category.path}
