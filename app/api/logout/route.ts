@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   // This is a GET request handler
   console.log("API: /logout GET request received.");
   try {
-    const cookieStore = cookies(); // No need to await here directly for getting, as it's a synchronous function from next/headers
+    const cookieStore = await cookies(); // FIX: Await cookies() to resolve the Promise
     const accessCodeCookie = cookieStore.get("accessCode");
 
     // --- Start Cookie Domain Logic (ensuring consistent domain for deletion) ---
