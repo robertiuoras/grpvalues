@@ -4,9 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
+    "dev:clean": "rm -rf .next && cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
+    "dev:auto": "rm -rf .next && cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
+    "dev:deep": "rm -rf .next tsconfig.tsbuildinfo && cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
     "build": "cross-env NODE_OPTIONS=--max_old_space_size=4096 next build",
+    "build:clean": "rm -rf .next && cross-env NODE_OPTIONS=--max_old_space_size=4096 next build",
     "start": "cross-env NODE_OPTIONS=--max_old_space_size=4096 next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clean": "rm -rf .next",
+    "clean:all": "rm -rf .next node_modules package-lock.json && npm install"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",
@@ -21,7 +27,8 @@
     "next": "15.4.6",
     "papaparse": "^5.5.3",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "tesseract.js": "^6.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.12",

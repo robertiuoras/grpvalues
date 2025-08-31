@@ -51,8 +51,23 @@ export function useAuth() {
           console.log("useAuth: Session is active.");
         } else {
           console.log(
-            "useAuth: Client-side session expired after 1 hour. Clearing cookies."
+            "useAuth: Client-side session expired after 1 hour. Clearing cookies and cleaning up Firestore."
           );
+
+          // Clean up Firestore before clearing cookies
+          if (idCookie) {
+            fetch("/api/cleanup-session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ accessCodeId: idCookie }),
+            }).catch((error) => {
+              console.error(
+                "useAuth: Failed to cleanup session in Firestore:",
+                error
+              );
+            });
+          }
+
           Cookies.remove("isAuthenticated");
           Cookies.remove("authTimestamp");
           Cookies.remove("userRole");

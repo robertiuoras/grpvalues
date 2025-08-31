@@ -17,6 +17,12 @@
 /.next/
 /out/
 
+# build cache
+.next/
+.next/cache/
+.next/server/
+.next/static/
+
 # production
 /build
 

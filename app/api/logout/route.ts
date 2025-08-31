@@ -77,15 +77,20 @@ export async function GET(request: NextRequest) {
           if (doc.exists) {
             const docData = doc.data();
             console.log(
-              `API: Document '${accessCodeDocId}' exists. Current 'is_in_use': ${docData?.is_in_use}`
+              `API: Document '${accessCodeDocId}' exists. Current 'is_in_use': ${docData?.is_in_use}, Role: ${docData?.role}`
             );
 
-            if (docData?.is_in_use) {
+            // Only mark as "not in use" for non-admin codes, since admin codes can be shared
+            if (docData?.is_in_use && docData?.role !== "admin") {
               await codeRef.update({
                 is_in_use: false,
               });
               console.log(
                 `API: Successfully updated 'is_in_use' to false for document ID: '${accessCodeDocId}'.`
+              );
+            } else if (docData?.role === "admin") {
+              console.log(
+                `API: Document '${accessCodeDocId}' is an admin code. Not marking as 'not in use' to allow multiple admin sessions.`
               );
             } else {
               console.log(

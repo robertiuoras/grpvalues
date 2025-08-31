@@ -117,7 +117,8 @@ export async function POST(request: NextRequest) {
         return { success: false, message: "Invalid access code" };
       }
 
-      if (codeData?.is_in_use) {
+      // Skip the "in use" check for admin/owner codes to allow multiple simultaneous logins
+      if (codeData?.is_in_use && codeData?.role !== "admin") {
         console.log("API: Code found but is already in use (409).");
         return {
           success: false,

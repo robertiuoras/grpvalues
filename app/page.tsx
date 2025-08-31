@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import React from "react"; // Explicitly import React for JSX usage
 import { useAuth } from "../hooks/useAuth"; // Import useAuth hook - FIXED PATH
+import Link from "next/link"; // Add Next.js Link import
+import { useRouter } from "next/navigation"; // Add router for navigation
 
 interface CategoryCard {
   name: string;
@@ -23,6 +25,7 @@ interface CategoryCard {
 export default function HomePage() {
   // Use the authentication hook to get global auth state
   const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter(); // Add router instance
 
   const categories: CategoryCard[] = [
     {
@@ -105,9 +108,16 @@ export default function HomePage() {
       {/* Grid for category cards - responsive for 1, 2, or 3 columns */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
         {categories.map((category) => (
-          <a
+          <Link
             key={category.name}
             href={category.path}
+            onClick={(e) => {
+              e.preventDefault();
+              // Small delay to ensure smooth navigation
+              setTimeout(() => {
+                router.push(category.path);
+              }, 100);
+            }}
             className="flex items-center p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700
                                  hover:bg-gray-700 hover:shadow-2xl transition-all duration-300 cursor-pointer"
           >
@@ -116,7 +126,7 @@ export default function HomePage() {
               <h2 className="text-2xl font-bold text-white">{category.name}</h2>
               <p className="text-gray-300 text-sm">{category.description}</p>
             </div>
-          </a>
+          </Link>
         ))}
       </div>
     </div>

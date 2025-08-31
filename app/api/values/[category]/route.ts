@@ -130,7 +130,21 @@ export async function GET(
       return NextResponse.json({ message: "Not found" }, { status: 404 });
     }
 
-    const values = snapshot.docs.map((d) => d.data());
+    const values = snapshot.docs
+      .map((doc) => {
+        try {
+          const data = doc.data();
+          return data;
+        } catch (error) {
+          console.error(
+            `[Firestore Error] Failed to extract data from document ${doc.id}:`,
+            error
+          );
+          return null;
+        }
+      })
+      .filter((item) => item !== null); // Filter out any null values from failed extractions
+
     console.log(
       `[Firestore Result] Successfully fetched ${values.length} items from path: ${collectionRef.path}. Returning 200.`
     );

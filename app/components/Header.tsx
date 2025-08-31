@@ -13,23 +13,42 @@ export function Header() {
   const { isAuthenticated, isLoading, userRole } = useAuth();
 
   const categories = [
-    { name: "Cars", path: "/values/cars" },
-    { name: "Boats", path: "/values/boats" },
-    { name: "Planes", path: "/values/planes" },
-    { name: "Helicopters", path: "/values/helicopters" },
-    { name: "Clothing List", path: "/values/clothinglist" },
-    { name: "Masks", path: "/values/masks" },
-    { name: "Luminous Clothing", path: "/values/luminousclothing" },
-    { name: "Motorcycles", path: "/values/motorcycles" },
-    { name: "Bunker Help", path: "/values/bunkerhelp" },
-    { name: "Illegal Items", path: "/values/illegalitems" },
-    { name: "Cropped Collection Shirts", path: "/values/croppcollectionshirt" },
-    { name: "Denim Jackets", path: "/values/denimjacket" },
-    { name: "Items", path: "/values/items" },
-    { name: "LifeInvader", path: "/lifeinvader" },
+    { name: "Cars", path: "/values/cars", isAdmin: false },
+    { name: "Boats", path: "/values/boats", isAdmin: false },
+    { name: "Planes", path: "/values/planes", isAdmin: false },
+    { name: "Helicopters", path: "/values/helicopters", isAdmin: false },
+    { name: "Clothing List", path: "/values/clothinglist", isAdmin: false },
+    { name: "Masks", path: "/values/masks", isAdmin: false },
+    {
+      name: "Luminous Clothing",
+      path: "/values/luminousclothing",
+      isAdmin: false,
+    },
+    { name: "Motorcycles", path: "/values/motorcycles", isAdmin: false },
+    { name: "Bunker Help", path: "/values/bunkerhelp", isAdmin: false },
+    { name: "Illegal Items", path: "/values/illegalitems", isAdmin: false },
+    {
+      name: "Cropped Collection Shirts",
+      path: "/values/croppcollectionshirt",
+      isAdmin: false,
+    },
+    { name: "Denim Jackets", path: "/values/denimjacket", isAdmin: false },
+    { name: "Items", path: "/values/items", isAdmin: false },
+    { name: "LifeInvader", path: "/lifeinvader", isAdmin: false },
   ];
 
   const adminLinks = [{ name: "Admin Panel", path: "/admin/active-users" }];
+
+  // Create categories with admin button for admin users
+  const getCategoriesWithAdmin = () => {
+    if (userRole === "admin") {
+      return [
+        { name: "Admin Panel", path: "/admin/active-users", isAdmin: true },
+        ...categories,
+      ];
+    }
+    return categories;
+  };
 
   const renderHomeLink = (content: React.ReactNode, className: string) => {
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -140,7 +159,7 @@ export function Header() {
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="px-4 py-2 rounded-lg bg-blue-900 hover:bg-blue-800 text-white font-semibold transition duration-200 flex items-center gap-2 shadow-sm text-sm md:text-base"
           >
-            <span>{userRole === "owner" ? "Admin" : "Categories"}</span>{" "}
+            <span>{userRole === "admin" ? "Admin" : "Categories"}</span>{" "}
             <svg
               className={`w-4 h-4 transition-transform duration-200 ${
                 isDropdownOpen ? "rotate-180" : ""
@@ -159,27 +178,27 @@ export function Header() {
           </button>
           {isDropdownOpen && (
             <div className="absolute right-0 top-14 mt-2 py-2 w-56 bg-blue-900 rounded-lg shadow-xl border border-blue-700 z-50">
-              {userRole === "owner"
-                ? adminLinks.map((link) => (
-                    <Link
-                      key={link.name}
-                      href={link.path}
-                      className="block px-4 py-2 text-sm md:text-base text-gray-100 hover:bg-blue-700 hover:text-white transition-colors duration-300"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      {link.name}
-                    </Link>
-                  ))
-                : categories.map((category) => (
-                    <Link
-                      key={category.name}
-                      href={category.path}
-                      className="block px-4 py-2 text-sm md:text-base text-gray-100 hover:bg-blue-700 hover:text-white transition-colors duration-300"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
+              {getCategoriesWithAdmin().map((category) => (
+                <Link
+                  key={category.name}
+                  href={category.path}
+                  className={`block px-4 py-2 text-sm md:text-base transition-colors duration-300 ${
+                    category.isAdmin
+                      ? "text-red-300 hover:bg-red-700 hover:text-white border-b border-red-600"
+                      : "text-gray-100 hover:bg-blue-700 hover:text-white"
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsDropdownOpen(false);
+                    // Small delay to ensure dropdown closes before navigation
+                    setTimeout(() => {
+                      router.push(category.path);
+                    }, 100);
+                  }}
+                >
+                  {category.name}
+                </Link>
+              ))}
             </div>
           )}
         </div>

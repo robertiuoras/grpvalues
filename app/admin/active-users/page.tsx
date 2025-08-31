@@ -28,6 +28,8 @@ export default function ActiveUsersPage() {
   const [users, setUsers] = useState<ActiveUser[]>([]); // Renamed from activeUsers to users
   const [fetchLoading, setFetchLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [cleanupLoading, setCleanupLoading] = useState(false);
+  const [cleanupMessage, setCleanupMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated && userRole === "admin" && !isLoading) {
@@ -74,6 +76,37 @@ export default function ActiveUsersPage() {
     }
   }, [isAuthenticated, isLoading, userRole]);
 
+  const handleCleanupStuckCodes = async () => {
+    setCleanupLoading(true);
+    setCleanupMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/cleanup-stuck-codes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setCleanupMessage(`✅ ${data.message}`);
+        // Refresh the users data to show updated status
+        window.location.reload();
+      } else {
+        setCleanupMessage(
+          `❌ Error: ${data.message || "Failed to cleanup codes"}`
+        );
+      }
+    } catch (error: any) {
+      console.error("Error cleaning up stuck codes:", error);
+      setCleanupMessage(
+        `❌ Network error: ${error.message || "Unknown error"}`
+      );
+    } finally {
+      setCleanupLoading(false);
+    }
+  };
+
   // Global authentication check from useAuth
   if (isLoading) {
     return (
@@ -112,6 +145,38 @@ export default function ActiveUsersPage() {
         This dashboard shows the status of all active access codes, including
         current usage and recent activity.
       </p>
+
+      {/* Cleanup Button */}
+      <div className="mb-6 flex flex-col items-center gap-4">
+        <button
+          onClick={handleCleanupStuckCodes}
+          disabled={cleanupLoading}
+          className="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center gap-2"
+        >
+          {cleanupLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Cleaning Up...
+            </>
+          ) : (
+            <>
+              <AlertCircle size={16} />
+              Clean Up Stuck Codes
+            </>
+          )}
+        </button>
+        {cleanupMessage && (
+          <p
+            className={`text-sm font-medium ${
+              cleanupMessage.startsWith("✅")
+                ? "text-green-400"
+                : "text-red-400"
+            }`}
+          >
+            {cleanupMessage}
+          </p>
+        )}
+      </div>
 
       {fetchLoading ? (
         <div className="flex flex-col items-center">

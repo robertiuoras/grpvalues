@@ -749,10 +749,23 @@ export default function CategoryPage({
                 {item.name}
               </h3>
               <p className="text-lg text-gray-200 mt-auto">
-                Value:{" "}
-                <span className="font-bold text-emerald-400">
-                  {formatNumberWithCommas(item.value) || "N/A"}
-                </span>
+                {["cars", "boats", "planes", "helicopters"].includes(
+                  category
+                ) ? (
+                  <>
+                    State Value:{" "}
+                    <span className="font-bold text-emerald-400">
+                      ${formatNumberWithCommas(item.value) || "N/A"}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Value:{" "}
+                    <span className="font-bold text-emerald-400">
+                      {formatNumberWithCommas(item.value) || "N/A"}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
           ))}
