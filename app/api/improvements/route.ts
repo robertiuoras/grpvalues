@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFirestore } from "firebase-admin/firestore";
-import { getAuth } from "firebase-admin/auth";
+import { db } from "@lib/firebaseAdmin.js";
 import { cookies } from "next/headers";
-
-// Initialize Firestore
-const db = getFirestore();
 
 export async function GET(request: NextRequest) {
   try {

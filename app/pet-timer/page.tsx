@@ -21,8 +21,8 @@ export default function PetTimerPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
-  const intervalRef = useRef<NodeJS.Timeout>();
-  const audioRef = useRef<HTMLAudioElement>();
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Timer colors for visual variety
   const timerColors = [
@@ -86,7 +86,7 @@ export default function PetTimerPage() {
         }
 
         // Play sound notification
-        if (audioRef.current) {
+        if (audioRef.current !== null) {
           audioRef.current.play().catch(console.error);
         }
 
@@ -96,8 +96,9 @@ export default function PetTimerPage() {
     }, 1000);
 
     return () => {
-      if (intervalRef.current) {
+      if (intervalRef.current !== null) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
   }, [currentTimer, notificationsEnabled]);
