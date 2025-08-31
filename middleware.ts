@@ -1,23 +1,33 @@
 // middleware.ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   // Get authentication status directly from the 'isAuthenticated' cookie.
   // The 'useAuth' hook in the client-side manages the expiry and clears this cookie.
-  const isAuthenticated = request.cookies.get('isAuthenticated')?.value === 'true';
+  const isAuthenticated =
+    request.cookies.get("isAuthenticated")?.value === "true";
   const pathname = request.nextUrl.pathname;
+
+  // Check if access codes are required (stored in a cookie for middleware access)
+  const accessCodeRequired =
+    request.cookies.get("accessCodeRequired")?.value !== "false";
+
+  // If access codes are not required, allow all requests to proceed
+  if (!accessCodeRequired) {
+    return NextResponse.next();
+  }
 
   // 1. If the user is NOT authenticated AND is trying to access any page EXCEPT the login page,
   //    redirect them to the login page. This ensures all protected routes (including '/') redirect instantly.
-  if (!isAuthenticated && pathname !== '/login') {
-    return NextResponse.redirect(new URL('/login', request.url));
+  if (!isAuthenticated && pathname !== "/login") {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // 2. If the user IS authenticated AND is trying to access the login page,
   //    redirect them to the home page (or a main dashboard if you have one).
-  if (isAuthenticated && pathname === '/login') {
-    return NextResponse.redirect(new URL('/', request.url));
+  if (isAuthenticated && pathname === "/login") {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // 3. For all other cases (authenticated users on non-login pages, or unauthenticated users on the login page),
@@ -35,6 +45,6 @@ export const config = {
      * - api/ (your API routes - these should handle their own auth/RBAC checks internally)
      * - Any other public assets or files that do not require authentication.
      */
-    '/((?!_next|api).*)', // This broadly matches all pages (including root) but excludes internal Next.js and API routes
+    "/((?!_next|api).*)", // This broadly matches all pages (including root) but excludes internal Next.js and API routes
   ],
 };

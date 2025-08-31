@@ -164,6 +164,36 @@ const getCanonicalCategory = (displayName: string): string => {
   return "uncategorized"; // Fallback for unmatched display names
 };
 
+// Helper function to get icon paths for different types
+const getTypeIcon = (type: string): string => {
+  if (!type) return "/images/icons/other.png";
+
+  const lowerType = type.toLowerCase();
+
+  // Match types to your custom icon files
+  if (lowerType.includes("work") || lowerType.includes("office"))
+    return "/images/icons/work.png";
+  if (lowerType.includes("business") || lowerType.includes("misc"))
+    return "/images/icons/business.png";
+  if (
+    lowerType.includes("auto") ||
+    lowerType.includes("car") ||
+    lowerType.includes("vehicle")
+  )
+    return "/images/icons/auto.png";
+  if (lowerType.includes("service") || lowerType.includes("station"))
+    return "/images/icons/service.png";
+  if (lowerType.includes("real estate") || lowerType.includes("property"))
+    return "/images/icons/real estate.png";
+  if (lowerType.includes("dating") || lowerType.includes("social"))
+    return "/images/icons/dating.png";
+  if (lowerType.includes("discount") || lowerType.includes("sale"))
+    return "/images/icons/discount.png";
+
+  // Default fallback
+  return "/images/icons/other.png";
+};
+
 /**
  * Normalizes text for search, converting to lowercase, removing punctuation,
  * and replacing common synonyms/abbreviations. It also handles numbers.
@@ -392,6 +422,10 @@ export default function App() {
   const [modalOnCancel, setModalOnCancel] = useState<() => void>(() => {});
   const [isModalConfirm, setIsModalConfirm] = useState(true);
   const [modalTitle, setModalTitle] = useState<string | undefined>(undefined);
+  const [displayLimit, setDisplayLimit] = useState(50); // Limit initial display for performance
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
+    new Set()
+  ); // Track expanded descriptions
 
   // Effect for debouncing the search query
   useEffect(() => {
@@ -403,6 +437,25 @@ export default function App() {
       clearTimeout(handler);
     };
   }, [searchQuery]);
+
+  // Reset display limit when search or view changes
+  useEffect(() => {
+    setDisplayLimit(50);
+    setExpandedDescriptions(new Set()); // Reset expanded descriptions
+  }, [searchQuery, showMyAds]);
+
+  // Toggle description expansion
+  const toggleDescriptionExpansion = (templateId: string) => {
+    setExpandedDescriptions((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(templateId)) {
+        newSet.delete(templateId);
+      } else {
+        newSet.add(templateId);
+      }
+      return newSet;
+    });
+  };
 
   // Fetch user's saved ads
   const fetchMySavedAds = useCallback(async () => {
@@ -674,9 +727,9 @@ export default function App() {
             const originalDescription = (row[1] || "").trim();
             let originalType = (row[2] || "").trim();
 
-            // Specific fix for "Office" category: if original type is empty, set it to "Office"
+            // Specific fix for "Office" category: if original type is empty, set it to "work"
             if (canonicalCat === "office" && !originalType) {
-              originalType = "Office";
+              originalType = "work";
             }
 
             const normalizedName = normalizeSearchText(originalName);
@@ -801,31 +854,15 @@ export default function App() {
   }, [activeCategory, allFetchedTemplates, searchQuery, showMyAds]);
 
   const filteredTemplates = useMemo(() => {
-    console.log("filteredTemplates useMemo recalculating..."); // LOG
-    console.log(
-      "filteredTemplates: mySavedAds count:",
-      mySavedAds.length,
-      "templates count:",
-      templates.length
-    ); // LOG
+    // Optimized filtering for better performance
     const normalizedSearchQuery = normalizeSearchText(debouncedSearchQuery); // Use debounced search query
-    console.log(
-      `[SearchDebug] Normalized Search Query: '${normalizedSearchQuery}' (Original: '${debouncedSearchQuery}')`
-    );
 
     if (normalizedSearchQuery === "") {
       const source = showMyAds ? mySavedAds : templates;
-      console.log(
-        "filteredTemplates: Search query empty. Showing",
-        showMyAds ? "My Saved Ads" : "Templates"
-      ); // LOG
+
       return source;
     } else {
       const sourceTemplates = showMyAds ? mySavedAds : allFetchedTemplates;
-      console.log(
-        "filteredTemplates: Searching in",
-        showMyAds ? "My Saved Ads" : "All Fetched Templates"
-      ); // LOG
 
       let impliedCategoryCanonical: string | null = null;
       for (const canonicalCat of CANONICAL_CATEGORIES) {
@@ -850,32 +887,19 @@ export default function App() {
           typeof t.name !== "string" ||
           typeof t.normalizedName !== "string"
         ) {
-          console.warn(
-            "filteredTemplates: Skipping invalid item during search:",
-            t
-          ); // LOG
           return false;
         }
         const normalizedNameForSearch = t.normalizedName;
         const normalizedDescriptionForSearch = t.normalizedDescription; // Also include description in search
 
-        console.log(
-          `  [SearchDebug] Item: Original Name='${t.name}', Normalized Name='${normalizedNameForSearch}', Original Desc='${t.description}', Normalized Desc='${normalizedDescriptionForSearch}'`
-        );
-
         const matchesSearch = searchTerms.every((term) => {
-          const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-          const regex = new RegExp(`\\b${escapedTerm}\\b`, "i");
-
-          const nameMatch = regex.test(normalizedNameForSearch);
-          const descriptionMatch = regex.test(normalizedDescriptionForSearch);
-
-          console.log(
-            `    [SearchDebug] Term '${term}' vs Name '${normalizedNameForSearch}': MATCH=${nameMatch}`
-          );
-          console.log(
-            `    [SearchDebug] Term '${term}' vs Desc '${normalizedDescriptionForSearch}': MATCH=${descriptionMatch}`
-          );
+          // Use simple includes() instead of regex for better performance
+          const nameMatch = normalizedNameForSearch
+            .toLowerCase()
+            .includes(term.toLowerCase());
+          const descriptionMatch = normalizedDescriptionForSearch
+            .toLowerCase()
+            .includes(term.toLowerCase());
 
           return nameMatch || descriptionMatch; // Match if found in name OR description
         });
@@ -898,7 +922,6 @@ export default function App() {
     templates,
     allFetchedTemplates,
     debouncedSearchQuery,
-    activeCategory,
     showMyAds,
     mySavedAds,
   ]);
@@ -936,7 +959,27 @@ export default function App() {
           {mainTitle}
         </h1>
 
-        <div className="mb-8 flex justify-center px-2 relative">
+        {/* Top Navigation Buttons */}
+        <div className="flex justify-center gap-4 mb-8">
+          <a
+            href="https://docs.google.com/spreadsheets/d/1vfQSNESlFUqWgy6Oje61_RCvLEKKUMnG6YzUVXpwG2E/edit?gid=0#gid=0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 shadow-lg flex items-center gap-2"
+          >
+            📊 Vehicle/Clothing List
+          </a>
+          <a
+            href="https://docs.google.com/document/d/1zNTpF4bmcjOVef6XmCvq3x6DxPkWAFNdJJE5mwS5D3o/edit?tab=t.0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 shadow-lg flex items-center gap-2"
+          >
+            📋 Internal Policy
+          </a>
+        </div>
+
+        <div className="mb-6 flex justify-center px-2 relative">
           <input
             type="text"
             placeholder="Search all templates by name, description, or type..."
@@ -974,7 +1017,7 @@ export default function App() {
         </div>
 
         {!showMyAds && ( // Only show category buttons if not showing "My Saved Ads"
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-10 px-2">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 px-2">
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -982,11 +1025,11 @@ export default function App() {
                   setActiveCategory(cat);
                   setSearchQuery(""); // Clear search query when changing category
                 }}
-                className={`px-6 py-3 rounded-full font-semibold text-base sm:text-lg transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md
+                className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-md
                   ${
                     activeCategory === cat && searchQuery === "" // Highlight only if active and no search
-                      ? "bg-red-700 text-white shadow-xl ring-4 ring-red-300 hover:bg-red-800"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                      ? "bg-red-700 text-white shadow-xl ring-2 ring-red-300 hover:bg-red-800"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-red-700 focus:outline-none focus:ring-1 focus:ring-gray-400"
                   }`}
               >
                 {cat}
@@ -996,20 +1039,20 @@ export default function App() {
         )}
 
         {isAuthenticated && showMyAds && (
-          <div className="flex justify-center mb-10">
+          <div className="flex justify-center mb-8">
             <button
               onClick={() => {
                 resetAdForm();
                 setShowAddEditModal(true);
               }}
-              className="px-6 py-3 rounded-full font-semibold text-base sm:text-lg bg-red-600 text-white hover:bg-red-700 transition-colors duration-300 flex items-center gap-2 shadow-md"
+              className="px-5 py-2.5 rounded-full font-medium text-sm bg-red-600 text-white hover:bg-red-700 transition-colors duration-300 flex items-center gap-2 shadow-md"
             >
-              <PlusCircleIcon className="w-5 h-5" /> Add New Ad
+              <PlusCircleIcon className="w-4 h-4" /> Add New Ad
             </button>
           </div>
         )}
 
-        <section className="min-h-[400px] bg-white rounded-2xl p-6 sm:p-8 border border-gray-200 shadow-xl">
+        <section className="min-h-[400px] bg-white rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-xl">
           {authLoading ? ( // Auth loading is always top priority
             <p className="text-gray-700 text-center py-20 text-xl animate-pulse font-medium">
               Checking authentication...
@@ -1029,81 +1072,124 @@ export default function App() {
                 : "No templates found matching your criteria."}
             </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
-              {filteredTemplates.map((t, i) => {
-                // Defensive check: if item 't' is undefined/null, skip rendering it.
-                if (!t) {
-                  console.warn(
-                    "Skipping rendering of an undefined/null item in filteredTemplates at index:",
-                    i
-                  );
-                  return null;
-                }
-                // Also ensure t.id is a string before passing to key or handleDeleteAd
-                // This now works because Template interface has optional 'id'
-                const itemId =
-                  typeof t.id === "string" && t.id !== ""
-                    ? t.id
-                    : `fallback-${i}`;
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5">
+                {filteredTemplates.slice(0, displayLimit).map((t, i) => {
+                  if (!t) return null;
+                  // Also ensure t.id is a string before passing to key or handleDeleteAd
+                  // This now works because Template interface has optional 'id'
+                  const itemId =
+                    typeof t.id === "string" && t.id !== ""
+                      ? t.id
+                      : `fallback-${i}`;
 
-                return (
-                  <div
-                    key={itemId} // Use robust itemId for key
-                    className="relative p-6 bg-gradient-to-br from-white to-gray-50 text-gray-800 border border-gray-200 rounded-xl shadow-lg hover:shadow-2xl hover:border-red-400 transition-all duration-300 transform hover:-translate-y-2 flex flex-col justify-between group"
-                  >
-                    <div className="flex-grow mb-4">
-                      <h3 className="font-bold text-xl text-red-700 mb-2 leading-tight">
-                        {t.name ?? ""} {/* Add nullish coalescing for safety */}
-                      </h3>
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        {t.description ?? ""}{" "}
-                        {/* Add nullish coalescing for safety */}
-                      </p>
-                      {/* Removed Type and Category display */}
-                    </div>
-                    <div className="mt-auto text-right flex justify-end items-center gap-2">
-                      {" "}
-                      {/* Adjusted to include gap for new icon */}
-                      {showMyAds ? ( // Show edit/delete buttons for user's ads
-                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          {/* NEW: Copy Description button for saved ads */}
-                          <button
-                            onClick={() => handleCopy(t.description ?? "")} // Copies only the description
-                            className="p-2 rounded-full bg-gray-100 hover:bg-blue-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                            title="Copy description to clipboard"
+                  return (
+                    <div
+                      key={itemId} // Use robust itemId for key
+                      className="relative p-4 bg-gradient-to-br from-white to-gray-50 text-gray-800 border border-gray-200 rounded-lg shadow-md hover:shadow-lg hover:border-red-400 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between group"
+                    >
+                      <div className="flex-grow mb-3">
+                        <h3 className="font-bold text-lg text-red-700 mb-2 leading-tight line-clamp-2">
+                          {t.name ?? ""}{" "}
+                          {/* Add nullish coalescing for safety */}
+                        </h3>
+                        <div className="mb-2">
+                          <p
+                            className={`text-gray-700 text-xs leading-relaxed ${
+                              expandedDescriptions.has(itemId)
+                                ? ""
+                                : "line-clamp-3"
+                            }`}
                           >
-                            <ClipboardIcon className="w-5 h-5 text-blue-600" />
-                          </button>
-                          <button
-                            onClick={() => openEditModal(t as UserAd)} // Cast to UserAd as we are in showMyAds context
-                            className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                            title="Edit ad"
-                          >
-                            <PencilIcon className="w-5 h-5 text-blue-600" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteAd(itemId)} // Use robust itemId
-                            className="p-2 rounded-full bg-red-100 hover:bg-red-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
-                            title="Delete ad"
-                          >
-                            <TrashIcon className="w-5 h-5 text-red-600" />
-                          </button>
+                            {t.description ?? ""}
+                          </p>
+                          {t.description && t.description.length > 120 && (
+                            <button
+                              onClick={() => toggleDescriptionExpansion(itemId)}
+                              className="text-red-600 hover:text-red-700 text-xs font-medium mt-1 transition-colors duration-200"
+                            >
+                              {expandedDescriptions.has(itemId)
+                                ? "See Less"
+                                : "See More"}
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        // Show copy button for general templates
-                        <button
-                          onClick={() => handleCopy(getAdDisplayContent(t))} // Copy simplified content (name + description)
-                          className="p-2 rounded-full bg-gray-100 hover:bg-red-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all ease-out duration-300"
-                          title="Copy template description to clipboard"
-                        >
-                          <ClipboardIcon className="w-5 h-5 text-red-600" />
-                        </button>
-                      )}
+                        {/* Add Type display with custom icon and bold text */}
+                        {t.type && (
+                          <div className="flex items-center gap-3 text-gray-600 text-sm font-medium">
+                            <span className="text-gray-500">Type:</span>
+                            <img
+                              src={getTypeIcon(t.type)}
+                              alt={`${t.type} icon`}
+                              className="w-6 h-6 object-contain rounded-lg shadow-sm"
+                            />
+                            <span className="font-bold text-base">
+                              {t.type}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-auto text-right flex justify-end items-center gap-2">
+                        {" "}
+                        {/* Adjusted to include gap for new icon */}
+                        {showMyAds ? ( // Show edit/delete buttons for user's ads
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            {/* NEW: Copy Description button for saved ads */}
+                            <button
+                              onClick={() => handleCopy(t.description ?? "")} // Copies only the description
+                              className="p-1.5 rounded-full bg-gray-100 hover:bg-blue-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                              title="Copy description to clipboard"
+                            >
+                              <ClipboardIcon className="w-4 h-4 text-blue-600" />
+                            </button>
+                            <button
+                              onClick={() => openEditModal(t as UserAd)} // Cast to UserAd as we are in showMyAds context
+                              className="p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                              title="Edit ad"
+                            >
+                              <PencilIcon className="w-4 h-4 text-blue-600" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAd(itemId)} // Use robust itemId
+                              className="p-1.5 rounded-full bg-red-100 hover:bg-red-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                              title="Delete ad"
+                            >
+                              <TrashIcon className="w-4 h-4 text-red-600" />
+                            </button>
+                          </div>
+                        ) : (
+                          // Show copy button for general templates
+                          <button
+                            onClick={() => handleCopy(getAdDisplayContent(t))} // Copy simplified content (name + description)
+                            className="p-1.5 rounded-full bg-gray-100 hover:bg-red-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all ease-out duration-300"
+                            title="Copy template description to clipboard"
+                          >
+                            <ClipboardIcon className="w-4 h-4 text-red-600" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+
+              {/* Load More Button */}
+              {filteredTemplates.length > displayLimit && (
+                <div className="flex justify-center mt-6">
+                  <button
+                    onClick={() =>
+                      setDisplayLimit((prev) =>
+                        Math.min(prev + 50, filteredTemplates.length)
+                      )
+                    }
+                    className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 shadow-lg"
+                  >
+                    Load More Templates (
+                    {filteredTemplates.length - displayLimit} remaining)
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       </main>

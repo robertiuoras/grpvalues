@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "../../../hooks/useAuth"; // Corrected path
 import { useRouter } from "next/navigation";
+import FirebaseStorageImage from "../../components/FirebaseStorageImage";
 
 import {
   RefreshCcw,
@@ -742,14 +743,14 @@ export default function CategoryPage({
             >
               {item.imageUrl && (
                 <div className="mb-6 flex justify-center items-center w-64 h-64 bg-gray-700 rounded-lg overflow-hidden p-2">
-                  <img
+                  <FirebaseStorageImage
                     src={item.imageUrl}
                     alt={item.name}
+                    width={256}
+                    height={256}
                     className="w-full h-full object-contain"
-                    onError={(e) => {
-                      e.currentTarget.src =
-                        "https://placehold.co/400x200/555/FFF?text=Image+Not+Found";
-                    }}
+                    priority={false}
+                    fallbackText="Image Not Found"
                   />
                 </div>
               )}

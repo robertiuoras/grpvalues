@@ -126,5 +126,60 @@ export function useAuth() {
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [router, pathname]); // Re-added 'pathname' to dependencies
 
+  // Add heartbeat system to prevent codes from getting stuck
+  useEffect(() => {
+    if (!isAuthenticated || !userId) return;
+
+    // Send heartbeat every 2 minutes to keep the session active
+    const heartbeatInterval = setInterval(async () => {
+      try {
+        // Update lastUsed timestamp to prevent the code from being marked as stuck
+        const response = await fetch("/api/heartbeat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessCodeId: userId }),
+        });
+
+        if (!response.ok) {
+          console.warn("useAuth: Heartbeat failed, session may be stale");
+        }
+      } catch (error) {
+        console.error("useAuth: Heartbeat error:", error);
+      }
+    }, 2 * 60 * 1000); // Every 2 minutes
+
+    // Handle browser close/tab close to clean up immediately
+    const handleBeforeUnload = () => {
+      if (userId) {
+        // Send a synchronous request to clean up immediately
+        navigator.sendBeacon(
+          "/api/cleanup-session",
+          JSON.stringify({ accessCodeId: userId })
+        );
+      }
+    };
+
+    // Handle page visibility change (tab switching, minimizing)
+    const handleVisibilityChange = () => {
+      if (document.hidden && userId) {
+        // Tab is hidden, send cleanup request
+        fetch("/api/cleanup-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessCodeId: userId }),
+        }).catch(console.error);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(heartbeatInterval);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isAuthenticated, userId]);
+
   return { isAuthenticated, isLoading, userRole, userId, setIsAuthenticated }; // Return userId
 }

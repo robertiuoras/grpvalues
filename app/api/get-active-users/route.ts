@@ -50,15 +50,20 @@ export async function GET(request: NextRequest) {
     snapshot.docs.forEach((doc) => {
       const data = doc.data();
       const lastUsedDate = data.lastUsed?.toDate();
+
       const isRecentlyActive = lastUsedDate
         ? lastUsedDate.getTime() >= oneHourAgo.getTime()
         : false;
 
+      // If a user hasn't been active for over 1 hour, consider them logged out
+      // regardless of the is_in_use field (this prevents the display bug)
+      const effectiveLoginStatus = data.is_in_use && isRecentlyActive;
+
       usersData.push({
         accessCodeId: doc.id,
         playerId: data.playerId || null,
-        is_in_use: !!data.is_in_use,
-        lastUsed: lastUsedDate ? lastUsedDate.toISOString() : "Never",
+        is_in_use: effectiveLoginStatus, // Use effective status instead of raw is_in_use
+        lastUsed: lastUsedDate ? lastUsedDate.getTime().toString() : "Never",
         isRecentlyActive: isRecentlyActive,
         isActiveCode: !!data.isActive,
       });
@@ -68,10 +73,8 @@ export async function GET(request: NextRequest) {
       if (a.is_in_use !== b.is_in_use) return a.is_in_use ? -1 : 1;
       if (a.isRecentlyActive !== b.isRecentlyActive)
         return a.isRecentlyActive ? -1 : 1;
-      const aTime =
-        a.lastUsed === "Never" ? 0 : new Date(a.lastUsed!).getTime();
-      const bTime =
-        b.lastUsed === "Never" ? 0 : new Date(b.lastUsed!).getTime();
+      const aTime = a.lastUsed === "Never" ? 0 : parseInt(a.lastUsed!);
+      const bTime = b.lastUsed === "Never" ? 0 : parseInt(b.lastUsed!);
       return bTime - aTime;
     });
 
