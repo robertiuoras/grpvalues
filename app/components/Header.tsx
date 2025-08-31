@@ -26,6 +26,7 @@ export function Header() {
       isAdmin: false,
     },
     { name: "Bunker Help", path: "/bunker-help", isAdmin: false },
+    { name: "Pet Timer", path: "/pet-timer", isAdmin: false },
     { name: "Treasure Helper", path: "/treasure-helper", isAdmin: false },
     { name: "Illegal Items", path: "/values/illegalitems", isAdmin: false },
     {
@@ -38,13 +39,17 @@ export function Header() {
     { name: "LifeInvader", path: "/lifeinvader", isAdmin: false },
   ];
 
-  const adminLinks = [{ name: "Admin Panel", path: "/admin/active-users" }];
+  const adminLinks = [
+    { name: "Admin Panel", path: "/admin/active-users" },
+    { name: "Improvements", path: "/improvements" },
+  ];
 
   // Create categories with admin button for admin users
   const getCategoriesWithAdmin = () => {
     if (userRole === "admin") {
       return [
         { name: "Admin Panel", path: "/admin/active-users", isAdmin: true },
+        { name: "Improvements", path: "/improvements", isAdmin: true },
         ...categories,
       ];
     }

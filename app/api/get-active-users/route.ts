@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         accessCodeId: doc.id,
         playerId: data.playerId || null,
         is_in_use: !!data.is_in_use,
-        lastUsed: lastUsedDate ? lastUsedDate.toLocaleString() : "Never",
+        lastUsed: lastUsedDate ? lastUsedDate.toISOString() : "Never",
         isRecentlyActive: isRecentlyActive,
         isActiveCode: !!data.isActive,
       });

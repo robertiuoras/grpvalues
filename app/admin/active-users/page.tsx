@@ -31,6 +31,29 @@ export default function ActiveUsersPage() {
   const [cleanupLoading, setCleanupLoading] = useState(false);
   const [cleanupMessage, setCleanupMessage] = useState<string | null>(null);
 
+  // Helper function to format time properly
+  const formatTime = (timeString: string | null) => {
+    if (!timeString || timeString === "Never") return "Never";
+
+    try {
+      const date = new Date(timeString);
+      if (isNaN(date.getTime())) return timeString;
+
+      // Format with explicit 12-hour format and timezone
+      return date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZoneName: "short",
+      });
+    } catch (error) {
+      return timeString;
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated && userRole === "admin" && !isLoading) {
       const fetchUsersData = async () => {
@@ -213,7 +236,7 @@ export default function ActiveUsersPage() {
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
                 >
-                  Status
+                  Login Status
                 </th>
                 <th
                   scope="col"
@@ -245,7 +268,8 @@ export default function ActiveUsersPage() {
                     {user.isActiveCode ? (
                       user.is_in_use ? (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-900 text-green-300">
-                          <Wifi size={14} className="mr-1" /> In Use
+                          <Wifi size={14} className="mr-1" /> Currently Logged
+                          In
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-900 text-purple-300">
@@ -259,7 +283,7 @@ export default function ActiveUsersPage() {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                    {user.lastUsed}
+                    {formatTime(user.lastUsed)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {user.isRecentlyActive ? (
@@ -276,6 +300,37 @@ export default function ActiveUsersPage() {
               ))}
             </tbody>
           </table>
+
+          {/* Status Legend */}
+          <div className="mt-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+            <h3 className="text-sm font-semibold text-gray-300 mb-3">
+              Status Legend:
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-gray-400">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-900 text-green-300">
+                  <Wifi size={12} className="mr-1" /> Currently Logged In
+                </span>
+                <span>
+                  User has the page open and is actively using the system
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-900 text-purple-300">
+                  <WifiOff size={12} className="mr-1" /> Available
+                </span>
+                <span>
+                  Access code is valid but user is not currently logged in
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-900 text-red-300">
+                  <Ban size={12} className="mr-1" /> Inactive Code
+                </span>
+                <span>Access code has been deactivated or is invalid</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
