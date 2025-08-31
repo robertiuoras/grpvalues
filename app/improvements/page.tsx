@@ -55,15 +55,23 @@ export default function ImprovementsPage() {
   };
 
   useEffect(() => {
-    const savedImprovements = localStorage.getItem("improvements");
-    if (savedImprovements) {
-      setImprovements(JSON.parse(savedImprovements));
-    }
+    // Load improvements from API on mount
+    fetchImprovements();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("improvements", JSON.stringify(improvements));
-  }, [improvements]);
+  const fetchImprovements = async () => {
+    try {
+      const response = await fetch("/api/improvements");
+      if (response.ok) {
+        const data = await response.json();
+        setImprovements(data.improvements || []);
+      } else {
+        console.error("Failed to fetch improvements");
+      }
+    } catch (error) {
+      console.error("Error fetching improvements:", error);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -77,47 +85,77 @@ export default function ImprovementsPage() {
     setEditingId(null);
   };
 
-  const addImprovement = () => {
+  const addImprovement = async () => {
     if (!formData.title.trim() || !formData.description.trim()) return;
 
-    const newImprovement: Improvement = {
-      id: Date.now().toString(),
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      priority: formData.priority,
-      category: formData.category.trim(),
-      assignedTo: formData.assignedTo.trim(),
-      dueDate: formData.dueDate,
-      isCompleted: false,
-      createdAt: new Date().toISOString(),
-    };
+    setIsLoadingOperation(true);
+    setError(null);
 
-    setImprovements((prev) => [...prev, newImprovement]);
-    resetForm();
-    setShowAddForm(false);
+    try {
+      const response = await fetch("/api/improvements", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setImprovements((prev) => [data.improvement, ...prev]);
+        resetForm();
+        setShowAddForm(false);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || "Failed to create improvement");
+      }
+    } catch (error) {
+      console.error("Error creating improvement:", error);
+      setError("Network error occurred");
+    } finally {
+      setIsLoadingOperation(false);
+    }
   };
 
-  const updateImprovement = () => {
+  const updateImprovement = async () => {
     if (!editingId || !formData.title.trim() || !formData.description.trim())
       return;
 
-    setImprovements((prev) =>
-      prev.map((improvement) =>
-        improvement.id === editingId
-          ? {
-              ...improvement,
-              title: formData.title.trim(),
-              description: formData.description.trim(),
-              priority: formData.priority,
-              category: formData.category.trim(),
-              assignedTo: formData.assignedTo.trim(),
-              dueDate: formData.dueDate,
-            }
-          : improvement
-      )
-    );
+    try {
+      const response = await fetch("/api/improvements", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: editingId,
+          ...formData,
+        }),
+      });
 
-    resetForm();
+      if (response.ok) {
+        setImprovements((prev) =>
+          prev.map((improvement) =>
+            improvement.id === editingId
+              ? {
+                  ...improvement,
+                  title: formData.title.trim(),
+                  description: formData.description.trim(),
+                  priority: formData.priority,
+                  category: formData.category.trim(),
+                  assignedTo: formData.assignedTo.trim(),
+                  dueDate: formData.dueDate,
+                }
+              : improvement
+          )
+        );
+        resetForm();
+      } else {
+        console.error("Failed to update improvement");
+      }
+    } catch (error) {
+      console.error("Error updating improvement:", error);
+    }
   };
 
   const startEditing = (improvement: Improvement) => {
@@ -133,31 +171,70 @@ export default function ImprovementsPage() {
     setShowAddForm(true);
   };
 
-  const toggleCompletion = (id: string) => {
-    setImprovements((prev) =>
-      prev.map((improvement) =>
-        improvement.id === id
-          ? {
-              ...improvement,
-              isCompleted: !improvement.isCompleted,
-              completedAt: !improvement.isCompleted
-                ? new Date().toISOString()
-                : undefined,
-            }
-          : improvement
-      )
-    );
+  const toggleCompletion = async (id: string) => {
+    const improvement = improvements.find((imp) => imp.id === id);
+    if (!improvement) return;
+
+    const newCompletionStatus = !improvement.isCompleted;
+
+    try {
+      const response = await fetch("/api/improvements", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          isCompleted: newCompletionStatus,
+        }),
+      });
+
+      if (response.ok) {
+        setImprovements((prev) =>
+          prev.map((imp) =>
+            imp.id === id
+              ? {
+                  ...imp,
+                  isCompleted: newCompletionStatus,
+                  completedAt: newCompletionStatus
+                    ? new Date().toISOString()
+                    : undefined,
+                }
+              : imp
+          )
+        );
+      } else {
+        console.error("Failed to update completion status");
+      }
+    } catch (error) {
+      console.error("Error updating completion status:", error);
+    }
   };
 
-  const deleteImprovement = (id: string) => {
+  const deleteImprovement = async (id: string) => {
     if (confirm("Are you sure you want to delete this improvement?")) {
-      setImprovements((prev) =>
-        prev.filter((improvement) => improvement.id !== id)
-      );
+      try {
+        const response = await fetch(`/api/improvements?id=${id}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          setImprovements((prev) =>
+            prev.filter((improvement) => improvement.id !== id)
+          );
+        } else {
+          console.error("Failed to delete improvement");
+        }
+      } catch (error) {
+        console.error("Error deleting improvement:", error);
+      }
     }
   };
 
   const [filter, setFilter] = useState<"all" | "pending" | "completed">("all");
+  const [isLoadingOperation, setIsLoadingOperation] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const filteredImprovements = improvements.filter((improvement) => {
     if (filter === "pending") return !improvement.isCompleted;
     if (filter === "completed") return improvement.isCompleted;
@@ -242,18 +319,53 @@ export default function ImprovementsPage() {
               Completed ({improvements.filter((i) => i.isCompleted).length})
             </button>
           </div>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg flex items-center gap-2"
-          >
-            {showAddForm ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Plus className="w-5 h-5" />
-            )}
-            {showAddForm ? "Cancel" : "Add Improvement"}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={fetchImprovements}
+              disabled={isLoadingOperation}
+              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <div className="w-5 h-5">
+                {isLoadingOperation ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                ) : (
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                )}
+              </div>
+              {isLoadingOperation ? "Refreshing..." : "Refresh"}
+            </button>
+            <button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg flex items-center gap-2"
+            >
+              {showAddForm ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Plus className="w-5 h-5" />
+              )}
+              {showAddForm ? "Cancel" : "Add Improvement"}
+            </button>
+          </div>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
+            <p className="text-red-300 text-center">{error}</p>
+          </div>
+        )}
 
         {/* Add/Edit Form */}
         {showAddForm && (
@@ -354,14 +466,21 @@ export default function ImprovementsPage() {
             <div className="flex gap-3">
               <button
                 onClick={editingId ? updateImprovement : addImprovement}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 flex items-center gap-2"
+                disabled={isLoadingOperation}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {editingId ? (
+                {isLoadingOperation ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                ) : editingId ? (
                   <Edit3 className="w-5 h-5" />
                 ) : (
                   <Plus className="w-5 h-5" />
                 )}
-                {editingId ? "Update" : "Add"}
+                {isLoadingOperation
+                  ? "Saving..."
+                  : editingId
+                  ? "Update"
+                  : "Add"}
               </button>
               {editingId && (
                 <button
