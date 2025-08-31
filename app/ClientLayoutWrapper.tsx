@@ -7,6 +7,8 @@ import { Inter } from "next/font/google"; // Import Inter again if you need its 
 import "./globals.css"; // Ensure your global styles are imported
 import { Header } from "./components/Header"; // FIX: Changed to a named import for Header
 import { SpeedInsights } from "@vercel/speed-insights/next"; // Import SpeedInsights
+import { Analytics } from "@vercel/analytics/react"; // Import Analytics
+import { useEffect } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,6 +21,10 @@ export default function ClientLayoutWrapper({
   children: React.ReactNode;
   fontClassName?: string;
 }>) {
+  useEffect(() => {
+    console.log("🔍 Vercel Analytics Debug: Component mounted");
+    console.log("🔍 Vercel Analytics Debug: Check browser console for analytics events");
+  }, []);
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body suppressHydrationWarning={true}>
@@ -31,6 +37,10 @@ export default function ClientLayoutWrapper({
           {children}
         </div>
         <SpeedInsights />
+        <Analytics 
+          debug={true}
+          mode="production"
+        />
       </body>
     </html>
   );
