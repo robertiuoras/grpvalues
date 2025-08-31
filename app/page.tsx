@@ -9,6 +9,7 @@ import {
   Package,
   Glasses,
   Shirt, // Re-added Shirt icon for Luminous Clothing
+  HelpCircle, // Add HelpCircle icon for Beginner Help
 } from "lucide-react";
 import React from "react"; // Explicitly import React for JSX usage
 import { useAuth } from "../hooks/useAuth"; // Import useAuth hook - FIXED PATH
@@ -28,6 +29,12 @@ export default function HomePage() {
   const router = useRouter(); // Add router instance
 
   const categories: CategoryCard[] = [
+    {
+      name: "Beginner Help",
+      path: "/beginner-help",
+      description: "Get started with Grand RP and learn the basics.",
+      icon: <HelpCircle size={40} className="text-red-400" />,
+    },
     {
       name: "Cars",
       path: "/values/cars",
@@ -97,7 +104,36 @@ export default function HomePage() {
 
   // If authenticated, render the actual home page content
   return (
-    <div className="flex flex-col items-center w-full max-w-7xl mx-auto px-4 py-8">
+    <div className="flex flex-col items-center w-full max-w-7xl mx-auto px-4 py-8 relative">
+      {/* How to Join Notification */}
+      <div className="absolute top-20 left-4 z-50 pointer-events-none">
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-full shadow-lg border-2 border-green-400 transition-all duration-300 cursor-pointer group pointer-events-auto hover:scale-105">
+          <a
+            href="https://gta5grand.com/?ref=160825"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 font-bold text-sm md:text-base block w-full h-full"
+          >
+            <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-white opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+            How to Join?
+            <svg
+              className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+
       <h1 className="text-5xl font-extrabold text-blue-400 mb-6 drop-shadow-lg text-center">
         Welcome to Grand RP Values
       </h1>

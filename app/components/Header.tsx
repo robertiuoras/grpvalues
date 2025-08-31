@@ -17,6 +17,7 @@ export function Header() {
     { name: "Boats", path: "/values/boats", isAdmin: false },
     { name: "Planes", path: "/values/planes", isAdmin: false },
     { name: "Helicopters", path: "/values/helicopters", isAdmin: false },
+    { name: "Motorcycles", path: "/values/motorcycles", isAdmin: false },
     { name: "Clothing List", path: "/values/clothinglist", isAdmin: false },
     { name: "Masks", path: "/values/masks", isAdmin: false },
     {
@@ -24,8 +25,8 @@ export function Header() {
       path: "/values/luminousclothing",
       isAdmin: false,
     },
-    { name: "Motorcycles", path: "/values/motorcycles", isAdmin: false },
-    { name: "Bunker Help", path: "/values/bunkerhelp", isAdmin: false },
+    { name: "Bunker Help", path: "/bunker-help", isAdmin: false },
+    { name: "Treasure Helper", path: "/treasure-helper", isAdmin: false },
     { name: "Illegal Items", path: "/values/illegalitems", isAdmin: false },
     {
       name: "Cropped Collection Shirts",

@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "../../../hooks/useAuth"; // Corrected path
+import { useRouter } from "next/navigation";
 
 import {
   RefreshCcw,
@@ -97,7 +98,7 @@ const specialCategoryNames: Record<string, string> = {
   tightmask: "Tight Masks",
   snowboardermask: "Snowboarder Masks",
   motorcycles: "Motorcycles",
-  bunkerhelp: "Bunker Help",
+
   items: "Items",
 };
 
@@ -175,9 +176,17 @@ export default function CategoryPage({
   params: Promise<{ category: string }>;
 }) {
   const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
 
   const categoryObj = React.use(params);
   const category = categoryObj.category.toLowerCase();
+
+  // Redirect old bunkerhelp route to new bunker-help page
+  React.useEffect(() => {
+    if (category === "bunkerhelp") {
+      router.replace("/bunker-help");
+    }
+  }, [category, router]);
 
   const [selectedMainCategory, setSelectedMainCategory] = useState(
     category === "masks" ? "desertscarfmask" : category
@@ -463,8 +472,7 @@ export default function CategoryPage({
         return <Package className="w-16 h-16" />;
       case "motorcycles":
         return <Car className="w-16 h-16 -scale-x-100" />;
-      case "bunkerhelp":
-        return <RefreshCcw className="w-16 h-16" />;
+
       case "items":
         return <Package className="w-16 h-16" />;
       default:
