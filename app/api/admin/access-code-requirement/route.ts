@@ -22,18 +22,18 @@ export async function GET() {
       .get();
 
     if (!configDoc.exists) {
-      // If no config exists, create default (access codes NOT required)
+      // If no config exists, create default (access codes required)
       await db
         .collection("systemConfig")
         .doc("accessControl")
         .set({
-          accessCodeRequired: false,
+          accessCodeRequired: true,
           lastUpdated: new Date(),
           updatedBy: cookieStore.get("userId")?.value || "unknown",
         });
 
-      const response = NextResponse.json({ success: true, required: false });
-      response.cookies.set("accessCodeRequired", "false", {
+      const response = NextResponse.json({ success: true, required: true });
+      response.cookies.set("accessCodeRequired", "true", {
         path: "/",
         maxAge: 60 * 60 * 24 * 365,
         httpOnly: true,
@@ -44,7 +44,7 @@ export async function GET() {
     }
 
     const config = configDoc.data();
-    const required = config?.accessCodeRequired ?? false;
+    const required = config?.accessCodeRequired ?? true;
 
     const response = NextResponse.json({
       success: true,
