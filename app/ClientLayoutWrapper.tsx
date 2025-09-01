@@ -33,7 +33,13 @@ export default function ClientLayoutWrapper({
         <div
           className={`${
             fontClassName || inter.className
-          } bg-gray-900 text-white min-h-screen flex flex-col overflow-x-hidden`}
+          } text-white min-h-screen flex flex-col overflow-x-hidden animate-gradient`}
+          style={{
+            background:
+              "linear-gradient(-45deg, #0f172a, #1e293b, #0f172a, #1e3a8a)",
+            backgroundSize: "400% 400%",
+            animation: "gradient 8s ease infinite",
+          }}
         >
           <Header />
           {children}

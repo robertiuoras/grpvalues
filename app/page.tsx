@@ -104,9 +104,9 @@ export default function HomePage() {
 
   // If authenticated, render the actual home page content
   return (
-    <div className="flex flex-col items-center w-full max-w-7xl mx-auto px-4 py-8 relative">
-      {/* How to Join Notification */}
-      <div className="absolute top-20 left-4 z-50 pointer-events-none">
+    <>
+      {/* How to Join Notification - Fixed position outside layout */}
+      <div className="fixed top-24 left-4 z-50 pointer-events-none">
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-full shadow-lg border-2 border-green-400 transition-all duration-300 cursor-pointer group pointer-events-auto hover:scale-105">
           <a
             href="https://gta5grand.com/?ref=160825"
@@ -134,37 +134,98 @@ export default function HomePage() {
         </div>
       </div>
 
-      <h1 className="text-5xl font-extrabold text-blue-400 mb-6 drop-shadow-lg text-center">
-        Welcome to Grand RP Values
-      </h1>
-      <p className="text-xl text-gray-300 mb-12 text-center max-w-3xl">
-        Select a category below to explore the current market values.
-      </p>
+      <div className="flex flex-col items-center w-full max-w-7xl mx-auto px-4 py-8 relative">
+        <h1 className="text-5xl font-extrabold text-blue-400 mb-6 drop-shadow-lg text-center">
+          Welcome to Grand RP Values
+        </h1>
+        <p className="text-xl text-gray-300 mb-8 text-center max-w-3xl">
+          Select a category below to explore the current market values.
+        </p>
 
-      {/* Grid for category cards - responsive for 1, 2, or 3 columns */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
-        {categories.map((category) => (
-          <Link
-            key={category.name}
-            href={category.path}
-            onClick={(e) => {
-              e.preventDefault();
-              // Small delay to ensure smooth navigation
-              setTimeout(() => {
-                router.push(category.path);
-              }, 100);
-            }}
-            className="flex items-center p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700
-                                 hover:bg-gray-700 hover:shadow-2xl transition-all duration-300 cursor-pointer"
-          >
-            <div className="mr-4">{category.icon}</div>
-            <div className="flex flex-col">
-              <h2 className="text-2xl font-bold text-white">{category.name}</h2>
-              <p className="text-gray-300 text-sm">{category.description}</p>
+        {/* Community Information Section */}
+        <div className="mb-12 p-6 bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-xl border border-blue-700/30 max-w-4xl">
+          <h2 className="text-2xl font-bold text-blue-300 mb-4 text-center">
+            🌟 Community-Driven Platform
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-300">
+            <div>
+              <h3 className="text-lg font-semibold text-green-300 mb-2">
+                🤝 Built by Players, for Players
+              </h3>
+              <p className="text-sm leading-relaxed">
+                This platform is maintained and updated by the Grand RP
+                community. All values, templates, and features are contributed
+                by active players who understand the market dynamics and
+                community needs.
+              </p>
             </div>
-          </Link>
-        ))}
+            <div>
+              <h3 className="text-lg font-semibold text-yellow-300 mb-2">
+                📊 Real-Time Market Data
+              </h3>
+              <p className="text-sm leading-relaxed">
+                Get accurate, up-to-date market values for vehicles, clothing,
+                and items. Our community ensures the data reflects current
+                market conditions and helps you make informed trading decisions.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-purple-300 mb-2">
+                🎯 AI-Powered Assistance
+              </h3>
+              <p className="text-sm leading-relaxed">
+                Our advanced AI assistant learns from community feedback to
+                provide better ad formatting and suggestions. Every correction
+                helps improve the system for everyone.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-orange-300 mb-2">
+                🔄 Continuous Improvement
+              </h3>
+              <p className="text-sm leading-relaxed">
+                The platform evolves based on community feedback and needs. New
+                features, categories, and improvements are regularly added to
+                enhance your experience.
+              </p>
+            </div>
+          </div>
+          <div className="mt-6 p-4 bg-blue-800/20 rounded-lg border border-blue-600/30">
+            <p className="text-center text-sm text-blue-200">
+              <strong>💡 Tip:</strong> Found an outdated value or have a
+              suggestion? Contact robthemaster on discord to help improve the
+              platform for everyone!
+            </p>
+          </div>
+        </div>
+
+        {/* Grid for category cards - responsive for 1, 2, or 3 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
+          {categories.map((category) => (
+            <Link
+              key={category.name}
+              href={category.path}
+              onClick={(e) => {
+                e.preventDefault();
+                // Small delay to ensure smooth navigation
+                setTimeout(() => {
+                  router.push(category.path);
+                }, 100);
+              }}
+              className="flex items-center p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700
+                                 hover:bg-gray-700 hover:shadow-2xl transition-all duration-300 cursor-pointer"
+            >
+              <div className="mr-4">{category.icon}</div>
+              <div className="flex flex-col">
+                <h2 className="text-2xl font-bold text-white">
+                  {category.name}
+                </h2>
+                <p className="text-gray-300 text-sm">{category.description}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

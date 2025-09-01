@@ -1,6 +1,6 @@
 // app/api/user-ads/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@lib/firebaseAdmin"; // Ensure firebaseAdmin is correctly imported and initialized
+import { db } from "../../../lib/firebaseAdmin"; // Ensure firebaseAdmin is correctly imported and initialized
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
 // Helper to normalize text, duplicated for backend consistency

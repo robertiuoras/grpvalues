@@ -66,26 +66,13 @@
   animation: textBuild 400ms ease-out both;
 }
 
-/* Line clamp utilities for text truncation */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 /* Global styles for the app */
 
 /* Dark blue gradient background for HTML */
 html {
-  @apply min-h-screen bg-gradient-to-br from-blue-900 via-blue-950 to-blue-900 text-gray-100;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #1e3a8a, #1e293b, #1e3a8a);
+  color: #f1f5f9;
   font-family: "Inter", sans-serif;
   overflow-y: scroll;
   overflow-x: hidden; /* Prevent horizontal scroll */
@@ -93,7 +80,8 @@ html {
 
 /* Body inherits styles but keeps background transparent so gradient shows */
 body {
-  @apply min-h-screen text-gray-100;
+  min-height: 100vh;
+  color: #f1f5f9;
   background: transparent;
   font-family: "Inter", sans-serif;
   overflow-x: hidden; /* Prevent horizontal scroll */
@@ -103,14 +91,6 @@ body {
 :root {
   --background: #020c2c; /* deep navy */
   --foreground: #ededed;
-}
-
-/* Inline theme variables (if using a theming system) */
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 /* Dark mode overrides */

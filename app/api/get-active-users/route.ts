@@ -1,6 +1,6 @@
 // app/api/get-active-users/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@lib/firebaseAdmin.js";
+import { db } from "../../../lib/firebaseAdmin";
 import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {

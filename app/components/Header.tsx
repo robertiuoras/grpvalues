@@ -28,7 +28,6 @@ export function Header() {
     { name: "Battlepass", path: "/battlepass", isAdmin: false },
     { name: "Bunker Help", path: "/bunker-help", isAdmin: false },
     { name: "Pet Timer", path: "/pet-timer", isAdmin: false },
-    { name: "Treasure Helper", path: "/treasure-helper", isAdmin: false },
     { name: "Illegal Items", path: "/values/illegalitems", isAdmin: false },
     {
       name: "Cropped Collection Shirts",

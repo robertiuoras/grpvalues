@@ -9,6 +9,7 @@ import {
   TrashIcon,
   CheckIcon, // Replaced SaveIcon with CheckIcon
 } from "@heroicons/react/24/outline";
+import Image from "next/image";
 import { useAuth } from "../../hooks/useAuth"; // Corrected import path for useAuth hook
 
 // Define the interface for a template item
@@ -40,37 +41,19 @@ interface UserAd {
   updatedAt: string; // ISO string
 }
 
-// Canonical names for internal logic and URL mapping (all lowercase for consistency)
-const CANONICAL_CATEGORIES = [
-  "24 7 store",
-  "ammunition store",
-  "atm",
-  "bars",
-  "car sharing",
-  "chip tuning",
-  "car wash",
-  "clothing store",
-  "electrical station",
-  "family",
-  "farm",
-  "gas station",
-  "hair salon",
-  "jewellery store",
-  "juice shop",
-  "law firm",
-  "misc/own business",
-  "office",
-  "oil well",
-  "organisation",
-  "parking",
-  "pet shop",
-  "service station",
-  "tattoo parlor",
-  "taxi cab",
-  "warehouse",
+// Official categories for AI assistant (keep the original 8)
+const OFFICIAL_CATEGORIES = [
+  "auto",
+  "work",
+  "service",
+  "real estate",
+  "other",
+  "discount",
+  "dating",
+  "business",
 ];
 
-// Map canonical category names to their user-friendly display names
+// Map category names to their user-friendly display names
 const CATEGORY_DISPLAY_NAMES: { [key: string]: string } = {
   "24 7 store": "24/7 Store",
   "ammunition store": "Ammunition Store",
@@ -98,6 +81,117 @@ const CATEGORY_DISPLAY_NAMES: { [key: string]: string } = {
   "tattoo parlor": "Tattoo Parlor",
   "taxi cab": "Taxi Cab",
   warehouse: "Warehouse",
+  // AI Assistant categories (for backward compatibility)
+  auto: "Auto",
+  work: "Work",
+  service: "Service",
+  "real estate": "Real Estate",
+  other: "Other",
+  discount: "Discount",
+  dating: "Dating",
+  business: "Business",
+};
+
+// Map categories to their icon files (matching the icons in public/images/icons)
+const CATEGORY_ICONS: { [key: string]: string } = {
+  "24 7 store": "/images/icons/business.png",
+  "ammunition store": "/images/icons/business.png",
+  atm: "/images/icons/business.png",
+  bars: "/images/icons/business.png",
+  "car sharing": "/images/icons/auto.png",
+  "chip tuning": "/images/icons/auto.png",
+  "car wash": "/images/icons/service.png",
+  "clothing store": "/images/icons/other.png",
+  "electrical station": "/images/icons/service.png",
+  family: "/images/icons/dating.png",
+  farm: "/images/icons/business.png",
+  "gas station": "/images/icons/service.png",
+  "hair salon": "/images/icons/service.png",
+  "jewellery store": "/images/icons/other.png",
+  "juice shop": "/images/icons/business.png",
+  "law firm": "/images/icons/work.png",
+  "misc/own business": "/images/icons/business.png",
+  office: "/images/icons/work.png",
+  "oil well": "/images/icons/business.png",
+  organisation: "/images/icons/business.png",
+  parking: "/images/icons/service.png",
+  "pet shop": "/images/icons/business.png",
+  "service station": "/images/icons/service.png",
+  "tattoo parlor": "/images/icons/service.png",
+  "taxi cab": "/images/icons/auto.png",
+  warehouse: "/images/icons/business.png",
+  // AI Assistant categories (for backward compatibility)
+  auto: "/images/icons/auto.png",
+  work: "/images/icons/work.png",
+  service: "/images/icons/service.png",
+  "real estate": "/images/icons/real estate.png",
+  other: "/images/icons/other.png",
+  discount: "/images/icons/discount.png",
+  dating: "/images/icons/dating.png",
+  business: "/images/icons/business.png",
+};
+
+// Helper function to extract ad content and category from AI response
+const extractAdContentAndCategory = (aiResponse: string) => {
+  const lines = aiResponse.split("\n");
+
+  // Find the category line (should be the last line)
+  const categoryLine = lines[lines.length - 1];
+  const categoryMatch = categoryLine?.match(/Category:\s*(.+)/);
+
+  if (categoryMatch) {
+    // If we found a category line, exclude it from the ad content
+    const adContent = lines.slice(0, -1).join("\n").trim();
+    let category = categoryMatch[1].trim();
+
+    // Map "misc/own business" to "business" for display
+    if (category === "misc/own business") {
+      category = "business";
+    }
+
+    return { adContent, category };
+  } else {
+    // If no category line found, treat the entire response as ad content
+    const adContent = aiResponse.trim();
+    return { adContent, category: "" };
+  }
+};
+
+// Helper function to get category icon
+const getCategoryIcon = (category: string) => {
+  const lowerCategory = category.toLowerCase();
+
+  // Direct matches
+  if (CATEGORY_ICONS[lowerCategory]) {
+    return CATEGORY_ICONS[lowerCategory];
+  }
+
+  // Partial matches
+  if (
+    lowerCategory.includes("auto") ||
+    lowerCategory.includes("car") ||
+    lowerCategory.includes("vehicle")
+  ) {
+    return CATEGORY_ICONS.auto;
+  }
+  if (lowerCategory.includes("clothing") || lowerCategory.includes("fashion")) {
+    return CATEGORY_ICONS["clothing store"];
+  }
+  if (
+    lowerCategory.includes("office") ||
+    lowerCategory.includes("work") ||
+    lowerCategory.includes("job")
+  ) {
+    return CATEGORY_ICONS.office;
+  }
+  if (lowerCategory.includes("service")) {
+    return CATEGORY_ICONS["service station"];
+  }
+  if (lowerCategory.includes("business") || lowerCategory.includes("misc")) {
+    return CATEGORY_ICONS["misc/own business"];
+  }
+
+  return CATEGORY_ICONS.default;
 };
 
 // Map canonical category names to their respective Google Sheet published CSV URLs.
@@ -153,6 +247,9 @@ const SHEET_URLS: { [key: string]: string } = {
   warehouse:
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=366962962&single=true&output=csv", // Corrected 'sheets' to 'spreadsheets'
 };
+
+// All available categories from SHEET_URLS for LifeInvader templates
+const ALL_TEMPLATE_CATEGORIES = Object.keys(SHEET_URLS);
 
 // Helper function to get the canonical category from a display name
 const getCanonicalCategory = (displayName: string): string => {
@@ -252,8 +349,8 @@ const getCategoryFromName = (name: string): string => {
 
   const lowerCaseName = name.toLowerCase();
 
-  // Try to match against the predefined CANONICAL_CATEGORIES
-  for (const sheetCat of CANONICAL_CATEGORIES) {
+  // Try to match against the predefined OFFICIAL_CATEGORIES
+  for (const sheetCat of OFFICIAL_CATEGORIES) {
     if (lowerCaseName.startsWith(sheetCat)) {
       return sheetCat;
     }
@@ -389,11 +486,11 @@ export default function App() {
     []
   );
   const [categories, setCategories] = useState<string[]>(
-    CANONICAL_CATEGORIES.map(formatCategoryDisplayName)
+    ALL_TEMPLATE_CATEGORIES.map(formatCategoryDisplayName)
   );
   const [activeCategory, setActiveCategory] = useState(
-    CANONICAL_CATEGORIES.length > 0
-      ? formatCategoryDisplayName(CANONICAL_CATEGORIES[0])
+    ALL_TEMPLATE_CATEGORIES.length > 0
+      ? formatCategoryDisplayName(ALL_TEMPLATE_CATEGORIES[0])
       : ""
   );
   const [searchQuery, setSearchQuery] = useState("");
@@ -429,6 +526,15 @@ export default function App() {
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
     new Set()
   ); // Track expanded descriptions
+
+  // AI Assistant states
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [aiQuery, setAIQuery] = useState("");
+  const [aiResponse, setAIResponse] = useState("");
+  const [aiLoading, setAILoading] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
 
   // Effect for debouncing the search query
   useEffect(() => {
@@ -538,7 +644,7 @@ export default function App() {
     }
 
     // Define default type, category, and displayCategory for user-created ads
-    const defaultType = "User Ad";
+    const defaultType = newAdType || "Other";
     const defaultCategory = "misc/own business";
     const defaultDisplayCategory = formatCategoryDisplayName(defaultCategory);
 
@@ -668,9 +774,7 @@ export default function App() {
     setCurrentAdToEdit(ad);
     setNewAdName(ad.name);
     setNewAdDescription(ad.description);
-    // Removed setting type and category as they are no longer in the form
-    // setNewAdType(ad.type);
-    // setNewAdCategory(ad.category);
+    setNewAdType(ad.type); // Set the type when editing
     setShowAddEditModal(true);
   };
 
@@ -678,10 +782,94 @@ export default function App() {
     setCurrentAdToEdit(null);
     setNewAdName("");
     setNewAdDescription("");
-    // Removed resetting type and category as they are no longer in the form
-    // setNewAdType("");
-    // setNewAdCategory(CANONICAL_CATEGORIES[0] || "");
+    setNewAdType(""); // Reset type when clearing form
     setAdFormError("");
+  };
+
+  // AI Assistant function
+  const handleAIQuery = async () => {
+    if (!aiQuery.trim()) return;
+
+    setAILoading(true);
+    setAIResponse("");
+
+    try {
+      const response = await fetch("/api/ai-assistant", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: aiQuery,
+          templates: templates,
+          categories: OFFICIAL_CATEGORIES,
+          categoryDisplayNames: CATEGORY_DISPLAY_NAMES,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get AI response");
+      }
+
+      const data = await response.json();
+      setAIResponse(data.response);
+      setShowFeedback(true); // Show feedback option after getting response
+    } catch (error) {
+      console.error("AI Assistant error:", error);
+      setAIResponse("Sorry, I encountered an error. Please try again.");
+    } finally {
+      setAILoading(false);
+    }
+  };
+
+  // Feedback handling function
+  const handleFeedback = async () => {
+    if (!feedbackText.trim()) return;
+
+    setFeedbackLoading(true);
+    try {
+      const response = await fetch("/api/ai-assistant", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: aiQuery,
+          templates: templates,
+          categories: OFFICIAL_CATEGORIES,
+          categoryDisplayNames: CATEGORY_DISPLAY_NAMES,
+          feedback: feedbackText,
+          originalResponse: aiResponse,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.feedbackStored) {
+        setFeedbackText("");
+        setShowFeedback(false);
+        // Show success message
+        setModalMessage(
+          "Thank you for your feedback! I've learned from your correction and will apply this knowledge to future similar requests."
+        );
+        setModalTitle("Feedback Submitted");
+        setModalOnConfirm(() => () => setShowConfirmationModal(false));
+        setModalOnCancel(() => () => setShowConfirmationModal(false));
+        setIsModalConfirm(false);
+        setShowConfirmationModal(true);
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      setModalMessage(
+        "Sorry, there was an error submitting your feedback. Please try again."
+      );
+      setModalTitle("Error");
+      setModalOnConfirm(() => () => setShowConfirmationModal(false));
+      setModalOnCancel(() => () => setShowConfirmationModal(false));
+      setIsModalConfirm(false);
+      setShowConfirmationModal(true);
+    } finally {
+      setFeedbackLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -776,10 +964,10 @@ export default function App() {
       const fetchPromises: Promise<Template[]>[] = [];
 
       // Fetch all templates for global search, from all defined categories
-      const allCategoryUrls = CANONICAL_CATEGORIES.map((cat) => ({
+      const allCategoryUrls = ALL_TEMPLATE_CATEGORIES.map((cat: string) => ({
         url: SHEET_URLS[cat],
         canonicalCat: cat,
-      })).filter((item) => item.url && !item.url.startsWith("YOUR_"));
+      })).filter((item: any) => item.url && !item.url.startsWith("YOUR_"));
 
       for (const { url, canonicalCat } of allCategoryUrls) {
         fetchPromises.push(fetchAndProcessCSV(url, canonicalCat));
@@ -856,9 +1044,25 @@ export default function App() {
     }
   }, [activeCategory, allFetchedTemplates, searchQuery, showMyAds]);
 
+  // Effect to refresh templates when switching back to "Show All Ads"
+  useEffect(() => {
+    if (!showMyAds && allFetchedTemplates.length > 0 && !searchQuery) {
+      const categoryFiltered = allFetchedTemplates.filter(
+        (t) => t.displayCategory === activeCategory
+      );
+      setTemplates(categoryFiltered);
+    }
+  }, [showMyAds, allFetchedTemplates, searchQuery, activeCategory]);
+
   // Autocomplete logic for search suggestions
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
+      setSuggestedTemplate("");
+      return;
+    }
+
+    // Don't show autocomplete if the search query is too long (prevents overlap)
+    if (searchQuery.length > 50) {
       setSuggestedTemplate("");
       return;
     }
@@ -876,12 +1080,20 @@ export default function App() {
 
     if (suggestion && suggestion.name.toLowerCase() !== input) {
       // Prefer name matches, then description, then type
+      let suggestedText = "";
       if (suggestion.name.toLowerCase().startsWith(input)) {
-        setSuggestedTemplate(suggestion.name);
+        suggestedText = suggestion.name;
       } else if (suggestion.description.toLowerCase().startsWith(input)) {
-        setSuggestedTemplate(suggestion.description);
+        suggestedText = suggestion.description;
       } else {
-        setSuggestedTemplate(suggestion.type);
+        suggestedText = suggestion.type;
+      }
+
+      // Only show suggestion if there's enough space and it's not too long
+      if (suggestedText.length > input.length && suggestedText.length < 80) {
+        setSuggestedTemplate(suggestedText);
+      } else {
+        setSuggestedTemplate("");
       }
     } else {
       setSuggestedTemplate("");
@@ -926,7 +1138,7 @@ export default function App() {
       const sourceTemplates = showMyAds ? mySavedAds : allFetchedTemplates;
 
       let impliedCategoryCanonical: string | null = null;
-      for (const canonicalCat of CANONICAL_CATEGORIES) {
+      for (const canonicalCat of OFFICIAL_CATEGORIES) {
         const normalizedCanonicalCat = normalizeSearchText(canonicalCat);
         if (
           normalizedSearchQuery.startsWith(normalizedCanonicalCat) ||
@@ -1038,6 +1250,12 @@ export default function App() {
           >
             📋 Internal Policy
           </a>
+          <button
+            onClick={() => setShowAIAssistant(true)}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 shadow-lg flex items-center gap-2"
+          >
+            📝 Format My Ad
+          </button>
         </div>
 
         <div className="mb-6 flex justify-center px-2 relative">
@@ -1047,8 +1265,8 @@ export default function App() {
               placeholder="Search all templates by name, description, or type..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full p-4 rounded-full border border-gray-300 focus:outline-none focus:ring-4 focus:ring-red-200 shadow-lg text-lg transition-all duration-300 ease-in-out placeholder-gray-500 ${
-                isAnimating ? "bg-green-50 border-green-300" : ""
+              className={`w-full px-5 py-3 rounded-lg bg-white text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${
+                isAnimating ? "bg-green-50 border-green-500" : ""
               }`}
             />
 
@@ -1056,7 +1274,7 @@ export default function App() {
             {suggestedTemplate && suggestedTemplate !== searchQuery && (
               <div className="absolute inset-0 flex items-center pointer-events-none">
                 <span
-                  className="text-lg text-gray-600 font-normal absolute pointer-events-auto"
+                  className="text-gray-600 font-normal absolute pointer-events-auto"
                   style={{
                     left: `calc(1.25rem + ${
                       (searchQuery.length +
@@ -1069,7 +1287,7 @@ export default function App() {
                     onClick={() => {
                       animateAutocomplete(suggestedTemplate);
                     }}
-                    className="text-gray-600/70 hover:text-gray-600 cursor-pointer font-normal transition-colors duration-200 pr-8 text-build"
+                    className="text-gray-500/70 hover:text-gray-700 cursor-pointer font-normal transition-colors duration-200 pr-8 text-build"
                   >
                     {suggestedTemplate.slice(searchQuery.length).toLowerCase()}
                   </button>
@@ -1097,7 +1315,13 @@ export default function App() {
                 setShowMyAds((prev) => {
                   const newState = !prev;
                   setSearchQuery(""); // Clear search when toggling My Ads
-                  setActiveCategory(""); // Clear category selection when toggling My Ads
+                  setDebouncedSearchQuery(""); // Clear debounced search immediately
+                  // Set default category when switching back to "Show All Ads"
+                  setActiveCategory(
+                    newState
+                      ? ""
+                      : formatCategoryDisplayName(OFFICIAL_CATEGORIES[0])
+                  );
                   setMainTitle(
                     newState ? "My Saved Ads" : "LifeInvader Templates"
                   ); // Update main title
@@ -1193,7 +1417,7 @@ export default function App() {
                       className="relative p-4 bg-gradient-to-br from-white to-gray-50 text-gray-800 border border-gray-200 rounded-lg shadow-md hover:shadow-lg hover:border-red-400 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between group"
                     >
                       <div className="flex-grow mb-3">
-                        <h3 className="font-bold text-lg text-red-700 mb-2 leading-tight line-clamp-2">
+                        <h3 className="font-bold text-lg text-red-700 mb-2 leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
                           {t.name ?? ""}{" "}
                           {/* Add nullish coalescing for safety */}
                         </h3>
@@ -1202,7 +1426,7 @@ export default function App() {
                             className={`text-gray-700 text-xs leading-relaxed ${
                               expandedDescriptions.has(itemId)
                                 ? ""
-                                : "line-clamp-3"
+                                : "overflow-hidden text-ellipsis whitespace-nowrap"
                             }`}
                           >
                             {t.description ?? ""}
@@ -1363,8 +1587,43 @@ export default function App() {
                   disabled={adFormLoading}
                 ></textarea>
               </div>
-              {/* Removed Type Input Field */}
-              {/* Removed Category Select Field */}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    "Work",
+                    "Auto",
+                    "Service",
+                    "Business",
+                    "Real Estate",
+                    "Dating",
+                    "Discount",
+                    "Other",
+                  ].map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setNewAdType(type)}
+                      className={`p-3 rounded-lg border-2 transition-all duration-200 flex flex-col items-center gap-1 ${
+                        newAdType === type
+                          ? "border-red-500 bg-red-50 text-red-700"
+                          : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
+                      }`}
+                      disabled={adFormLoading}
+                    >
+                      <img
+                        src={getTypeIcon(type)}
+                        alt={`${type} icon`}
+                        className="w-6 h-6 object-contain"
+                      />
+                      <span className="text-xs font-medium">{type}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <button
                 type="submit"
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-sm flex items-center justify-center gap-2"
@@ -1383,6 +1642,271 @@ export default function App() {
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Ad Helper Screen */}
+      {showAIAssistant && (
+        <div className="fixed inset-0 bg-gray-900 z-50 overflow-y-auto">
+          <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-950 to-blue-900">
+            {/* Header */}
+            <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
+              <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => {
+                      setShowAIAssistant(false);
+                      setAIQuery("");
+                      setAIResponse("");
+                      setShowFeedback(false);
+                      setFeedbackText("");
+                    }}
+                    className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors duration-200"
+                    title="Back to Templates"
+                  >
+                    <XCircleIcon className="w-6 h-6 text-white" />
+                  </button>
+                  <h1 className="text-2xl font-bold text-white">
+                    📝 Ad Helper
+                  </h1>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="max-w-4xl mx-auto px-4 py-8">
+              <div className="bg-white rounded-xl shadow-2xl p-8">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                      Format Your Ad
+                    </h2>
+                    <p className="text-gray-600 mb-6">
+                      Paste your unformatted ad below and I'll help you format
+                      it according to internal policy. Works with vehicles,
+                      businesses, services, clothing, jobs, and more.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Your Unformatted Ad:
+                      </label>
+                      <textarea
+                        value={aiQuery}
+                        onChange={(e) => setAIQuery(e.target.value)}
+                        placeholder="Paste your unformatted ad here... (e.g., 'selling my car', 'hiring chef', 'business for sale')"
+                        className="w-full h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-base"
+                        onKeyPress={(e) =>
+                          e.key === "Enter" && !e.shiftKey && handleAIQuery()
+                        }
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleAIQuery}
+                        disabled={aiLoading || !aiQuery.trim()}
+                        className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {aiLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                            Formatting...
+                          </>
+                        ) : (
+                          <>
+                            <CheckIcon className="w-5 h-5" />
+                            Format Ad
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setAIQuery("");
+                          setAIResponse("");
+                          setShowFeedback(false);
+                          setFeedbackText("");
+                        }}
+                        className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all duration-200"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+
+                  {aiResponse && (
+                    <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                      <h3 className="font-semibold text-blue-800 mb-3 text-lg">
+                        Formatted Ad:
+                      </h3>
+
+                      {(() => {
+                        const { adContent, category } =
+                          extractAdContentAndCategory(aiResponse);
+                        const categoryIcon = getCategoryIcon(category);
+
+                        return (
+                          <>
+                            <div className="text-gray-700 whitespace-pre-wrap bg-white p-4 rounded border mb-3">
+                              {adContent}
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                              {category && (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium text-gray-600">
+                                    Category:
+                                  </span>
+                                  <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border">
+                                    <img
+                                      src={categoryIcon}
+                                      alt={category}
+                                      className="w-4 h-4"
+                                    />
+                                    <span className="text-sm font-medium text-gray-700">
+                                      {category}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    await navigator.clipboard.writeText(
+                                      adContent
+                                    );
+                                    // Visual feedback - temporarily change button text
+                                    const button =
+                                      event?.target as HTMLButtonElement;
+                                    if (button) {
+                                      const originalText = button.innerHTML;
+                                      button.innerHTML =
+                                        '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Copied!';
+                                      button.classList.add(
+                                        "bg-green-600",
+                                        "hover:bg-green-700"
+                                      );
+                                      button.classList.remove(
+                                        "bg-blue-600",
+                                        "hover:bg-blue-700"
+                                      );
+
+                                      setTimeout(() => {
+                                        button.innerHTML = originalText;
+                                        button.classList.remove(
+                                          "bg-green-600",
+                                          "hover:bg-green-700"
+                                        );
+                                        button.classList.add(
+                                          "bg-blue-600",
+                                          "hover:bg-blue-700"
+                                        );
+                                      }, 2000);
+                                    }
+                                  } catch (err) {
+                                    console.error("Failed to copy: ", err);
+                                  }
+                                }}
+                                className={`flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 ${
+                                  !category ? "ml-auto" : ""
+                                }`}
+                                title="Copy formatted ad"
+                              >
+                                <ClipboardIcon className="w-4 h-4" />
+                                Copy Ad
+                              </button>
+                            </div>
+                          </>
+                        );
+                      })()}
+
+                      {/* Feedback Section */}
+                      {showFeedback && (
+                        <div className="mt-4 pt-4 border-t border-blue-200">
+                          <h4 className="font-medium text-blue-800 mb-3">
+                            🤖 Help me improve! Was this formatting correct?
+                          </h4>
+                          <div className="space-y-3">
+                            <textarea
+                              value={feedbackText}
+                              onChange={(e) => setFeedbackText(e.target.value)}
+                              placeholder="If this formatting is wrong, please provide the correct version. I'll learn from your correction!"
+                              className="w-full h-20 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={handleFeedback}
+                                disabled={
+                                  feedbackLoading || !feedbackText.trim()
+                                }
+                                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                              >
+                                {feedbackLoading ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    Submitting...
+                                  </>
+                                ) : (
+                                  "Submit Correction"
+                                )}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowFeedback(false);
+                                  setFeedbackText("");
+                                }}
+                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-all duration-200 text-sm"
+                              >
+                                Skip
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <h3 className="font-semibold text-gray-800 mb-2">
+                      What I can help with:
+                    </h3>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>
+                        • Format your ad according to{" "}
+                        <a
+                          href="https://docs.google.com/document/d/1zNTpF4bmcjOVef6XmCvq3x6DxPkWAFNdJJE5mwS5D3o/edit?tab=t.0"
+                          target="_blank"
+                          className="text-blue-600 hover:underline"
+                        >
+                          LifeInvader Internal Policy
+                        </a>
+                      </li>
+                      <li>
+                        • Use correct vehicle names from{" "}
+                        <a
+                          href="https://docs.google.com/spreadsheets/d/1vfQSNESlFUqWgy6Oje61_RCvLEKKUMnG6YzUVXpwG2E/edit"
+                          target="_blank"
+                          className="text-blue-600 hover:underline"
+                        >
+                          approved vehicle list
+                        </a>
+                      </li>
+                      <li>• Structure ads professionally</li>
+                      <li>• Suggest the right category</li>
+                      <li>• Just paste your ad and get a formatted result</li>
+                      <li>
+                        • Powered by Google Gemini AI with access to policy
+                        documents
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 // app/api/values/[category]/route.ts
 import { NextResponse } from "next/server";
-import { db } from "@lib/firebaseAdmin.js"; // This import is critical for your Firestore instance
+import { db } from "../../../../lib/firebaseAdmin"; // This import is critical for your Firestore instance
 
 export async function GET(
   request: Request,

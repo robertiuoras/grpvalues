@@ -12,6 +12,9 @@ import {
   Clock,
   CheckCircle,
   XCircle,
+  Edit,
+  Save,
+  X,
 } from "lucide-react";
 
 interface ActiveUser {
@@ -33,6 +36,10 @@ export default function ActiveUsersPage() {
   const [accessCodeRequired, setAccessCodeRequired] = useState<boolean>(true);
   const [toggleLoading, setToggleLoading] = useState(false);
   const [toggleMessage, setToggleMessage] = useState<string | null>(null);
+  const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
+  const [newPlayerId, setNewPlayerId] = useState<string>("");
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
 
   // Helper function to format time properly
   const formatTime = (timeString: string | null) => {
@@ -192,6 +199,74 @@ export default function ActiveUsersPage() {
       setToggleMessage(`❌ Error: ${error.message}`);
     } finally {
       setToggleLoading(false);
+    }
+  };
+
+  const handleEditPlayerId = (
+    accessCodeId: string,
+    currentPlayerId: string | null
+  ) => {
+    setEditingPlayerId(accessCodeId);
+    setNewPlayerId(currentPlayerId || "");
+    setUpdateMessage(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPlayerId(null);
+    setNewPlayerId("");
+    setUpdateMessage(null);
+  };
+
+  const handleUpdatePlayerId = async (accessCodeId: string) => {
+    if (!newPlayerId.trim()) {
+      setUpdateMessage("❌ Player ID cannot be empty");
+      return;
+    }
+
+    setUpdateLoading(true);
+    setUpdateMessage(null);
+    try {
+      const response = await fetch("/api/admin/update-player-id", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          accessCodeId,
+          newPlayerId: newPlayerId.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setUpdateMessage(`✅ ${data.message}`);
+        setEditingPlayerId(null);
+        setNewPlayerId("");
+        // Refresh the users data
+        const fetchUsersData = async () => {
+          try {
+            const response = await fetch("/api/get-active-users");
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success) {
+                setUsers(data.users);
+              }
+            }
+          } catch (error) {
+            console.error("Error refreshing users data:", error);
+          }
+        };
+        fetchUsersData();
+      } else {
+        setUpdateMessage(`❌ ${data.message || "Failed to update player ID."}`);
+      }
+    } catch (error: any) {
+      setUpdateMessage(
+        `❌ Error: ${error.message || "Failed to update player ID."}`
+      );
+    } finally {
+      setUpdateLoading(false);
     }
   };
 
@@ -368,6 +443,31 @@ export default function ActiveUsersPage() {
             {toggleMessage}
           </div>
         )}
+        {updateMessage && (
+          <div
+            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+              updateMessage.startsWith("✅")
+                ? "bg-green-900/40 border border-green-700 text-green-300"
+                : "bg-red-900/40 border border-red-700 text-red-300"
+            }`}
+          >
+            {updateMessage}
+          </div>
+        )}
+      </div>
+
+      {/* Player ID Management */}
+      <div className="mb-6 flex flex-col items-center gap-4">
+        <div className="text-center max-w-2xl">
+          <h3 className="text-lg font-semibold text-blue-300 mb-2">
+            👤 Player ID Management
+          </h3>
+          <p className="text-sm text-gray-400 mb-4">
+            Edit player IDs directly from this panel. Click the edit icon next
+            to any player ID to modify it. Changes are saved immediately to
+            Firebase.
+          </p>
+        </div>
       </div>
 
       {fetchLoading ? (
@@ -415,9 +515,15 @@ export default function ActiveUsersPage() {
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider rounded-tr-lg"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
                 >
                   Recently Active
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider rounded-tr-lg"
+                >
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -431,7 +537,48 @@ export default function ActiveUsersPage() {
                     {user.accessCodeId}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
-                    {user.playerId || "N/A"}
+                    {editingPlayerId === user.accessCodeId ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={newPlayerId}
+                          onChange={(e) => setNewPlayerId(e.target.value)}
+                          className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter new player ID"
+                        />
+                        <button
+                          onClick={() =>
+                            handleUpdatePlayerId(user.accessCodeId)
+                          }
+                          disabled={updateLoading}
+                          className="p-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 rounded transition-colors duration-200"
+                        >
+                          {updateLoading ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                          ) : (
+                            <Save size={12} className="text-white" />
+                          )}
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="p-1 bg-red-600 hover:bg-red-700 rounded transition-colors duration-200"
+                        >
+                          <X size={12} className="text-white" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span>{user.playerId || "N/A"}</span>
+                        <button
+                          onClick={() =>
+                            handleEditPlayerId(user.accessCodeId, user.playerId)
+                          }
+                          className="p-1 bg-blue-600 hover:bg-blue-700 rounded transition-colors duration-200"
+                        >
+                          <Edit size={12} className="text-white" />
+                        </button>
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {user.isActiveCode ? (
@@ -464,6 +611,10 @@ export default function ActiveUsersPage() {
                         <Clock size={14} className="mr-1" /> Old
                       </span>
                     )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    {/* Additional actions can be added here in the future */}
+                    <span className="text-xs text-gray-500">-</span>
                   </td>
                 </tr>
               ))}

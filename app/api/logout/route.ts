@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
-import { db } from "@lib/firebaseAdmin"; // Ensure firebaseAdmin is correctly imported and initialized
+import { db } from "../../../lib/firebaseAdmin"; // Ensure firebaseAdmin is correctly imported and initialized
 
 export async function GET(request: NextRequest) {
   // This is a GET request handler

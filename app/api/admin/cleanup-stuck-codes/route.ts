@@ -1,6 +1,6 @@
 // app/api/admin/cleanup-stuck-codes/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@lib/firebaseAdmin";
+import { db } from "../../../../lib/firebaseAdmin";
 import { cookies } from "next/headers";
 
 /**
