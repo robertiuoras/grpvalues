@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
       });
+      console.log("🔧 Setting accessCodeRequired cookie to: true");
     } else {
       response.cookies.set("accessCodeRequired", "false", {
         path: "/",
@@ -125,6 +126,7 @@ export async function POST(request: NextRequest) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
       });
+      console.log("🔧 Setting accessCodeRequired cookie to: false");
     }
 
     return response;
