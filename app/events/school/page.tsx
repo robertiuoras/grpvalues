@@ -190,14 +190,20 @@ export default function ColorMixerPage() {
                 autoComplete="off" // Disable autofill/autocomplete
               />
               
-              {/* Transparent autocomplete text overlay */}
+              {/* Clickable autocomplete text overlay */}
               {suggestedColor && suggestedColor !== targetColorInput && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-xl text-gray-400/60 font-normal">
                     {targetColorInput}
-                    <span className="text-gray-300/40">
+                    <button
+                      onClick={() => {
+                        setTargetColorInput(suggestedColor);
+                        setFeedbackMessage("");
+                      }}
+                      className="text-blue-500 hover:text-blue-600 cursor-pointer font-medium transition-colors duration-200 hover:underline"
+                    >
                       {suggestedColor.slice(targetColorInput.length)}
-                    </span>
+                    </button>
                   </span>
                 </div>
               )}
