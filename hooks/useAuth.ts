@@ -79,24 +79,23 @@ export function useAuth() {
         );
       }
 
-      // Check if access codes are required FIRST
+      // Check if access codes are required
       const accessCodeRequired = Cookies.get("accessCodeRequired");
       const codesNotRequired = accessCodeRequired === "false";
       
-      // If access codes are not required, set loading to false and skip authentication checks
-      if (codesNotRequired) {
-        console.log(
-          "useAuth: Access codes not required, setting loading to false and skipping authentication checks."
-        );
-        setIsLoading(false);
-        return;
-      }
-      
-      // Only update state if access codes are required
+      // Always update state, but handle authentication differently based on access code requirement
       setIsAuthenticated(userIsAuthenticated);
       setUserRole(role);
       setUserId(currentUserId); // Update userId state
       setIsLoading(false);
+      
+      // If access codes are not required, skip authentication enforcement
+      if (codesNotRequired) {
+        console.log(
+          "useAuth: Access codes not required, skipping authentication enforcement but maintaining state."
+        );
+        return;
+      }
       console.log(
         "useAuth: State updated - isAuthenticated:",
         userIsAuthenticated,

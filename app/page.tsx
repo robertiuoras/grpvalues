@@ -100,7 +100,7 @@ export default function HomePage() {
   const accessCodeRequired = Cookies.get("accessCodeRequired");
   const codesNotRequired = accessCodeRequired === "false";
   
-  // If access codes are not required, skip authentication check
+  // If access codes are required and user is not authenticated, show loading
   if (!codesNotRequired && !isAuthenticated) {
     // If useAuth determines the user is NOT authenticated, it will handle the redirect to /login.
     // So, if we reach this point and isAuthenticated is false, it means a redirect is

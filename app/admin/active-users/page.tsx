@@ -82,7 +82,12 @@ export default function ActiveUsersPage() {
   };
 
   useEffect(() => {
-    if (isAuthenticated && userRole === "admin" && !isLoading) {
+    // Check if access codes are required
+    const accessCodeRequired = getCookie("accessCodeRequired");
+    const codesNotRequired = accessCodeRequired === "false";
+    
+    // Allow access if: (authenticated AND admin) OR (access codes not required)
+    if ((isAuthenticated && userRole === "admin" && !isLoading) || (codesNotRequired && !isLoading)) {
       const fetchUsersData = async () => {
         // Renamed from fetchActiveUsers to fetchUsersData
         setFetchLoading(true);
@@ -146,7 +151,7 @@ export default function ActiveUsersPage() {
       // Clean up interval on component unmount
       return () => clearInterval(intervalId);
     }
-  }, [isAuthenticated, isLoading, userRole]);
+  }, [isAuthenticated, isLoading, userRole, accessCodeRequired]);
 
   const handleCleanupStuckCodes = async () => {
     setCleanupLoading(true);
@@ -289,8 +294,13 @@ export default function ActiveUsersPage() {
     );
   }
 
+  // Check if access codes are required
+  const accessCodeRequired = getCookie("accessCodeRequired");
+  const codesNotRequired = accessCodeRequired === "false";
+  
   // Frontend RBAC: Check if authenticated AND if user has 'admin' role
-  if (!isAuthenticated || userRole !== "admin") {
+  // If access codes are not required, allow access to admin panel
+  if (!codesNotRequired && (!isAuthenticated || userRole !== "admin")) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4 text-white">
         <Ban size={80} className="text-red-500 mb-6 animate-pulse" />
