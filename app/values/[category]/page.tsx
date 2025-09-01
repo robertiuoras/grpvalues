@@ -6,6 +6,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "../../../hooks/useAuth"; // Corrected path
 import { useRouter } from "next/navigation";
 import FirebaseStorageImage from "../../components/FirebaseStorageImage";
+import Cookies from "js-cookie"; // Import Cookies for reading accessCodeRequired
 
 import {
   RefreshCcw,
@@ -500,11 +501,16 @@ export default function CategoryPage({
     );
   }
 
-  // If not authenticated, the useAuth hook will handle the redirect to /login.
-  // So, if we reach here and isAuthenticated is false, it means a redirect is
-  // in progress or has just completed, so we can render nothing or a simple
-  // "redirecting" message.
-  if (!isAuthenticated) {
+  // Check if access codes are required
+  const accessCodeRequired = Cookies.get("accessCodeRequired");
+  const codesNotRequired = accessCodeRequired === "false";
+  
+  // If access codes are not required, skip authentication check
+  if (!codesNotRequired && !isAuthenticated) {
+    // If not authenticated, the useAuth hook will handle the redirect to /login.
+    // So, if we reach here and isAuthenticated is false, it means a redirect is
+    // in progress or has just completed, so we can render nothing or a simple
+    // "redirecting" message.
     return null; // Or a brief "Redirecting to login..." message if desired
   }
 

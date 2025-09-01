@@ -15,6 +15,7 @@ import React from "react"; // Explicitly import React for JSX usage
 import { useAuth } from "../hooks/useAuth"; // Import useAuth hook - FIXED PATH
 import Link from "next/link"; // Add Next.js Link import
 import { useRouter } from "next/navigation"; // Add router for navigation
+import Cookies from "js-cookie"; // Import Cookies for reading accessCodeRequired
 
 interface CategoryCard {
   name: string;
@@ -95,10 +96,15 @@ export default function HomePage() {
     );
   }
 
-  // If useAuth determines the user is NOT authenticated, it will handle the redirect to /login.
-  // So, if we reach this point and isAuthenticated is false, it means a redirect is
-  // in progress or has just completed, so we render nothing to avoid flickering.
-  if (!isAuthenticated) {
+  // Check if access codes are required
+  const accessCodeRequired = Cookies.get("accessCodeRequired");
+  const codesNotRequired = accessCodeRequired === "false";
+  
+  // If access codes are not required, skip authentication check
+  if (!codesNotRequired && !isAuthenticated) {
+    // If useAuth determines the user is NOT authenticated, it will handle the redirect to /login.
+    // So, if we reach this point and isAuthenticated is false, it means a redirect is
+    // in progress or has just completed, so we render nothing to avoid flickering.
     return null;
   }
 

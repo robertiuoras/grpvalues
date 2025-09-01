@@ -94,6 +94,18 @@ export function useAuth() {
         false
       );
 
+      // Check if access codes are required
+      const accessCodeRequired = Cookies.get("accessCodeRequired");
+      const codesNotRequired = accessCodeRequired === "false";
+      
+      // If access codes are not required, skip authentication checks
+      if (codesNotRequired) {
+        console.log(
+          "useAuth: Access codes not required, skipping authentication checks."
+        );
+        return;
+      }
+      
       // Redirect if not authenticated AND not already on the login page
       // Added a small setTimeout to mitigate race conditions on Vercel deployment
       if (!userIsAuthenticated && pathname !== "/login") {
