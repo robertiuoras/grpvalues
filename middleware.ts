@@ -10,11 +10,21 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Check if access codes are required (stored in a cookie for middleware access)
-  const accessCodeRequired =
-    request.cookies.get("accessCodeRequired")?.value !== "false";
+  const accessCodeCookie = request.cookies.get("accessCodeRequired");
+  const accessCodeRequired = accessCodeCookie?.value !== "false";
+  
+  // Debug logging
+  console.log("🔍 Middleware Debug:", {
+    pathname,
+    accessCodeRequired,
+    cookieValue: accessCodeCookie?.value,
+    cookieExists: !!accessCodeCookie,
+    isAuthenticated
+  });
 
   // If access codes are not required, allow all requests to proceed
   if (!accessCodeRequired) {
+    console.log("✅ Access codes not required, allowing request");
     return NextResponse.next();
   }
 
