@@ -399,6 +399,9 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   // State to hold the debounced search query
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  // State for autocomplete suggestions
+  const [suggestedTemplate, setSuggestedTemplate] = useState("");
+  const [isAnimating, setIsAnimating] = useState(false);
   const [loading, setLoading] = useState(true); // Loading for general templates
   const [loadingMyAds, setLoadingMyAds] = useState(false); // NEW: Loading for user ads
   const papaScriptLoaded = useRef(false);
@@ -853,6 +856,64 @@ export default function App() {
     }
   }, [activeCategory, allFetchedTemplates, searchQuery, showMyAds]);
 
+  // Autocomplete logic for search suggestions
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) {
+      setSuggestedTemplate("");
+      return;
+    }
+
+    const input = searchQuery.trim().toLowerCase();
+    const sourceTemplates = showMyAds ? mySavedAds : allFetchedTemplates;
+
+    // Find a template that starts with the search query
+    const suggestion = sourceTemplates.find(
+      (template) =>
+        template.name.toLowerCase().startsWith(input) ||
+        template.description.toLowerCase().startsWith(input) ||
+        template.type.toLowerCase().startsWith(input)
+    );
+
+    if (suggestion && suggestion.name.toLowerCase() !== input) {
+      // Prefer name matches, then description, then type
+      if (suggestion.name.toLowerCase().startsWith(input)) {
+        setSuggestedTemplate(suggestion.name);
+      } else if (suggestion.description.toLowerCase().startsWith(input)) {
+        setSuggestedTemplate(suggestion.description);
+      } else {
+        setSuggestedTemplate(suggestion.type);
+      }
+    } else {
+      setSuggestedTemplate("");
+    }
+  }, [searchQuery, showMyAds, allFetchedTemplates, mySavedAds]);
+
+  // Animation function for autocomplete
+  const animateAutocomplete = (newValue: string) => {
+    setIsAnimating(true);
+
+    // Animate text building by gradually revealing characters
+    const currentText = searchQuery;
+    const newText = newValue;
+    const charsToAdd = newText.slice(currentText.length);
+
+    if (charsToAdd.length > 0) {
+      let currentIndex = currentText.length;
+      const interval = setInterval(() => {
+        if (currentIndex < newText.length) {
+          setSearchQuery(newText.slice(0, currentIndex + 1));
+          currentIndex++;
+        } else {
+          clearInterval(interval);
+          setTimeout(() => setIsAnimating(false), 100);
+        }
+      }, 50); // 50ms delay between each character
+    } else {
+      setSearchQuery(newText);
+      setTimeout(() => setIsAnimating(false), 100);
+    }
+  };
+
   const filteredTemplates = useMemo(() => {
     // Optimized filtering for better performance
     const normalizedSearchQuery = normalizeSearchText(debouncedSearchQuery); // Use debounced search query
@@ -980,13 +1041,56 @@ export default function App() {
         </div>
 
         <div className="mb-6 flex justify-center px-2 relative">
-          <input
-            type="text"
-            placeholder="Search all templates by name, description, or type..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full max-w-2xl p-4 rounded-full border border-gray-300 focus:outline-none focus:ring-4 focus:ring-red-200 shadow-lg text-lg transition-all duration-300 ease-in-out placeholder-gray-500"
-          />
+          <div className="relative w-full max-w-2xl">
+            <input
+              type="text"
+              placeholder="Search all templates by name, description, or type..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={`w-full p-4 rounded-full border border-gray-300 focus:outline-none focus:ring-4 focus:ring-red-200 shadow-lg text-lg transition-all duration-300 ease-in-out placeholder-gray-500 ${
+                isAnimating ? "bg-green-50 border-green-300" : ""
+              }`}
+            />
+
+            {/* Clickable autocomplete helper positioned after user's text */}
+            {suggestedTemplate && suggestedTemplate !== searchQuery && (
+              <div className="absolute inset-0 flex items-center pointer-events-none">
+                <span
+                  className="text-lg text-gray-600 font-normal absolute pointer-events-auto"
+                  style={{
+                    left: `calc(1.25rem + ${
+                      (searchQuery.length +
+                        (searchQuery.match(/\s/g) || []).length * 0.2) *
+                      0.5
+                    }rem + 0.01rem)`,
+                  }}
+                >
+                  <button
+                    onClick={() => {
+                      animateAutocomplete(suggestedTemplate);
+                    }}
+                    className="text-gray-600/70 hover:text-gray-600 cursor-pointer font-normal transition-colors duration-200 pr-8 text-build"
+                  >
+                    {suggestedTemplate.slice(searchQuery.length).toLowerCase()}
+                  </button>
+                </span>
+                {/* Clickable area for the right side of the search box when suggestion exists */}
+                {suggestedTemplate && suggestedTemplate !== searchQuery && (
+                  <div
+                    onClick={() => {
+                      animateAutocomplete(suggestedTemplate);
+                    }}
+                    className="absolute right-0 top-0 bottom-0 w-2/3 pointer-events-auto"
+                    style={{
+                      background: "transparent",
+                      cursor: "text",
+                      zIndex: 0,
+                    }}
+                  />
+                )}
+              </div>
+            )}
+          </div>
           {isAuthenticated && (
             <button
               onClick={() => {

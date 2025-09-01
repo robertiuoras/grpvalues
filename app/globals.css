@@ -1,6 +1,71 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
+/* Animated gradient background */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+/* Subtle blue glow animation for autocomplete */
+@keyframes autocompleteGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    border-color: rgba(59, 130, 246, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+}
+
+.glow-once {
+  animation: autocompleteGlow 800ms ease-out both;
+}
+
+/* Text building animation for autocomplete */
+@keyframes textBuild {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.text-build {
+  animation: textBuild 400ms ease-out both;
+}
+
 /* Line clamp utilities for text truncation */
 .line-clamp-2 {
   display: -webkit-box;
@@ -23,6 +88,7 @@ html {
   @apply min-h-screen bg-gradient-to-br from-blue-900 via-blue-950 to-blue-900 text-gray-100;
   font-family: "Inter", sans-serif;
   overflow-y: scroll;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 /* Body inherits styles but keeps background transparent so gradient shows */
@@ -30,8 +96,7 @@ body {
   @apply min-h-screen text-gray-100;
   background: transparent;
   font-family: "Inter", sans-serif;
-  margin-left: calc(100vw - 100%);
-  margin-left: 0;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 /* Optional CSS variables for theming */
@@ -55,5 +120,3 @@ body {
     --foreground: #f0f0f0;
   }
 }
-
-

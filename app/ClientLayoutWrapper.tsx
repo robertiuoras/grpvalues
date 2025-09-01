@@ -23,7 +23,9 @@ export default function ClientLayoutWrapper({
 }>) {
   useEffect(() => {
     console.log("🔍 Vercel Analytics Debug: Component mounted");
-    console.log("🔍 Vercel Analytics Debug: Check browser console for analytics events");
+    console.log(
+      "🔍 Vercel Analytics Debug: Check browser console for analytics events"
+    );
   }, []);
   return (
     <html lang="en" suppressHydrationWarning={true}>
@@ -31,16 +33,13 @@ export default function ClientLayoutWrapper({
         <div
           className={`${
             fontClassName || inter.className
-          } bg-gray-900 text-white min-h-screen flex flex-col`}
+          } bg-gray-900 text-white min-h-screen flex flex-col overflow-x-hidden`}
         >
           <Header />
           {children}
         </div>
         <SpeedInsights />
-        <Analytics 
-          debug={true}
-          mode="production"
-        />
+        <Analytics debug={true} mode="production" />
       </body>
     </html>
   );

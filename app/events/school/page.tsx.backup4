@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 
 export default function ColorMixerPage() {
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const [targetColorInput, setTargetColorInput] = useState("");
   const [foundMix, setFoundMix] = useState<{
     color1: string;
@@ -11,7 +10,6 @@ export default function ColorMixerPage() {
   } | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [suggestedColor, setSuggestedColor] = useState("");
-  const [isAnimating, setIsAnimating] = useState(false);
 
   // Define all colors (primary and mixable results) and their display properties
   const allColorsWithHex = [
@@ -117,70 +115,16 @@ export default function ColorMixerPage() {
 
   // Find suggested color for autocomplete
   useEffect(() => {
-    const input = targetColorInput.trim().toLowerCase();
-    if (!input) {
-      setSuggestedColor("");
-      return;
-    }
-
-    const availableColors = Object.keys(reverseMixingRules);
-    const suggested = availableColors.find((color) =>
-      color.toLowerCase().startsWith(input)
-    );
-
-    if (!suggested) {
-      setSuggestedColor("");
-      return;
-    }
-
-    // Only show suggestion if there is a suffix to display
-    if (suggested.toLowerCase() !== input) {
-      setSuggestedColor(suggested);
+    if (targetColorInput.trim()) {
+      const availableColors = Object.keys(reverseMixingRules);
+      const suggested = availableColors.find(color =>
+        color.toLowerCase().startsWith(targetColorInput.toLowerCase())
+      );
+      setSuggestedColor(suggested || "");
     } else {
       setSuggestedColor("");
     }
   }, [targetColorInput, reverseMixingRules]);
-
-  // Animation function for autocomplete
-  const animateAutocomplete = (newValue: string) => {
-    setIsAnimating(true);
-
-    // Animate text building by gradually revealing characters
-    const currentText = targetColorInput;
-    const newText = newValue.toLowerCase();
-    const charsToAdd = newText.slice(currentText.length);
-
-    if (charsToAdd.length > 0) {
-      let currentIndex = currentText.length;
-      const interval = setInterval(() => {
-        if (currentIndex < newText.length) {
-          setTargetColorInput(newText.slice(0, currentIndex + 1));
-          currentIndex++;
-        } else {
-          clearInterval(interval);
-          setSuggestedColor(""); // Clear suggestion after animation
-          setFeedbackMessage("");
-          // Focus and place cursor at the end
-          requestAnimationFrame(() => {
-            const el = inputRef.current;
-            if (el) {
-              el.focus({ preventScroll: true });
-              const valueLength = el.value.length;
-              try {
-                el.setSelectionRange(valueLength, valueLength);
-              } catch {}
-            }
-          });
-          setTimeout(() => setIsAnimating(false), 100);
-        }
-      }, 50); // 50ms delay between each character
-    } else {
-      setTargetColorInput(newText);
-      setSuggestedColor("");
-      setFeedbackMessage("");
-      setTimeout(() => setIsAnimating(false), 100);
-    }
-  };
 
   const handleFindMix = () => {
     const cleanedTargetColor = targetColorInput.trim().toUpperCase();
@@ -206,27 +150,17 @@ export default function ColorMixerPage() {
     }
   };
 
+
+
   return (
-    <div className="flex items-center justify-center h-screen w-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-4 relative overflow-hidden">
-      {/* Subtle, scoped background overlay (won't affect other pages) */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-25"
-        style={{
-          backgroundImage:
-            "radial-gradient(60rem 30rem at 50% 110%, rgba(59,130,246,0.25), transparent 60%), radial-gradient(40rem 20rem at -10% -10%, rgba(99,102,241,0.18), transparent 60%), radial-gradient(40rem 20rem at 110% -10%, rgba(20,184,166,0.18), transparent 60%)",
-        }}
-      />
-
-      <main className="w-full max-w-lg bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-6 sm:p-8 border border-white/30 text-center relative overflow-hidden transition-all duration-300">
-        {/* Accent gradient bar */}
-        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500" />
-
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 flex items-center justify-center p-4 sm:p-6 lg:p-8 font-inter">
+      <main className="max-w-xl mx-auto bg-white bg-opacity-95 rounded-3xl shadow-2xl p-8 sm:p-12 lg:p-14 border border-blue-100 text-center relative overflow-hidden">
         <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 leading-tight mb-8 drop-shadow-md relative z-10 flex items-center justify-center gap-4">
           <span role="img" aria-label="beaker">
             🔬
           </span>
           Chemistry
-          <span role="img" aria-label="test tube" className="animate-pulse">
+          <span role="img" aria-label="test tube">
             🧪
           </span>
         </h1>
@@ -243,7 +177,6 @@ export default function ColorMixerPage() {
               <input
                 id="targetColor"
                 type="text"
-                ref={inputRef}
                 value={targetColorInput}
                 onChange={(e) => {
                   setTargetColorInput(e.target.value);
@@ -253,48 +186,24 @@ export default function ColorMixerPage() {
                   if (e.key === "Enter") handleFindMix();
                 }}
                 placeholder="e.g., Coral, Raspberry, or Lavender"
-                className="w-full p-4 rounded-xl text-xl text-center focus:outline-none text-black placeholder-gray-500 bg-white/80 border border-gray-200 shadow-lg transition-all duration-200"
+                className="w-full p-4 border border-blue-300 rounded-xl text-xl text-center focus:outline-none focus:ring-4 focus:ring-blue-500 shadow-md transition-all duration-200 text-black placeholder-gray-500 bg-white/70"
                 autoComplete="off" // Disable autofill/autocomplete
               />
-
+              
               {/* Clickable autocomplete helper positioned after user's text */}
               {suggestedColor && suggestedColor !== targetColorInput && (
-                <div className="absolute inset-0 flex items-center pointer-events-none">
-                  <span
-                    className="text-xl text-gray-900 font-normal absolute pointer-events-auto"
-                    style={{
-                      left: `calc(50% + ${
-                        (targetColorInput.length +
-                          (targetColorInput.match(/\s/g) || []).length * 0.2) *
-                        0.5
-                      }rem + 0.01rem)`,
-                    }}
-                  >
+                <div className="absolute inset-0 flex items-center">
+                  <span className="text-xl text-gray-900 font-normal ml-[calc(50%+0.5rem)]">
                     <button
                       onClick={() => {
-                        animateAutocomplete(suggestedColor);
+                        setTargetColorInput(suggestedColor.toLowerCase());
+                        setFeedbackMessage("");
                       }}
-                      className="text-gray-900/60 hover:text-gray-900/80 cursor-pointer font-normal transition-colors duration-200 pr-8 text-build"
+                      className="text-gray-900/60 hover:text-gray-900/80 cursor-pointer font-normal transition-colors duration-200 bg-gray-100/50 px-2 py-1 rounded hover:bg-gray-200/50"
                     >
-                      {suggestedColor
-                        .slice(targetColorInput.length)
-                        .toLowerCase()}
+                      {suggestedColor.slice(targetColorInput.length).toLowerCase()}
                     </button>
                   </span>
-                  {/* Clickable area for the right side of the search box when suggestion exists */}
-                  {suggestedColor && suggestedColor !== targetColorInput && (
-                    <div
-                      onClick={() => {
-                        animateAutocomplete(suggestedColor);
-                      }}
-                      className="absolute right-0 top-0 bottom-0 w-2/3 pointer-events-auto"
-                      style={{
-                        background: "transparent",
-                        cursor: "text",
-                        zIndex: 0,
-                      }}
-                    />
-                  )}
                 </div>
               )}
             </div>
@@ -327,52 +236,30 @@ export default function ColorMixerPage() {
         )}
 
         {foundMix && (
-          <div className="relative z-10 mt-10">
-            <div className="mb-4 text-sm font-semibold tracking-wide text-blue-700/80">
-              Mix Result
+          <div className="relative z-10 mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div
+              className="p-6 rounded-xl shadow-xl border border-gray-300 text-2xl font-bold flex items-center justify-center h-32 transition-transform duration-200 hover:scale-105 relative overflow-hidden group"
+              style={{
+                backgroundColor: colorToHex[foundMix.color1] || "#D1D5DB",
+                color:
+                  allColorsWithHex.find((c) => c.name === foundMix.color1)
+                    ?.text || "black",
+              }}
+            >
+              {foundMix.color1}
+              <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
             </div>
-            <div className="flex items-center justify-center gap-2 sm:gap-3">
-              <div
-                className="p-4 sm:p-5 rounded-xl shadow-xl border border-white/40 text-lg sm:text-xl font-bold flex items-center justify-center h-20 sm:h-24 min-w-[6rem] transition-transform duration-200 hover:scale-105 relative overflow-hidden group"
-                style={{
-                  backgroundColor: colorToHex[foundMix.color1] || "#D1D5DB",
-                  color:
-                    allColorsWithHex.find((c) => c.name === foundMix.color1)
-                      ?.text || "black",
-                }}
-              >
-                {foundMix.color1}
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
-              </div>
-              <span className="text-xl sm:text-2xl text-gray-800/70">+</span>
-              <div
-                className="p-4 sm:p-5 rounded-xl shadow-xl border border-white/40 text-lg sm:text-xl font-bold flex items-center justify-center h-20 sm:h-24 min-w-[6rem] transition-transform duration-200 hover:scale-105 relative overflow-hidden group"
-                style={{
-                  backgroundColor: colorToHex[foundMix.color2] || "#D1D5DB",
-                  color:
-                    allColorsWithHex.find((c) => c.name === foundMix.color2)
-                      ?.text || "black",
-                }}
-              >
-                {foundMix.color2}
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
-              </div>
-              <span className="text-xl sm:text-2xl text-gray-800/70">=</span>
-              <div
-                className="p-4 sm:p-5 rounded-xl shadow-xl ring-1 ring-white/40 text-lg sm:text-xl font-extrabold flex items-center justify-center h-20 sm:h-24 min-w-[7rem] transition-transform duration-200 hover:scale-105 relative overflow-hidden group bg-white/80"
-                style={{
-                  backgroundColor:
-                    colorToHex[targetColorInput.trim().toUpperCase()] ||
-                    "#FFFFFF",
-                  color:
-                    allColorsWithHex.find(
-                      (c) => c.name === targetColorInput.trim().toUpperCase()
-                    )?.text || "black",
-                }}
-              >
-                {targetColorInput.trim().toUpperCase() || "RESULT"}
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
-              </div>
+            <div
+              className="p-6 rounded-xl shadow-xl border border-gray-300 text-2xl font-bold flex items-center justify-center h-32 transition-transform duration-200 hover:scale-105 relative overflow-hidden group"
+              style={{
+                backgroundColor: colorToHex[foundMix.color2] || "#D1D5DB",
+                color:
+                  allColorsWithHex.find((c) => c.name === foundMix.color2)
+                    ?.text || "black",
+              }}
+            >
+              {foundMix.color2}
+              <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
             </div>
           </div>
         )}

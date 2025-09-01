@@ -206,6 +206,8 @@ export default function CategoryPage({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [suggestedItem, setSuggestedItem] = useState("");
+  const [isAnimating, setIsAnimating] = useState(false);
   const [sortOption, setSortOption] = useState<
     "value-asc" | "value-desc" | "alpha-asc" | "alpha-desc" | null
   >(null);
@@ -340,6 +342,25 @@ export default function CategoryPage({
     }
   }, [items, searchTerm, sortOption]);
 
+  // Autocomplete logic for search suggestions
+  useEffect(() => {
+    if (searchTerm.trim().length < 2) {
+      setSuggestedItem("");
+      return;
+    }
+
+    const input = searchTerm.trim().toLowerCase();
+    const suggestion = items.find((item) =>
+      item.name.toLowerCase().startsWith(input)
+    );
+
+    if (suggestion && suggestion.name.toLowerCase() !== input) {
+      setSuggestedItem(suggestion.name);
+    } else {
+      setSuggestedItem("");
+    }
+  }, [searchTerm, items]);
+
   const clothingHeadingsForDisplay = useMemo(
     () =>
       selectedGender
@@ -417,6 +438,55 @@ export default function CategoryPage({
     fetchGeneralItems,
     fetchLuminousItems, // NEW: Add this dependency
   ]);
+
+  // Autocomplete logic for search suggestions
+  useEffect(() => {
+    if (searchTerm.trim().length < 2) {
+      setSuggestedItem("");
+      return;
+    }
+
+    const input = searchTerm.trim().toLowerCase();
+    const suggestion = items.find(
+      (item) =>
+        item.name.toLowerCase().startsWith(input) ||
+        item.name.toLowerCase().includes(input)
+    );
+
+    if (suggestion && suggestion.name.toLowerCase() !== input) {
+      setSuggestedItem(suggestion.name);
+    } else {
+      setSuggestedItem("");
+    }
+  }, [searchTerm, items]);
+
+  // Animation function for autocomplete
+  const animateAutocomplete = (newValue: string) => {
+    setIsAnimating(true);
+
+    // Animate text building by gradually revealing characters
+    const currentText = searchTerm;
+    const newText = newValue;
+    const charsToAdd = newText.slice(currentText.length);
+
+    if (charsToAdd.length > 0) {
+      let currentIndex = currentText.length;
+      const interval = setInterval(() => {
+        if (currentIndex < newText.length) {
+          setSearchTerm(newText.slice(0, currentIndex + 1));
+          currentIndex++;
+        } else {
+          clearInterval(interval);
+          setSuggestedItem(""); // Clear suggestion after animation
+          setTimeout(() => setIsAnimating(false), 100);
+        }
+      }, 50); // 50ms delay between each character
+    } else {
+      setSearchTerm(newText);
+      setSuggestedItem("");
+      setTimeout(() => setIsAnimating(false), 100);
+    }
+  };
 
   // Now, the conditional returns come after all hooks are declared.
 
@@ -680,13 +750,56 @@ export default function CategoryPage({
           (selectedGender && selectedClothingSubcatSlug)) &&
         (category !== "luminousclothing" || selectedLuminousSubcategory) && ( // NEW: Added condition for luminous clothing
           <div className="flex flex-col items-center w-full max-w-6xl mb-8">
-            <input
-              type="text"
-              placeholder="Search items..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="mb-4 px-5 py-3 rounded-lg w-full max-w-md bg-gray-700 text-gray-100 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="relative w-full max-w-md mb-4">
+              <input
+                type="text"
+                placeholder="Search items..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={`w-full px-5 py-3 rounded-lg bg-gray-700 text-gray-100 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${
+                  isAnimating ? "bg-green-800 border-green-500" : ""
+                }`}
+              />
+
+              {/* Clickable autocomplete helper positioned after user's text */}
+              {suggestedItem && suggestedItem !== searchTerm && (
+                <div className="absolute inset-0 flex items-center pointer-events-none">
+                  <span
+                    className="text-gray-100 font-normal absolute pointer-events-auto"
+                    style={{
+                      left: `calc(1.25rem + ${
+                        (searchTerm.length +
+                          (searchTerm.match(/\s/g) || []).length * 0.2) *
+                        0.5
+                      }rem + 0.01rem)`,
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        animateAutocomplete(suggestedItem);
+                      }}
+                      className="text-gray-400/70 hover:text-gray-300 cursor-pointer font-normal transition-colors duration-200 pr-8 text-build"
+                    >
+                      {suggestedItem.slice(searchTerm.length).toLowerCase()}
+                    </button>
+                  </span>
+                  {/* Clickable area for the right side of the search box when suggestion exists */}
+                  {suggestedItem && suggestedItem !== searchTerm && (
+                    <div
+                      onClick={() => {
+                        animateAutocomplete(suggestedItem);
+                      }}
+                      className="absolute right-0 top-0 bottom-0 w-2/3 pointer-events-auto"
+                      style={{
+                        background: "transparent",
+                        cursor: "text",
+                        zIndex: 0,
+                      }}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
             <div className="flex gap-4 flex-wrap justify-center mb-6">
               <button
                 className={getSortButtonClass("value-asc")}
