@@ -4,7 +4,9 @@ import React, { useState } from "react";
 import { Trophy, Star, Zap, Target, Award, TrendingUp } from "lucide-react";
 
 const BattlepassPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'cars'>('daily');
+  const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "cars">(
+    "daily"
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-6">
@@ -18,7 +20,8 @@ const BattlepassPage: React.FC = () => {
             </h1>
           </div>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Complete challenges, earn XP, and unlock exclusive rewards in the ultimate criminal progression system
+            Complete challenges, earn XP, and unlock exclusive rewards in the
+            ultimate progression system.
           </p>
         </div>
 
@@ -27,31 +30,31 @@ const BattlepassPage: React.FC = () => {
           <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-2 border border-purple-500/30">
             <div className="flex space-x-2">
               <button
-                onClick={() => setActiveTab('daily')}
+                onClick={() => setActiveTab("daily")}
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                  activeTab === 'daily'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
-                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                  activeTab === "daily"
+                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
+                    : "text-gray-300 hover:text-white hover:bg-white/10"
                 }`}
               >
                 Daily Tasks
               </button>
               <button
-                onClick={() => setActiveTab('weekly')}
+                onClick={() => setActiveTab("weekly")}
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                  activeTab === 'weekly'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
-                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                  activeTab === "weekly"
+                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
+                    : "text-gray-300 hover:text-white hover:bg-white/10"
                 }`}
               >
                 Weekly Tasks
               </button>
               <button
-                onClick={() => setActiveTab('cars')}
+                onClick={() => setActiveTab("cars")}
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                  activeTab === 'cars'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
-                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                  activeTab === "cars"
+                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
+                    : "text-gray-300 hover:text-white hover:bg-white/10"
                 }`}
               >
                 Current Battlepass Cars
@@ -62,10 +65,14 @@ const BattlepassPage: React.FC = () => {
 
         {/* Tab Content */}
         <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-8 border border-purple-500/30 min-h-96">
-          {activeTab === 'daily' && (
+          {activeTab === "daily" && (
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-6 text-purple-300">Daily Tasks</h2>
-              <p className="text-gray-400 text-lg mb-8">Complete daily challenges to earn XP and rewards</p>
+              <h2 className="text-3xl font-bold mb-6 text-purple-300">
+                Daily Tasks
+              </h2>
+              <p className="text-gray-400 text-lg mb-8">
+                Complete daily challenges to earn XP and rewards
+              </p>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="bg-white/5 rounded-xl p-6 border border-white/10">
                   <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/50">
@@ -92,10 +99,14 @@ const BattlepassPage: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'weekly' && (
+          {activeTab === "weekly" && (
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-6 text-purple-300">Weekly Tasks</h2>
-              <p className="text-gray-400 text-lg mb-8">Tackle weekly challenges for bigger rewards</p>
+              <h2 className="text-3xl font-bold mb-6 text-purple-300">
+                Weekly Tasks
+              </h2>
+              <p className="text-gray-400 text-lg mb-8">
+                Tackle weekly challenges for bigger rewards
+              </p>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="bg-white/5 rounded-xl p-6 border border-white/10">
                   <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-yellow-500/50">
@@ -122,15 +133,17 @@ const BattlepassPage: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'cars' && (
+          {activeTab === "cars" && (
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-6 text-purple-300">Current Battlepass Cars</h2>
+              <h2 className="text-3xl font-bold mb-6 text-purple-300">
+                Current Battlepass Cars
+              </h2>
               <div className="flex justify-center">
-                <img 
-                  src="/images/battlepass.png" 
-                  alt="Battlepass Cars" 
+                <img
+                  src="/images/battlepass.png"
+                  alt="Battlepass Cars"
                   className="max-w-full h-auto rounded-xl shadow-2xl"
-                  style={{ maxHeight: '800px', minHeight: '600px' }}
+                  style={{ maxHeight: "800px", minHeight: "600px" }}
                 />
               </div>
             </div>
