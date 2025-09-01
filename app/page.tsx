@@ -11,7 +11,7 @@ import {
   Shirt, // Re-added Shirt icon for Luminous Clothing
   HelpCircle, // Add HelpCircle icon for Beginner Help
 } from "lucide-react";
-import React from "react"; // Explicitly import React for JSX usage
+import React, { useState, useEffect } from "react"; // Explicitly import React for JSX usage
 import { useAuth } from "../hooks/useAuth"; // Import useAuth hook - FIXED PATH
 import Link from "next/link"; // Add Next.js Link import
 import { useRouter } from "next/navigation"; // Add router for navigation
@@ -35,6 +35,15 @@ export default function HomePage() {
   
   // Override loading state if access codes are not required
   const shouldShowLoading = isLoading && !codesNotRequired;
+  
+  // Force render when access codes are not required
+  const [forceRender, setForceRender] = useState(false);
+  
+  useEffect(() => {
+    if (codesNotRequired) {
+      setForceRender(true);
+    }
+  }, [codesNotRequired]);
 
   const categories: CategoryCard[] = [
     {
@@ -103,8 +112,8 @@ export default function HomePage() {
       </div>
     );
   }
-  
-  // If access codes are not required, don't show loading state
+
+  // If access codes are not required, render the page immediately
   if (codesNotRequired) {
     console.log("Page: Access codes not required, rendering content without authentication");
   }
