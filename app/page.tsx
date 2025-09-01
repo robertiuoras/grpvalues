@@ -24,12 +24,175 @@ interface CategoryCard {
   icon: React.ReactNode;
 }
 
+// Public component that renders when access codes are disabled
+function PublicHomePage() {
+  const categories: CategoryCard[] = [
+    {
+      name: "Beginner Help",
+      path: "/beginner-help",
+      description: "Get started with Grand RP and learn the basics.",
+      icon: <HelpCircle size={40} className="text-red-400" />,
+    },
+    {
+      name: "Cars",
+      path: "/values/cars",
+      description: "Find market values for all types of cars.",
+      icon: <Car size={40} className="text-blue-400" />,
+    },
+    {
+      name: "Boats",
+      path: "/values/boats",
+      description: "Check values for various boats and yachts.",
+      icon: <Ship size={40} className="text-teal-400" />,
+    },
+    {
+      name: "Planes",
+      path: "/values/planes",
+      description: "Discover the prices of private planes.",
+      icon: <Plane size={40} className="text-emerald-400" />,
+    },
+    {
+      name: "Helicopters",
+      path: "/values/helicopters",
+      description: "Browse values for different helicopter models.",
+      icon: <Plane size={40} className="text-purple-400 rotate-90" />,
+    },
+    {
+      name: "Clothing List",
+      path: "/values/clothinglist",
+      description: "Explore the market values for various clothing items.",
+      icon: <Package size={40} className="text-pink-400" />,
+    },
+    {
+      name: "Masks",
+      path: "/values/masks",
+      description: "Browse different types of masks.",
+      icon: <Glasses size={40} className="text-orange-400" />,
+    },
+    {
+      name: "Luminous Clothing",
+      path: "/values/luminousclothing",
+      description: "Check values for luminous shirts and pants.",
+      icon: <Shirt size={40} className="text-yellow-400" />,
+    },
+  ];
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4">
+      {/* Main content goes here */}
+      <div className="text-center mb-12">
+        <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+          Welcome to Grand RP Values
+        </h1>
+        <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto">
+          Your ultimate resource for accurate market values of vehicles, clothing, and items in Grand RP. 
+          Get real-time pricing data to make informed trading decisions.
+        </p>
+      </div>
+
+      {/* Community-Driven Platform Section */}
+      <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm rounded-2xl p-8 mb-12 border border-white/10 max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-6 text-white">
+          Community-Driven Platform
+        </h2>
+        <p className="text-lg text-gray-300 text-center mb-6">
+          Our platform is built by the community, for the community. Every value, every update, 
+          and every improvement comes from players like you who want to make trading fair and transparent.
+        </p>
+        <div className="grid md:grid-cols-3 gap-6 text-center">
+          <div className="bg-white/5 rounded-lg p-4">
+            <h3 className="text-xl font-semibold text-blue-400 mb-2">Real-Time Data</h3>
+            <p className="text-gray-300">Values updated continuously based on actual market activity</p>
+          </div>
+          <div className="bg-white/5 rounded-lg p-4">
+            <h3 className="text-xl font-semibold text-purple-400 mb-2">Community Verified</h3>
+            <p className="text-gray-300">All values are verified by experienced traders and community members</p>
+          </div>
+          <div className="bg-white/5 rounded-lg p-4">
+            <h3 className="text-xl font-semibold text-pink-400 mb-2">Always Free</h3>
+            <p className="text-gray-300">No paywalls, no premium features - everything is free for everyone</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Categories Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12 w-full max-w-6xl">
+        {categories.map((category, index) => (
+          <Link
+            key={category.name}
+            href={category.path}
+            className="group relative bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20"
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="p-3 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-all duration-300">
+                {category.icon}
+              </div>
+              <h3 className="text-xl font-semibold text-white group-hover:text-blue-400 transition-colors duration-300">
+                {category.name}
+              </h3>
+              <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                {category.description}
+              </p>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* How to Join Button */}
+      <div className="relative group">
+        <a
+          href="https://gta5grand.com/?ref=160825"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 font-bold text-sm md:text-base block w-full h-full"
+        >
+          <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-white opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+          How to Join?
+          <svg
+            className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+            />
+          </svg>
+        </a>
+      </div>
+
+      {/* Tip Section */}
+      <div className="mt-12 p-6 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 backdrop-blur-sm rounded-xl border border-yellow-500/20 max-w-4xl mx-auto">
+        <div className="flex items-start gap-4">
+          <div className="text-2xl">💡</div>
+          <div>
+            <h3 className="text-lg font-semibold text-yellow-400 mb-2">Tip</h3>
+            <p className="text-gray-300">
+              Found an outdated value or have a suggestion? Contact robthemaster on discord to help improve the platform for everyone!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const router = useRouter(); // Add router instance
   
   // Check if access codes are required immediately (client-side only)
   const accessCodeRequired = typeof window !== 'undefined' ? Cookies.get("accessCodeRequired") : null;
   const codesNotRequired = accessCodeRequired === "false";
+  
+  // If access codes are not required, render the public page immediately
+  if (codesNotRequired) {
+    console.log("Page: Access codes not required, rendering public content without authentication");
+    return <PublicHomePage />;
+  }
   
   // Only use useAuth hook if access codes are required
   const { isAuthenticated, isLoading } = useAuth();
@@ -84,114 +247,6 @@ export default function HomePage() {
       icon: <Shirt size={40} className="text-yellow-400" />,
     },
   ];
-  
-  // If access codes are not required, render the page immediately
-  if (codesNotRequired) {
-    console.log("Page: Access codes not required, rendering content without authentication");
-    // Render the page content directly
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4">
-        {/* Main content goes here */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-            Welcome to Grand RP Values
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto">
-            Your ultimate resource for accurate market values of vehicles, clothing, and items in Grand RP. 
-            Get real-time pricing data to make informed trading decisions.
-          </p>
-        </div>
-
-        {/* Community-Driven Platform Section */}
-        <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm rounded-2xl p-8 mb-12 border border-white/10 max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-6 text-white">
-            Community-Driven Platform
-          </h2>
-          <p className="text-lg text-gray-300 text-center mb-6">
-            Our platform is built by the community, for the community. Every value, every update, 
-            and every improvement comes from players like you who want to make trading fair and transparent.
-          </p>
-          <div className="grid md:grid-cols-3 gap-6 text-center">
-            <div className="bg-white/5 rounded-lg p-4">
-              <h3 className="text-xl font-semibold text-blue-400 mb-2">Real-Time Data</h3>
-              <p className="text-gray-300">Values updated continuously based on actual market activity</p>
-            </div>
-            <div className="bg-white/5 rounded-lg p-4">
-              <h3 className="text-xl font-semibold text-purple-400 mb-2">Community Verified</h3>
-              <p className="text-gray-300">All values are verified by experienced traders and community members</p>
-            </div>
-            <div className="bg-white/5 rounded-lg p-4">
-              <h3 className="text-xl font-semibold text-pink-400 mb-2">Always Free</h3>
-              <p className="text-gray-300">No paywalls, no premium features - everything is free for everyone</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Categories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12 w-full max-w-6xl">
-          {categories.map((category, index) => (
-            <Link
-              key={category.name}
-              href={category.path}
-              className="group relative bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20"
-            >
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="p-3 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-all duration-300">
-                  {category.icon}
-                </div>
-                <h3 className="text-xl font-semibold text-white group-hover:text-blue-400 transition-colors duration-300">
-                  {category.name}
-                </h3>
-                <p className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
-                  {category.description}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* How to Join Button */}
-        <div className="relative group">
-          <a
-            href="https://gta5grand.com/?ref=160825"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 font-bold text-sm md:text-base block w-full h-full"
-          >
-            <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-white opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-            How to Join?
-            <svg
-              className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
-          </a>
-        </div>
-
-        {/* Tip Section */}
-        <div className="mt-12 p-6 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 backdrop-blur-sm rounded-xl border border-yellow-500/20 max-w-4xl mx-auto">
-          <div className="flex items-start gap-4">
-            <div className="text-2xl">💡</div>
-            <div>
-              <h3 className="text-lg font-semibold text-yellow-400 mb-2">Tip</h3>
-              <p className="text-gray-300">
-                Found an outdated value or have a suggestion? Contact robthemaster on discord to help improve the platform for everyone!
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
   
   // Override loading state if access codes are not required
   const shouldShowLoading = codesNotRequired ? false : isLoading;
