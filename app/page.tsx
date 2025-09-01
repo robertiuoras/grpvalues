@@ -86,8 +86,13 @@ export default function HomePage() {
     },
   ];
 
+  // Check if access codes are required
+  const accessCodeRequired = Cookies.get("accessCodeRequired");
+  const codesNotRequired = accessCodeRequired === "false";
+  
   // Show a loading state while authentication is being checked by useAuth
-  if (isLoading) {
+  // But only if access codes are required
+  if (isLoading && !codesNotRequired) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mb-4"></div>
@@ -95,10 +100,6 @@ export default function HomePage() {
       </div>
     );
   }
-
-  // Check if access codes are required
-  const accessCodeRequired = Cookies.get("accessCodeRequired");
-  const codesNotRequired = accessCodeRequired === "false";
   
   // If access codes are required and user is not authenticated, show loading
   if (!codesNotRequired && !isAuthenticated) {
