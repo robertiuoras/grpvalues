@@ -83,8 +83,8 @@ export default function ActiveUsersPage() {
 
   useEffect(() => {
     // Check if access codes are required
-    const accessCodeRequired = getCookie("accessCodeRequired");
-    const codesNotRequired = accessCodeRequired === "false";
+    const accessCodeRequiredCookie = getCookie("accessCodeRequired");
+    const codesNotRequired = accessCodeRequiredCookie === "false";
     
     // Allow access if: (authenticated AND admin) OR (access codes not required)
     if ((isAuthenticated && userRole === "admin" && !isLoading) || (codesNotRequired && !isLoading)) {
@@ -295,8 +295,8 @@ export default function ActiveUsersPage() {
   }
 
   // Check if access codes are required
-  const accessCodeRequired = getCookie("accessCodeRequired");
-  const codesNotRequired = accessCodeRequired === "false";
+  const accessCodeRequiredCookie = getCookie("accessCodeRequired");
+  const codesNotRequired = accessCodeRequiredCookie === "false";
   
   // Frontend RBAC: Check if authenticated AND if user has 'admin' role
   // If access codes are not required, allow access to admin panel
