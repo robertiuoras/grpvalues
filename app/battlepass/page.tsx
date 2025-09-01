@@ -3,90 +3,8 @@
 import React, { useState } from "react";
 import { Trophy, Star, Zap, Target, Award, TrendingUp } from "lucide-react";
 
-interface BattlepassTier {
-  id: number;
-  name: string;
-  description: string;
-  rewards: string[];
-  requiredXP: number;
-  isUnlocked: boolean;
-  rarity: "common" | "rare" | "epic" | "legendary";
-}
-
 const BattlepassPage: React.FC = () => {
-  const [currentXP, setCurrentXP] = useState(1250);
-  const [selectedTier, setSelectedTier] = useState<number | null>(null);
-
-  const battlepassTiers: BattlepassTier[] = [
-    {
-      id: 1,
-      name: "Rookie Grinder",
-      description: "Start your journey with basic rewards",
-      rewards: ["$5,000", "Basic Mask", "Starter Vehicle"],
-      requiredXP: 0,
-      isUnlocked: true,
-      rarity: "common"
-    },
-    {
-      id: 2,
-      name: "Street Hustler",
-      description: "Prove your worth in the streets",
-      rewards: ["$10,000", "Premium Clothing", "Weapon License"],
-      requiredXP: 500,
-      isUnlocked: currentXP >= 500,
-      rarity: "common"
-    },
-    {
-      id: 3,
-      name: "Gang Leader",
-      description: "Establish your dominance",
-      rewards: ["$25,000", "Gang Hideout", "Advanced Weapons"],
-      requiredXP: 1000,
-      isUnlocked: currentXP >= 1000,
-      rarity: "rare"
-    },
-    {
-      id: 4,
-      name: "Crime Boss",
-      description: "Rule the underground",
-      rewards: ["$50,000", "Luxury Vehicle", "Bodyguard Service"],
-      requiredXP: 2000,
-      isUnlocked: currentXP >= 2000,
-      rarity: "epic"
-    },
-    {
-      id: 5,
-      name: "Kingpin",
-      description: "The ultimate criminal mastermind",
-      rewards: ["$100,000", "Private Island", "Helicopter", "Unlimited Power"],
-      requiredXP: 5000,
-      isUnlocked: currentXP >= 5000,
-      rarity: "legendary"
-    }
-  ];
-
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case "common": return "border-gray-400 text-gray-400";
-      case "rare": return "border-blue-400 text-blue-400";
-      case "epic": return "border-purple-400 text-purple-400";
-      case "legendary": return "border-yellow-400 text-yellow-400";
-      default: return "border-gray-400 text-gray-400";
-    }
-  };
-
-  const getRarityIcon = (rarity: string) => {
-    switch (rarity) {
-      case "common": return <Star className="w-4 h-4" />;
-      case "rare": return <Zap className="w-4 h-4" />;
-      case "epic": return <Target className="w-4 h-4" />;
-      case "legendary": return <Trophy className="w-4 h-4" />;
-      default: return <Star className="w-4 h-4" />;
-    }
-  };
-
-  const nextTier = battlepassTiers.find(tier => !tier.isUnlocked);
-  const progressToNext = nextTier ? ((currentXP - (nextTier.requiredXP - 500)) / 500) * 100 : 100;
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'cars'>('daily');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-6">
@@ -104,118 +22,135 @@ const BattlepassPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Progress Overview */}
-        <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-purple-500/30">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <TrendingUp className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">Current Level</h2>
-                <p className="text-gray-400">XP: {currentXP.toLocaleString()}</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-400">Next Tier</p>
-              <p className="text-xl font-bold text-purple-400">
-                {nextTier ? nextTier.name : "MAXED OUT!"}
-              </p>
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-2 border border-purple-500/30">
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setActiveTab('daily')}
+                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                  activeTab === 'daily'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                Daily Tasks
+              </button>
+              <button
+                onClick={() => setActiveTab('weekly')}
+                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                  activeTab === 'weekly'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                Weekly Tasks
+              </button>
+              <button
+                onClick={() => setActiveTab('cars')}
+                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                  activeTab === 'cars'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                Current Battlepass Cars
+              </button>
             </div>
           </div>
-          
-          {nextTier && (
-            <div className="mb-4">
-              <div className="flex justify-between text-sm mb-2">
-                <span>Progress to {nextTier.name}</span>
-                <span>{Math.round(progressToNext)}%</span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-3">
-                <div 
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(progressToNext, 100)}%` }}
-                ></div>
+        </div>
+
+        {/* Tab Content */}
+        <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-8 border border-purple-500/30 min-h-96">
+          {activeTab === 'daily' && (
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-6 text-purple-300">Daily Tasks</h2>
+              <p className="text-gray-400 text-lg mb-8">Complete daily challenges to earn XP and rewards</p>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/50">
+                    <Target className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Complete 5 Missions</h3>
+                  <p className="text-gray-400 text-sm">Reward: 100 XP</p>
+                </div>
+                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                  <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/50">
+                    <Zap className="w-8 h-8 text-green-400" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Win 3 Battles</h3>
+                  <p className="text-gray-400 text-sm">Reward: 150 XP</p>
+                </div>
+                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                  <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-500/50">
+                    <Star className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Earn $10,000</h3>
+                  <p className="text-gray-400 text-sm">Reward: 200 XP</p>
+                </div>
               </div>
             </div>
           )}
-        </div>
 
-        {/* Battlepass Tiers */}
-        <div className="grid gap-6">
-          {battlepassTiers.map((tier) => (
-            <div
-              key={tier.id}
-              className={`bg-black/30 backdrop-blur-sm rounded-2xl p-6 border-2 transition-all duration-300 hover:scale-105 cursor-pointer ${
-                tier.isUnlocked 
-                  ? "border-green-500/50 bg-green-500/10" 
-                  : "border-gray-600/50 hover:border-purple-500/50"
-              } ${selectedTier === tier.id ? "ring-4 ring-purple-500/50" : ""}`}
-              onClick={() => setSelectedTier(selectedTier === tier.id ? null : tier.id)}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${getRarityColor(tier.rarity)}`}>
-                    {getRarityIcon(tier.rarity)}
+          {activeTab === 'weekly' && (
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-6 text-purple-300">Weekly Tasks</h2>
+              <p className="text-gray-400 text-lg mb-8">Tackle weekly challenges for bigger rewards</p>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                  <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-yellow-500/50">
+                    <Trophy className="w-8 h-8 text-yellow-400" />
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold">{tier.name}</h3>
-                    <p className="text-gray-400">{tier.description}</p>
-                  </div>
+                  <h3 className="font-semibold mb-2">Complete 20 Missions</h3>
+                  <p className="text-gray-400 text-sm">Reward: 500 XP</p>
                 </div>
-                <div className="text-right">
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    tier.isUnlocked 
-                      ? "bg-green-500/20 text-green-400 border border-green-500/50" 
-                      : "bg-gray-500/20 text-gray-400 border border-gray-500/50"
-                  }`}>
-                    {tier.isUnlocked ? "UNLOCKED" : `${tier.requiredXP} XP`}
+                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                  <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/50">
+                    <TrendingUp className="w-8 h-8 text-red-400" />
                   </div>
+                  <h3 className="font-semibold mb-2">Reach Level 10</h3>
+                  <p className="text-gray-400 text-sm">Reward: 1000 XP</p>
+                </div>
+                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                  <div className="w-16 h-16 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-500/50">
+                    <Award className="w-8 h-8 text-indigo-400" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Unlock 5 Items</h3>
+                  <p className="text-gray-400 text-sm">Reward: 750 XP</p>
                 </div>
               </div>
+            </div>
+          )}
 
-              {selectedTier === tier.id && (
-                <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10">
-                  <h4 className="font-semibold mb-3 text-purple-300">Rewards:</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {tier.rewards.map((reward, index) => (
-                      <div key={index} className="flex items-center space-x-2 bg-white/5 rounded-lg px-3 py-2">
-                        <Award className="w-4 h-4 text-yellow-400" />
-                        <span className="text-sm">{reward}</span>
-                      </div>
-                    ))}
+          {activeTab === 'cars' && (
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-6 text-purple-300">Current Battlepass Cars</h2>
+              <p className="text-gray-400 text-lg mb-8">Exclusive vehicles available in this season's battlepass</p>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                  <div className="w-16 h-16 bg-gray-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-500/50">
+                    <Star className="w-8 h-8 text-gray-400" />
                   </div>
+                  <h3 className="font-semibold mb-2">Street Racer</h3>
+                  <p className="text-gray-400 text-sm">Common Tier - 100 XP</p>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* How to Earn XP */}
-        <div className="mt-12 bg-black/30 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/30">
-          <h2 className="text-2xl font-bold mb-6 text-center text-purple-300">How to Earn XP</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/50">
-                <Target className="w-8 h-8 text-blue-400" />
+                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/50">
+                    <Zap className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Gang Cruiser</h3>
+                  <p className="text-gray-400 text-sm">Rare Tier - 500 XP</p>
+                </div>
+                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+                  <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-500/50">
+                    <Target className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Boss Limo</h3>
+                  <p className="text-gray-400 text-sm">Epic Tier - 1000 XP</p>
+                </div>
               </div>
-              <h3 className="font-semibold mb-2">Complete Missions</h3>
-              <p className="text-gray-400 text-sm">Finish daily and weekly challenges</p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/50">
-                <Zap className="w-8 h-8 text-green-400" />
-              </div>
-              <h3 className="font-semibold mb-2">Win Battles</h3>
-              <p className="text-gray-400 text-sm">Defeat other players in combat</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-500/50">
-                <Star className="w-8 h-8 text-purple-400" />
-              </div>
-              <h3 className="font-semibold mb-2">Achieve Goals</h3>
-              <p className="text-gray-400 text-sm">Reach milestones and objectives</p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
