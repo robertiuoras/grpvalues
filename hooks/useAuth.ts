@@ -10,7 +10,16 @@ export function useAuth() {
     // On client-side, check if access codes are required
     if (typeof window !== 'undefined') {
       const accessCodeRequired = Cookies.get("accessCodeRequired");
-      return accessCodeRequired !== "false"; // Only loading if access codes are required
+      const codesNotRequired = accessCodeRequired === "false";
+      
+      // If access codes are not required, check for existing admin cookies
+      if (codesNotRequired) {
+        const authStatus = Cookies.get("isAuthenticated");
+        const roleCookie = Cookies.get("userRole");
+        return !(authStatus === "true" && roleCookie === "admin");
+      }
+      
+      return true; // Loading if access codes are required
     }
     return true; // Default to loading on server-side
   });
