@@ -6,11 +6,22 @@ import Cookies from "js-cookie";
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Start with loading true, will be set correctly in useEffect
+  const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null); // New state for userId
   const router = useRouter();
   const pathname = usePathname();
+
+  // Check initial loading state based on access code requirement
+  useEffect(() => {
+    const accessCodeRequired = Cookies.get("accessCodeRequired");
+    const codesNotRequired = accessCodeRequired === "false";
+    
+    if (codesNotRequired) {
+      console.log("useAuth: Access codes not required, setting loading to false immediately");
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     console.log("useAuth: useEffect triggered.");
