@@ -190,9 +190,9 @@ export default function ColorMixerPage() {
                 autoComplete="off" // Disable autofill/autocomplete
               />
               
-              {/* Clickable autocomplete helper right next to user's text */}
+              {/* Clickable autocomplete helper at cursor position */}
               {suggestedColor && suggestedColor !== targetColorInput && (
-                <div className="absolute inset-0 flex items-center">
+                <div className="absolute inset-0 flex items-center justify-end">
                   <span className="text-xl text-gray-900 font-normal">
                     {targetColorInput}
                     <button
