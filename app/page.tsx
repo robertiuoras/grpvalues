@@ -80,43 +80,58 @@ function PublicHomePage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4">
       {/* Main content goes here */}
-      <div className="text-center mb-12">
-        <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+      <div className="text-center mb-8 mt-8">
+        <h1 className="text-3xl md:text-4xl font-extrabold mb-4 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
           Welcome to Grand RP Values
         </h1>
-        <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto">
-          Your ultimate resource for accurate market values of vehicles, clothing, and items in Grand RP. 
-          Get real-time pricing data to make informed trading decisions.
+        <p className="text-lg md:text-xl text-gray-300 mb-6 max-w-4xl mx-auto">
+          Your ultimate resource for accurate market values of vehicles,
+          clothing, and items in Grand RP. Get real-time pricing data to make
+          informed trading decisions.
         </p>
       </div>
 
       {/* Community-Driven Platform Section */}
-      <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm rounded-2xl p-8 mb-12 border border-white/10 max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-6 text-white">
+      <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-white/10 max-w-4xl mx-auto">
+        <h2 className="text-2xl font-bold text-center mb-4 text-white">
           Community-Driven Platform
         </h2>
-        <p className="text-lg text-gray-300 text-center mb-6">
-          Our platform is built by the community, for the community. Every value, every update, 
-          and every improvement comes from players like you who want to make trading fair and transparent.
+        <p className="text-base text-gray-300 text-center mb-4">
+          Our platform is built by the community, for the community. Every
+          value, every update, and every improvement comes from players like you
+          who want to make trading fair and transparent.
         </p>
-        <div className="grid md:grid-cols-3 gap-6 text-center">
-          <div className="bg-white/5 rounded-lg p-4">
-            <h3 className="text-xl font-semibold text-blue-400 mb-2">Real-Time Data</h3>
-            <p className="text-gray-300">Values updated continuously based on actual market activity</p>
+        <div className="grid md:grid-cols-3 gap-4 text-center">
+          <div className="bg-white/5 rounded-lg p-3">
+            <h3 className="text-lg font-semibold text-blue-400 mb-2">
+              Real-Time Data
+            </h3>
+            <p className="text-sm text-gray-300">
+              Values updated continuously based on actual market activity
+            </p>
           </div>
-          <div className="bg-white/5 rounded-lg p-4">
-            <h3 className="text-xl font-semibold text-purple-400 mb-2">Community Verified</h3>
-            <p className="text-gray-300">All values are verified by experienced traders and community members</p>
+          <div className="bg-white/5 rounded-lg p-3">
+            <h3 className="text-lg font-semibold text-purple-400 mb-2">
+              Community Verified
+            </h3>
+            <p className="text-sm text-gray-300">
+              All values are verified by experienced traders and community
+              members
+            </p>
           </div>
-          <div className="bg-white/5 rounded-lg p-4">
-            <h3 className="text-xl font-semibold text-pink-400 mb-2">Always Free</h3>
-            <p className="text-gray-300">No paywalls, no premium features - everything is free for everyone</p>
+          <div className="bg-white/5 rounded-lg p-3">
+            <h3 className="text-lg font-semibold text-pink-400 mb-2">
+              Always Free
+            </h3>
+            <p className="text-sm text-gray-300">
+              No paywalls, no premium features - everything is free for everyone
+            </p>
           </div>
         </div>
       </div>
 
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12 w-full max-w-6xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8 w-full max-w-6xl">
         {categories.map((category, index) => (
           <Link
             key={category.name}
@@ -144,10 +159,10 @@ function PublicHomePage() {
           href="https://gta5grand.com/?ref=160825"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 font-bold text-sm md:text-base block w-full h-full"
+          className="flex items-center gap-2 font-bold text-sm md:text-base block w-full h-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
         >
-          <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-white opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+          <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-400"></span>
           How to Join?
           <svg
             className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200"
@@ -166,13 +181,14 @@ function PublicHomePage() {
       </div>
 
       {/* Tip Section */}
-      <div className="mt-12 p-6 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 backdrop-blur-sm rounded-xl border border-yellow-500/20 max-w-4xl mx-auto">
+      <div className="mt-8 p-4 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 backdrop-blur-sm rounded-xl border border-yellow-500/20 max-w-4xl mx-auto">
         <div className="flex items-start gap-4">
           <div className="text-2xl">💡</div>
           <div>
             <h3 className="text-lg font-semibold text-yellow-400 mb-2">Tip</h3>
             <p className="text-gray-300">
-              Found an outdated value or have a suggestion? Contact robthemaster on discord to help improve the platform for everyone!
+              Found an outdated value or have a suggestion? Contact robthemaster
+              on discord to help improve the platform for everyone!
             </p>
           </div>
         </div>
@@ -183,20 +199,23 @@ function PublicHomePage() {
 
 export default function HomePage() {
   const router = useRouter(); // Add router instance
-  
+
   // Check if access codes are required immediately (client-side only)
-  const accessCodeRequired = typeof window !== 'undefined' ? Cookies.get("accessCodeRequired") : null;
+  const accessCodeRequired =
+    typeof window !== "undefined" ? Cookies.get("accessCodeRequired") : null;
   const codesNotRequired = accessCodeRequired === "false";
-  
+
   // If access codes are not required, render the public page immediately
   if (codesNotRequired) {
-    console.log("Page: Access codes not required, rendering public content without authentication");
+    console.log(
+      "Page: Access codes not required, rendering public content without authentication"
+    );
     return <PublicHomePage />;
   }
-  
+
   // Only use useAuth hook if access codes are required
   const { isAuthenticated, isLoading } = useAuth();
-  
+
   const categories: CategoryCard[] = [
     {
       name: "Beginner Help",
@@ -247,11 +266,9 @@ export default function HomePage() {
       icon: <Shirt size={40} className="text-yellow-400" />,
     },
   ];
-  
+
   // Override loading state if access codes are not required
   const shouldShowLoading = codesNotRequired ? false : isLoading;
-
-
 
   // Show a loading state while authentication is being checked by useAuth
   // But only if access codes are required
@@ -264,8 +281,6 @@ export default function HomePage() {
     );
   }
 
-
-  
   // If access codes are required and user is not authenticated, show loading
   if (!codesNotRequired && !isAuthenticated) {
     // If useAuth determines the user is NOT authenticated, it will handle the redirect to /login.
@@ -273,10 +288,12 @@ export default function HomePage() {
     // in progress or has just completed, so we render nothing to avoid flickering.
     return null;
   }
-  
+
   // If access codes are not required, render the page regardless of authentication status
   if (codesNotRequired) {
-    console.log("Page: Access codes not required, rendering content without authentication");
+    console.log(
+      "Page: Access codes not required, rendering content without authentication"
+    );
   }
 
   // If authenticated, render the actual home page content

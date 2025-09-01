@@ -49,6 +49,19 @@ export default function ActiveUsersPage() {
     return null;
   };
 
+  // Check if access codes are required (client-side only) - moved outside useEffect for render scope
+  const accessCodeRequiredCookie = typeof window !== 'undefined' ? getCookie("accessCodeRequired") : null;
+  const codesNotRequired = accessCodeRequiredCookie === "false";
+  
+  // Check for admin authentication even when access codes are disabled
+  const hasAdminAuth = isAuthenticated && userRole === "admin";
+  const hasAdminCookies = typeof window !== 'undefined' ? 
+    (getCookie("userRole") === "admin" && getCookie("isAuthenticated") === "true") : false;
+  
+  // When access codes are disabled, check for admin cookies directly
+  // When access codes are enabled, check for authenticated admin
+  const isAdminUser = codesNotRequired ? hasAdminCookies : hasAdminAuth;
+
   // Helper function to format time properly
   const formatTime = (timeString: string | null) => {
     if (!timeString || timeString === "Never") return "Never";
@@ -82,18 +95,6 @@ export default function ActiveUsersPage() {
   };
 
   useEffect(() => {
-    // Check if access codes are required (client-side only)
-    const accessCodeRequiredCookie = typeof window !== 'undefined' ? getCookie("accessCodeRequired") : null;
-    const codesNotRequired = accessCodeRequiredCookie === "false";
-    
-    // Check for admin authentication even when access codes are disabled
-    const hasAdminAuth = isAuthenticated && userRole === "admin";
-    const hasAdminCookies = typeof window !== 'undefined' ? 
-      (getCookie("userRole") === "admin" && getCookie("isAuthenticated") === "true") : false;
-    
-    // When access codes are disabled, check for admin cookies even if isAuthenticated is false
-    const isAdminUser = hasAdminAuth || (codesNotRequired && hasAdminCookies);
-    
     // Allow access if user is admin (either authenticated admin or has admin cookies when access codes disabled)
     if (isAdminUser && !isLoading) {
       const fetchUsersData = async () => {
@@ -292,19 +293,6 @@ export default function ActiveUsersPage() {
     }
   };
 
-  // Check if access codes are required (client-side only)
-  const accessCodeRequiredCookie = typeof window !== 'undefined' ? getCookie("accessCodeRequired") : null;
-  const codesNotRequired = accessCodeRequiredCookie === "false";
-  
-  // Check for admin authentication even when access codes are disabled
-  const hasAdminAuth = isAuthenticated && userRole === "admin";
-  const hasAdminCookies = typeof window !== 'undefined' ? 
-    (getCookie("userRole") === "admin" && getCookie("isAuthenticated") === "true") : false;
-  
-  // When access codes are disabled, check for admin cookies directly
-  // When access codes are enabled, check for authenticated admin
-  const isAdminUser = codesNotRequired ? hasAdminCookies : hasAdminAuth;
-  
   // Only show loading if we don't have admin access and are still loading
   if (isLoading && !isAdminUser) {
     return (
