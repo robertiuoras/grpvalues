@@ -6,7 +6,14 @@ import Cookies from "js-cookie";
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => {
+    // On client-side, check if access codes are required
+    if (typeof window !== 'undefined') {
+      const accessCodeRequired = Cookies.get("accessCodeRequired");
+      return accessCodeRequired !== "false"; // Only loading if access codes are required
+    }
+    return true; // Default to loading on server-side
+  });
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null); // New state for userId
   const router = useRouter();
