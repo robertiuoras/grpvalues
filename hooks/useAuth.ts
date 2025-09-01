@@ -79,6 +79,20 @@ export function useAuth() {
         );
       }
 
+      // Check if access codes are required FIRST
+      const accessCodeRequired = Cookies.get("accessCodeRequired");
+      const codesNotRequired = accessCodeRequired === "false";
+      
+      // If access codes are not required, set loading to false and skip authentication checks
+      if (codesNotRequired) {
+        console.log(
+          "useAuth: Access codes not required, setting loading to false and skipping authentication checks."
+        );
+        setIsLoading(false);
+        return;
+      }
+      
+      // Only update state if access codes are required
       setIsAuthenticated(userIsAuthenticated);
       setUserRole(role);
       setUserId(currentUserId); // Update userId state
@@ -93,18 +107,6 @@ export function useAuth() {
         "isLoading:",
         false
       );
-
-      // Check if access codes are required
-      const accessCodeRequired = Cookies.get("accessCodeRequired");
-      const codesNotRequired = accessCodeRequired === "false";
-      
-      // If access codes are not required, skip authentication checks
-      if (codesNotRequired) {
-        console.log(
-          "useAuth: Access codes not required, skipping authentication checks."
-        );
-        return;
-      }
       
       // Redirect if not authenticated AND not already on the login page
       // Added a small setTimeout to mitigate race conditions on Vercel deployment

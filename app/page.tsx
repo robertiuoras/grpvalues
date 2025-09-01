@@ -107,6 +107,11 @@ export default function HomePage() {
     // in progress or has just completed, so we render nothing to avoid flickering.
     return null;
   }
+  
+  // If access codes are not required, render the page regardless of authentication status
+  if (codesNotRequired) {
+    console.log("Page: Access codes not required, rendering content without authentication");
+  }
 
   // If authenticated, render the actual home page content
   return (
