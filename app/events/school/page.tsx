@@ -9,8 +9,7 @@ export default function ColorMixerPage() {
     color2: string;
   } | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
-  const [showAutocomplete, setShowAutocomplete] = useState(false);
-  const [filteredColors, setFilteredColors] = useState<string[]>([]);
+  const [suggestedColor, setSuggestedColor] = useState("");
 
   // Define all colors (primary and mixable results) and their display properties
   const allColorsWithHex = [
@@ -114,33 +113,18 @@ export default function ColorMixerPage() {
     setTargetColorInput("");
   }, []);
 
-  // Filter colors for autocomplete
+  // Find suggested color for autocomplete
   useEffect(() => {
     if (targetColorInput.trim()) {
       const availableColors = Object.keys(reverseMixingRules);
-      const filtered = availableColors.filter(color =>
-        color.toLowerCase().includes(targetColorInput.toLowerCase())
+      const suggested = availableColors.find(color =>
+        color.toLowerCase().startsWith(targetColorInput.toLowerCase())
       );
-      setFilteredColors(filtered);
-      setShowAutocomplete(filtered.length > 0);
+      setSuggestedColor(suggested || "");
     } else {
-      setShowAutocomplete(false);
-      setFilteredColors([]);
+      setSuggestedColor("");
     }
   }, [targetColorInput, reverseMixingRules]);
-
-  // Close autocomplete when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.autocomplete-container')) {
-        setShowAutocomplete(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleFindMix = () => {
     const cleanedTargetColor = targetColorInput.trim().toUpperCase();
@@ -166,11 +150,7 @@ export default function ColorMixerPage() {
     }
   };
 
-  const handleAutocompleteSelect = (color: string) => {
-    setTargetColorInput(color);
-    setShowAutocomplete(false);
-    setFeedbackMessage("");
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 flex items-center justify-center p-4 sm:p-6 lg:p-8 font-inter">
@@ -192,42 +172,36 @@ export default function ColorMixerPage() {
           >
             WHAT COLOR DO YOU WANT TO CREATE?
           </label>
-          <div className="relative autocomplete-container">
-            <input
-              id="targetColor"
-              type="text"
-              value={targetColorInput}
-              onChange={(e) => {
-                setTargetColorInput(e.target.value);
-                setFeedbackMessage("");
-              }}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") handleFindMix();
-              }}
-              onFocus={() => {
-                if (targetColorInput.trim() && filteredColors.length > 0) {
-                  setShowAutocomplete(true);
-                }
-              }}
-              placeholder="e.g., Coral, Raspberry, or Lavender"
-              className="w-full p-4 border border-blue-300 rounded-xl text-xl text-center focus:outline-none focus:ring-4 focus:ring-blue-500 shadow-md transition-all duration-200 text-black placeholder-gray-500 bg-white/70"
-              autoComplete="off" // Disable autofill/autocomplete
-            />
-            
-            {/* Autocomplete Dropdown */}
-            {showAutocomplete && filteredColors.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-blue-300 rounded-xl shadow-lg max-h-48 overflow-y-auto z-20">
-                {filteredColors.map((color, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleAutocompleteSelect(color)}
-                    className="w-full px-4 py-3 text-left text-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-150 border-b border-gray-100 last:border-b-0 first:rounded-t-xl last:rounded-b-xl"
-                  >
-                    {color}
-                  </button>
-                ))}
-              </div>
-            )}
+          <div className="relative">
+            <div className="relative">
+              <input
+                id="targetColor"
+                type="text"
+                value={targetColorInput}
+                onChange={(e) => {
+                  setTargetColorInput(e.target.value);
+                  setFeedbackMessage("");
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") handleFindMix();
+                }}
+                placeholder="e.g., Coral, Raspberry, or Lavender"
+                className="w-full p-4 border border-blue-300 rounded-xl text-xl text-center focus:outline-none focus:ring-4 focus:ring-blue-500 shadow-md transition-all duration-200 text-black placeholder-gray-500 bg-white/70"
+                autoComplete="off" // Disable autofill/autocomplete
+              />
+              
+              {/* Transparent autocomplete text overlay */}
+              {suggestedColor && suggestedColor !== targetColorInput && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="text-xl text-gray-400/60 font-normal">
+                    {targetColorInput}
+                    <span className="text-gray-300/40">
+                      {suggestedColor.slice(targetColorInput.length)}
+                    </span>
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
