@@ -28,6 +28,13 @@ export default function HomePage() {
   // Use the authentication hook to get global auth state
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter(); // Add router instance
+  
+  // Check if access codes are required immediately
+  const accessCodeRequired = Cookies.get("accessCodeRequired");
+  const codesNotRequired = accessCodeRequired === "false";
+  
+  // Override loading state if access codes are not required
+  const shouldShowLoading = isLoading && !codesNotRequired;
 
   const categories: CategoryCard[] = [
     {
@@ -86,19 +93,20 @@ export default function HomePage() {
     },
   ];
 
-  // Check if access codes are required
-  const accessCodeRequired = Cookies.get("accessCodeRequired");
-  const codesNotRequired = accessCodeRequired === "false";
-  
   // Show a loading state while authentication is being checked by useAuth
   // But only if access codes are required
-  if (isLoading && !codesNotRequired) {
+  if (shouldShowLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mb-4"></div>
         <p className="text-gray-300">Loading content...</p>
       </div>
     );
+  }
+  
+  // If access codes are not required, don't show loading state
+  if (codesNotRequired) {
+    console.log("Page: Access codes not required, rendering content without authentication");
   }
   
   // If access codes are required and user is not authenticated, show loading
