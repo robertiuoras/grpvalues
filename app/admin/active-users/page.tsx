@@ -301,13 +301,14 @@ export default function ActiveUsersPage() {
     );
   }
 
-  // Check if access codes are required
-  const accessCodeRequiredCookie = getCookie("accessCodeRequired");
+  // Check if access codes are required (client-side only)
+  const accessCodeRequiredCookie = typeof window !== 'undefined' ? getCookie("accessCodeRequired") : null;
   const codesNotRequired = accessCodeRequiredCookie === "false";
   
   // Check for admin authentication even when access codes are disabled
   const hasAdminAuth = isAuthenticated && userRole === "admin";
-  const hasAdminCookies = getCookie("userRole") === "admin" && getCookie("isAuthenticated") === "true";
+  const hasAdminCookies = typeof window !== 'undefined' ? 
+    (getCookie("userRole") === "admin" && getCookie("isAuthenticated") === "true") : false;
   
   // When access codes are disabled, check for admin cookies even if isAuthenticated is false
   const isAdminUser = hasAdminAuth || (codesNotRequired && hasAdminCookies);
