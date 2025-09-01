@@ -194,13 +194,12 @@ export default function ColorMixerPage() {
               {suggestedColor && suggestedColor !== targetColorInput && (
                 <div className="absolute inset-0 flex items-center">
                   <span className="text-xl text-gray-900 font-normal">
-                    {targetColorInput}
                     <button
                       onClick={() => {
                         setTargetColorInput(suggestedColor.toLowerCase());
                         setFeedbackMessage("");
                       }}
-                      className="text-gray-900/60 hover:text-gray-900/80 cursor-pointer font-normal transition-colors duration-200 bg-gray-100/50 px-2 py-1 rounded hover:bg-gray-200/50 ml-1"
+                      className="text-gray-900/60 hover:text-gray-900/80 cursor-pointer font-normal transition-colors duration-200 bg-gray-100/50 px-2 py-1 rounded hover:bg-gray-200/50"
                     >
                       {suggestedColor.slice(targetColorInput.length).toLowerCase()}
                     </button>
