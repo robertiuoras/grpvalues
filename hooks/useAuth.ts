@@ -83,13 +83,13 @@ export function useAuth() {
       const accessCodeRequired = Cookies.get("accessCodeRequired");
       const codesNotRequired = accessCodeRequired === "false";
       
-      // Always update state, but handle authentication differently based on access code requirement
+      // Always update state
       setIsAuthenticated(userIsAuthenticated);
       setUserRole(role);
       setUserId(currentUserId); // Update userId state
       setIsLoading(false);
       
-      // If access codes are not required, skip authentication enforcement
+      // If access codes are not required, skip authentication enforcement but maintain state
       if (codesNotRequired) {
         console.log(
           "useAuth: Access codes not required, skipping authentication enforcement but maintaining state."

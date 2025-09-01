@@ -86,8 +86,12 @@ export default function ActiveUsersPage() {
     const accessCodeRequiredCookie = getCookie("accessCodeRequired");
     const codesNotRequired = accessCodeRequiredCookie === "false";
     
-    // Allow access if: (authenticated AND admin) OR (access codes not required)
-    if ((isAuthenticated && userRole === "admin" && !isLoading) || (codesNotRequired && !isLoading)) {
+    // Check for admin authentication even when access codes are disabled
+    const hasAdminAuth = isAuthenticated && userRole === "admin";
+    const hasAdminCookies = getCookie("userRole") === "admin" && getCookie("isAuthenticated") === "true";
+    
+    // Allow access if: (authenticated AND admin) OR (access codes not required AND has admin cookies)
+    if ((hasAdminAuth && !isLoading) || (codesNotRequired && hasAdminCookies && !isLoading)) {
       const fetchUsersData = async () => {
         // Renamed from fetchActiveUsers to fetchUsersData
         setFetchLoading(true);
@@ -298,9 +302,13 @@ export default function ActiveUsersPage() {
   const accessCodeRequiredCookie = getCookie("accessCodeRequired");
   const codesNotRequired = accessCodeRequiredCookie === "false";
   
-  // Frontend RBAC: Check if authenticated AND if user has 'admin' role
-  // If access codes are not required, allow access to admin panel
-  if (!codesNotRequired && (!isAuthenticated || userRole !== "admin")) {
+  // Check for admin authentication even when access codes are disabled
+  const hasAdminAuth = isAuthenticated && userRole === "admin";
+  const hasAdminCookies = getCookie("userRole") === "admin" && getCookie("isAuthenticated") === "true";
+  
+  // Frontend RBAC: Always require admin authentication, regardless of access code requirement
+  // If access codes are disabled, check for valid admin cookies instead
+  if (!hasAdminAuth && !(codesNotRequired && hasAdminCookies)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4 text-white">
         <Ban size={80} className="text-red-500 mb-6 animate-pulse" />
@@ -310,6 +318,11 @@ export default function ActiveUsersPage() {
         <p className="text-lg text-gray-300 text-center">
           You do not have the necessary permissions to view this page.
         </p>
+        {codesNotRequired && (
+          <p className="text-sm text-gray-400 text-center mt-4">
+            Admin authentication required even when access codes are disabled.
+          </p>
+        )}
       </div>
     );
   }
