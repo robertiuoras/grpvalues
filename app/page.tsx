@@ -213,6 +213,12 @@ export default function HomePage() {
     return <PublicHomePage />;
   }
 
+  // For server-side rendering, always render the public page initially
+  // The client-side will handle the authentication check
+  if (typeof window === "undefined") {
+    return <PublicHomePage />;
+  }
+
   // Only use useAuth hook if access codes are required
   const { isAuthenticated, isLoading } = useAuth();
 
