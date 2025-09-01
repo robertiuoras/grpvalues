@@ -125,29 +125,13 @@ const BattlepassPage: React.FC = () => {
           {activeTab === 'cars' && (
             <div className="text-center">
               <h2 className="text-3xl font-bold mb-6 text-purple-300">Current Battlepass Cars</h2>
-              <p className="text-gray-400 text-lg mb-8">Exclusive vehicles available in this season's battlepass</p>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-                  <div className="w-16 h-16 bg-gray-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-500/50">
-                    <Star className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Street Racer</h3>
-                  <p className="text-gray-400 text-sm">Common Tier - 100 XP</p>
-                </div>
-                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/50">
-                    <Zap className="w-8 h-8 text-blue-400" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Gang Cruiser</h3>
-                  <p className="text-gray-400 text-sm">Rare Tier - 500 XP</p>
-                </div>
-                <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-                  <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-500/50">
-                    <Target className="w-8 h-8 text-purple-400" />
-                  </div>
-                  <h3 className="font-semibold mb-2">Boss Limo</h3>
-                  <p className="text-gray-400 text-sm">Epic Tier - 1000 XP</p>
-                </div>
+              <div className="flex justify-center">
+                <img 
+                  src="/images/battlepass.png" 
+                  alt="Battlepass Cars" 
+                  className="max-w-full h-auto rounded-xl shadow-2xl"
+                  style={{ maxHeight: '500px' }}
+                />
               </div>
             </div>
           )}
