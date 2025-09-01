@@ -15,6 +15,22 @@ export function useAuth() {
   useEffect(() => {
     console.log("useAuth: useEffect triggered.");
     const checkAuthentication = () => {
+      // Check if access codes are required FIRST
+      const accessCodeRequired = Cookies.get("accessCodeRequired");
+      const codesNotRequired = accessCodeRequired === "false";
+      
+      // If access codes are not required, skip authentication check entirely
+      if (codesNotRequired) {
+        console.log(
+          "useAuth: Access codes not required, skipping authentication check entirely."
+        );
+        setIsAuthenticated(false);
+        setUserRole(null);
+        setUserId(null);
+        setIsLoading(false);
+        return;
+      }
+
       const authStatus = Cookies.get("isAuthenticated");
       const authTimestamp = Cookies.get("authTimestamp");
       const roleCookie = Cookies.get("userRole");
@@ -79,23 +95,12 @@ export function useAuth() {
         );
       }
 
-      // Check if access codes are required
-      const accessCodeRequired = Cookies.get("accessCodeRequired");
-      const codesNotRequired = accessCodeRequired === "false";
-      
-      // Always update state
+      // Update state
       setIsAuthenticated(userIsAuthenticated);
       setUserRole(role);
       setUserId(currentUserId); // Update userId state
       setIsLoading(false);
       
-      // If access codes are not required, skip authentication enforcement but maintain state
-      if (codesNotRequired) {
-        console.log(
-          "useAuth: Access codes not required, skipping authentication enforcement but maintaining state."
-        );
-        return;
-      }
       console.log(
         "useAuth: State updated - isAuthenticated:",
         userIsAuthenticated,
