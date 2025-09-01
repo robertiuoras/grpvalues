@@ -55,45 +55,20 @@ const nextConfig: NextConfig = {
       // Disable aggressive caching in development to prevent module errors
       config.cache = false;
       
-      // Better chunk management to prevent './985.js' errors
+      // Disable problematic features that cause './985.js' errors
       config.optimization = {
         ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            default: false,
-            vendors: false,
-            // Create more stable chunks
-            vendor: {
-              name: 'vendor',
-              chunks: 'all',
-              test: /node_modules/,
-              priority: 20,
-            },
-            common: {
-              name: 'common',
-              minChunks: 2,
-              chunks: 'all',
-              priority: 10,
-              reuseExistingChunk: true,
-              enforce: true,
-            },
-          },
-        },
+        splitChunks: false, // Disable chunk splitting in dev to prevent errors
+        runtimeChunk: false, // Disable runtime chunking
       };
       
-      // Disable webpack 5 persistent caching that causes issues
-      config.cache = {
-        type: 'filesystem',
-        buildDependencies: {
-          config: [__filename],
-        },
-        cacheDirectory: '.next/cache',
-        compression: 'gzip',
-        maxAge: 172800000, // 2 days
-        store: 'pack',
-        version: '1.0.0',
-      };
+      // Disable persistent caching that causes issues
+      config.cache = false;
+      
+      // Disable webpack 5 features that cause problems
+      if (config.experiments) {
+        config.experiments.lazyCompilation = false;
+      }
     }
     
     // Better module resolution
