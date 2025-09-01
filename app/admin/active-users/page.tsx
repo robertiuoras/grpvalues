@@ -311,8 +311,9 @@ export default function ActiveUsersPage() {
   const hasAdminCookies = typeof window !== 'undefined' ? 
     (getCookie("userRole") === "admin" && getCookie("isAuthenticated") === "true") : false;
   
-  // When access codes are disabled, check for admin cookies even if isAuthenticated is false
-  const isAdminUser = hasAdminAuth || (codesNotRequired && hasAdminCookies);
+  // When access codes are disabled, check for admin cookies directly
+  // When access codes are enabled, check for authenticated admin
+  const isAdminUser = codesNotRequired ? hasAdminCookies : hasAdminAuth;
   
   // Frontend RBAC: Always require admin authentication, regardless of access code requirement
   if (!isAdminUser) {

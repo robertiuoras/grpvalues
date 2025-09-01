@@ -37,14 +37,29 @@ export function useAuth() {
       const accessCodeRequired = Cookies.get("accessCodeRequired");
       const codesNotRequired = accessCodeRequired === "false";
       
-      // If access codes are not required, skip authentication check entirely
+      // If access codes are not required, check for existing admin cookies
       if (codesNotRequired) {
         console.log(
-          "useAuth: Access codes not required, skipping authentication check entirely."
+          "useAuth: Access codes not required, checking for existing admin cookies."
         );
-        setIsAuthenticated(false);
-        setUserRole(null);
-        setUserId(null);
+        
+        // Check for existing admin cookies
+        const authStatus = Cookies.get("isAuthenticated");
+        const roleCookie = Cookies.get("userRole");
+        const userIdCookie = Cookies.get("userId");
+        
+        if (authStatus === "true" && roleCookie === "admin") {
+          console.log("useAuth: Found admin cookies, setting authenticated state");
+          setIsAuthenticated(true);
+          setUserRole("admin");
+          setUserId(userIdCookie || null);
+        } else {
+          console.log("useAuth: No admin cookies found, setting unauthenticated state");
+          setIsAuthenticated(false);
+          setUserRole(null);
+          setUserId(null);
+        }
+        
         setIsLoading(false);
         return;
       }
