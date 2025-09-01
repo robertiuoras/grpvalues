@@ -184,7 +184,7 @@ export function Header() {
             </svg>
           </button>
           {isDropdownOpen && (
-            <div className="absolute right-0 top-14 mt-2 py-2 w-56 bg-blue-900 rounded-lg shadow-xl border border-blue-700 z-50 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-600 scrollbar-track-blue-800">
+            <div className="absolute right-0 top-14 mt-2 py-2 w-56 bg-blue-900 rounded-lg shadow-xl border border-blue-700 z-50 max-h-96 overflow-y-auto">
               {getCategoriesWithAdmin().map((category) => (
                 <Link
                   key={category.name}
