@@ -41,6 +41,14 @@ export default function ActiveUsersPage() {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
 
+  // Helper function to get cookie value
+  const getCookie = (name: string) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    return null;
+  };
+
   // Helper function to format time properly
   const formatTime = (timeString: string | null) => {
     if (!timeString || timeString === "Never") return "Never";
@@ -114,19 +122,23 @@ export default function ActiveUsersPage() {
           if (response.ok) {
             const data = await response.json();
             setAccessCodeRequired(data.required);
-
-            // Set a cookie that the middleware can read
-            document.cookie = `accessCodeRequired=${
-              data.required
-            }; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
           }
         } catch (error) {
           console.error("Error fetching access code requirement:", error);
         }
       };
 
-      fetchUsersData(); // Initial fetch
-      fetchAccessCodeRequirement(); // Fetch access code requirement status
+      // Also check the cookie value to ensure consistency
+      const checkCookieValue = () => {
+        const cookieValue = getCookie("accessCodeRequired");
+        if (cookieValue !== null) {
+          setAccessCodeRequired(cookieValue === "true");
+        }
+      };
+
+              fetchUsersData(); // Initial fetch
+        fetchAccessCodeRequirement(); // Fetch access code requirement status
+        checkCookieValue(); // Check cookie value for consistency
 
       // Set up a refresh interval (e.g., every 30 seconds)
       const intervalId = setInterval(fetchUsersData, 30 * 1000);
@@ -190,10 +202,7 @@ export default function ActiveUsersPage() {
       setAccessCodeRequired(!accessCodeRequired);
       setToggleMessage(result.message);
 
-      // Update the cookie immediately for middleware access
-      document.cookie = `accessCodeRequired=${!accessCodeRequired}; path=/; max-age=${
-        60 * 60 * 24 * 365
-      }; SameSite=Lax`;
+      // The API now sets the cookie directly, no need to set it here
     } catch (error: any) {
       console.error("Toggle error:", error);
       setToggleMessage(`❌ Error: ${error.message}`);

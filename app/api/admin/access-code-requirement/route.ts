@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       response.cookies.set("accessCodeRequired", "true", {
         path: "/",
         maxAge: 60 * 60 * 24 * 365, // 1 year
-        httpOnly: true,
+        httpOnly: false, // Allow JavaScript to read this cookie
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
       });
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
       response.cookies.set("accessCodeRequired", "false", {
         path: "/",
         maxAge: 60 * 60 * 24 * 365, // 1 year
-        httpOnly: true,
+        httpOnly: false, // Allow JavaScript to read this cookie
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
       });
