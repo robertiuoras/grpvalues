@@ -5,12 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 
 export function useAuth() {
-  // Check if access codes are required immediately to set initial loading state
-  const accessCodeRequired = Cookies.get("accessCodeRequired");
-  const codesNotRequired = accessCodeRequired === "false";
-  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(!codesNotRequired); // Set loading based on access code requirement
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true, will be set correctly in useEffect
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null); // New state for userId
   const router = useRouter();
@@ -19,6 +15,10 @@ export function useAuth() {
   useEffect(() => {
     console.log("useAuth: useEffect triggered.");
     const checkAuthentication = () => {
+      // Check if access codes are required FIRST
+      const accessCodeRequired = Cookies.get("accessCodeRequired");
+      const codesNotRequired = accessCodeRequired === "false";
+      
       // If access codes are not required, skip authentication check entirely
       if (codesNotRequired) {
         console.log(
