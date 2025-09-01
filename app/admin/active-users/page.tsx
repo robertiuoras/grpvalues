@@ -159,7 +159,7 @@ export default function ActiveUsersPage() {
       // Clean up interval on component unmount
       return () => clearInterval(intervalId);
     }
-  }, [isAuthenticated, isLoading, userRole, accessCodeRequired]);
+  }, [isAuthenticated, isLoading, userRole]);
 
   const handleCleanupStuckCodes = async () => {
     setCleanupLoading(true);
