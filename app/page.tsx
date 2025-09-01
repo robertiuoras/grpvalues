@@ -29,8 +29,8 @@ export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter(); // Add router instance
   
-  // Check if access codes are required immediately
-  const accessCodeRequired = Cookies.get("accessCodeRequired");
+  // Check if access codes are required immediately (client-side only)
+  const accessCodeRequired = typeof window !== 'undefined' ? Cookies.get("accessCodeRequired") : null;
   const codesNotRequired = accessCodeRequired === "false";
   
   // Override loading state if access codes are not required
