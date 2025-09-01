@@ -90,8 +90,11 @@ export default function ActiveUsersPage() {
     const hasAdminAuth = isAuthenticated && userRole === "admin";
     const hasAdminCookies = getCookie("userRole") === "admin" && getCookie("isAuthenticated") === "true";
     
-    // Allow access if: (authenticated AND admin) OR (access codes not required AND has admin cookies)
-    if ((hasAdminAuth && !isLoading) || (codesNotRequired && hasAdminCookies && !isLoading)) {
+    // When access codes are disabled, check for admin cookies even if isAuthenticated is false
+    const isAdminUser = hasAdminAuth || (codesNotRequired && hasAdminCookies);
+    
+    // Allow access if user is admin (either authenticated admin or has admin cookies when access codes disabled)
+    if (isAdminUser && !isLoading) {
       const fetchUsersData = async () => {
         // Renamed from fetchActiveUsers to fetchUsersData
         setFetchLoading(true);
@@ -306,9 +309,11 @@ export default function ActiveUsersPage() {
   const hasAdminAuth = isAuthenticated && userRole === "admin";
   const hasAdminCookies = getCookie("userRole") === "admin" && getCookie("isAuthenticated") === "true";
   
+  // When access codes are disabled, check for admin cookies even if isAuthenticated is false
+  const isAdminUser = hasAdminAuth || (codesNotRequired && hasAdminCookies);
+  
   // Frontend RBAC: Always require admin authentication, regardless of access code requirement
-  // If access codes are disabled, check for valid admin cookies instead
-  if (!hasAdminAuth && !(codesNotRequired && hasAdminCookies)) {
+  if (!isAdminUser) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4 text-white">
         <Ban size={80} className="text-red-500 mb-6 animate-pulse" />
