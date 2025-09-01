@@ -112,27 +112,34 @@ export function useAuth() {
         false
       );
       
-      // Redirect if not authenticated AND not already on the login page
-      // Added a small setTimeout to mitigate race conditions on Vercel deployment
-      if (!userIsAuthenticated && pathname !== "/login") {
-        console.log(
-          "useAuth: Not authenticated and not on login page. Scheduling redirect to /login."
-        );
-        setTimeout(() => {
-          router.replace("/login");
-        }, 50); // Small delay
-      }
-      // If authenticated and on the login page, redirect to home
-      else if (userIsAuthenticated && pathname === "/login") {
-        console.log(
-          "useAuth: Authenticated on login page. Scheduling redirect to /."
-        );
-        setTimeout(() => {
-          router.replace("/");
-        }, 50); // Small delay
+      // Only redirect if access codes are required
+      if (!codesNotRequired) {
+        // Redirect if not authenticated AND not already on the login page
+        // Added a small setTimeout to mitigate race conditions on Vercel deployment
+        if (!userIsAuthenticated && pathname !== "/login") {
+          console.log(
+            "useAuth: Not authenticated and not on login page. Scheduling redirect to /login."
+          );
+          setTimeout(() => {
+            router.replace("/login");
+          }, 50); // Small delay
+        }
+        // If authenticated and on the login page, redirect to home
+        else if (userIsAuthenticated && pathname === "/login") {
+          console.log(
+            "useAuth: Authenticated on login page. Scheduling redirect to /."
+          );
+          setTimeout(() => {
+            router.replace("/");
+          }, 50); // Small delay
+        } else {
+          console.log(
+            "useAuth: No redirect needed based on current state and path."
+          );
+        }
       } else {
         console.log(
-          "useAuth: No redirect needed based on current state and path."
+          "useAuth: Access codes not required, skipping redirect logic."
         );
       }
     };
