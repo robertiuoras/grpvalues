@@ -130,7 +130,7 @@ const BattlepassPage: React.FC = () => {
                   src="/images/battlepass.png" 
                   alt="Battlepass Cars" 
                   className="max-w-full h-auto rounded-xl shadow-2xl"
-                  style={{ maxHeight: '500px' }}
+                  style={{ maxHeight: '800px', minHeight: '600px' }}
                 />
               </div>
             </div>
