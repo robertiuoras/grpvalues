@@ -46,7 +46,10 @@ export function Header() {
 
   // Create categories with admin button for admin users
   const getCategoriesWithAdmin = () => {
-    if (userRole === "admin") {
+    // Check if user is admin (either authenticated admin or has admin cookies when access codes disabled)
+    const isAdmin = userRole === "admin" || (codesNotRequired && Cookies.get("userRole") === "admin");
+    
+    if (isAdmin) {
       return [
         { name: "Admin Panel", path: "/admin/active-users", isAdmin: true },
         { name: "Improvements", path: "/improvements", isAdmin: true },
@@ -120,11 +123,16 @@ export function Header() {
     }
   };
 
+  // Check if access codes are required
+  const accessCodeRequired = Cookies.get("accessCodeRequired");
+  const codesNotRequired = accessCodeRequired === "false";
+
   if (isLoading) {
     return null;
   }
 
-  if (!isAuthenticated) {
+  // Show header if authenticated OR if access codes are not required
+  if (!isAuthenticated && !codesNotRequired) {
     return null;
   }
 
@@ -132,13 +140,15 @@ export function Header() {
     <header className="bg-blue-950 text-gray-100 p-4 shadow-md sticky top-0 z-50 font-sans">
       <div className="max-w-7xl mx-auto flex flex-row items-center justify-between relative px-8">
         <div className="flex items-center gap-4">
-          <Link
-            href="#"
-            onClick={handleLogout}
-            className="text-sm md:text-base font-medium px-3 py-1 rounded-full bg-red-600/80 text-white hover:bg-red-700 transition-colors duration-300 whitespace-nowrap"
-          >
-            Log Out
-          </Link>
+          {isAuthenticated && (
+            <Link
+              href="#"
+              onClick={handleLogout}
+              className="text-sm md:text-base font-medium px-3 py-1 rounded-full bg-red-600/80 text-white hover:bg-red-700 transition-colors duration-300 whitespace-nowrap"
+            >
+              Log Out
+            </Link>
+          )}
           {renderHomeLink(
             "Grand RP Values",
             "text-3xl font-bold text-blue-400 hover:text-blue-300 transition-colors duration-300"
@@ -165,7 +175,14 @@ export function Header() {
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="px-4 py-2 rounded-lg bg-blue-900 hover:bg-blue-800 text-white font-semibold transition duration-200 flex items-center gap-2 shadow-sm text-sm md:text-base"
           >
-            <span>{userRole === "admin" ? "Admin" : "Categories"}</span>{" "}
+            <span>
+              {isAuthenticated && userRole === "admin" 
+                ? "Admin" 
+                : codesNotRequired 
+                  ? "Categories" 
+                  : "Categories"
+              }
+            </span>{" "}
             <svg
               className={`w-4 h-4 transition-transform duration-200 ${
                 isDropdownOpen ? "rotate-180" : ""
