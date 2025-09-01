@@ -54,7 +54,7 @@ export async function GET() {
     response.cookies.set("accessCodeRequired", required.toString(), {
       path: "/",
       maxAge: 60 * 60 * 24 * 365,
-      httpOnly: true,
+      httpOnly: false, // Allow JavaScript to read this cookie
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
     });
