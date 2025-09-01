@@ -25,6 +25,7 @@ export function Header() {
       path: "/values/luminousclothing",
       isAdmin: false,
     },
+    { name: "Battlepass", path: "/battlepass", isAdmin: false },
     { name: "Bunker Help", path: "/bunker-help", isAdmin: false },
     { name: "Pet Timer", path: "/pet-timer", isAdmin: false },
     { name: "Treasure Helper", path: "/treasure-helper", isAdmin: false },
@@ -183,14 +184,14 @@ export function Header() {
             </svg>
           </button>
           {isDropdownOpen && (
-            <div className="absolute right-0 top-14 mt-2 py-2 w-56 bg-blue-900 rounded-lg shadow-xl border border-blue-700 z-50">
+            <div className="absolute right-0 top-14 mt-2 py-2 w-56 bg-blue-900 rounded-lg shadow-xl border border-blue-700 z-50 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-600 scrollbar-track-blue-800">
               {getCategoriesWithAdmin().map((category) => (
                 <Link
                   key={category.name}
                   href={category.path}
                   className={`block px-4 py-2 text-sm md:text-base transition-colors duration-300 ${
                     category.isAdmin
-                      ? "text-red-300 hover:bg-red-700 hover:text-white border-b border-red-600"
+                      ? "text-red-300 hover:bg-red-700 hover:text-white"
                       : "text-gray-100 hover:bg-blue-700 hover:text-white"
                   }`}
                   onClick={(e) => {
