@@ -292,16 +292,6 @@ export default function ActiveUsersPage() {
     }
   };
 
-  // Global authentication check from useAuth
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mb-4"></div>
-        <p className="text-gray-300">Loading authentication...</p>
-      </div>
-    );
-  }
-
   // Check if access codes are required (client-side only)
   const accessCodeRequiredCookie = typeof window !== 'undefined' ? getCookie("accessCodeRequired") : null;
   const codesNotRequired = accessCodeRequiredCookie === "false";
@@ -314,6 +304,16 @@ export default function ActiveUsersPage() {
   // When access codes are disabled, check for admin cookies directly
   // When access codes are enabled, check for authenticated admin
   const isAdminUser = codesNotRequired ? hasAdminCookies : hasAdminAuth;
+  
+  // Only show loading if we don't have admin access and are still loading
+  if (isLoading && !isAdminUser) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mb-4"></div>
+        <p className="text-gray-300">Loading authentication...</p>
+      </div>
+    );
+  }
   
   // Frontend RBAC: Always require admin authentication, regardless of access code requirement
   if (!isAdminUser) {
