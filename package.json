@@ -7,6 +7,8 @@
     "dev:clean": "rm -rf .next && cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
     "dev:auto": "rm -rf .next && cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
     "dev:deep": "rm -rf .next tsconfig.tsbuildinfo && cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
+    "dev:stable": "rm -rf .next && rm -rf node_modules/.cache && npm cache clean --force && cross-env NODE_OPTIONS=--max_old_space_size=4096 next dev",
+    "dev:helper": "./scripts/dev-helper.sh",
     "build": "cross-env NODE_OPTIONS=--max_old_space_size=4096 next build",
     "build:clean": "rm -rf .next && cross-env NODE_OPTIONS=--max_old_space_size=4096 next build",
     "start": "cross-env NODE_OPTIONS=--max_old_space_size=4096 next start",

@@ -49,12 +49,64 @@ const nextConfig: NextConfig = {
     pagesBufferLength: 2,
   },
 
-  // Webpack configuration for better cache management
+  // Webpack configuration to prevent module resolution errors
   webpack: (config, { dev, isServer }) => {
-    if (dev && !isServer) {
-      // Disable aggressive caching in development
+    if (dev) {
+      // Disable aggressive caching in development to prevent module errors
       config.cache = false;
+      
+      // Better chunk management to prevent './985.js' errors
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Create more stable chunks
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /node_modules/,
+              priority: 20,
+            },
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              priority: 10,
+              reuseExistingChunk: true,
+              enforce: true,
+            },
+          },
+        },
+      };
+      
+      // Disable webpack 5 persistent caching that causes issues
+      config.cache = {
+        type: 'filesystem',
+        buildDependencies: {
+          config: [__filename],
+        },
+        cacheDirectory: '.next/cache',
+        compression: 'gzip',
+        maxAge: 172800000, // 2 days
+        store: 'pack',
+        version: '1.0.0',
+      };
     }
+    
+    // Better module resolution
+    config.resolve = {
+      ...config.resolve,
+      fallback: {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      },
+    };
+    
     return config;
   },
 };
