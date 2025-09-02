@@ -170,7 +170,8 @@ function analyzeAdPattern(input: string): { adType: string; formatPattern: strin
 async function formatAdWithAI(
   adContent: string,
   categories: string[],
-  categoryDisplayNames: any
+  categoryDisplayNames: any,
+  correctCategory?: string
 ): Promise<string> {
   try {
     console.log("🤖 Using Google Gemini AI for ad formatting...");
@@ -185,7 +186,7 @@ async function formatAdWithAI(
     const { policy, vehicleList, clothingList, itemsList } = await fetchPolicyData();
 
     // Detect category and get relevant feedback
-    const detectedCategory = detectCategory(adContent);
+    const detectedCategory = correctCategory || detectCategory(adContent);
     const relevantFeedback = await getRelevantFeedback(adContent, detectedCategory);
 
     // Create learning context from feedback
@@ -269,8 +270,8 @@ ${learningContext}`;
       .trim();
 
     // Extract category
-    let category = detectedCategory;
-    if (categoryLine) {
+    let category = correctCategory || detectedCategory;
+    if (categoryLine && !correctCategory) {
       const extractedCategory = categoryLine.replace("Category:", "").trim().toLowerCase();
       const officialCategories = ['auto', 'work', 'service', 'real estate', 'other', 'discount', 'dating', 'business'];
       if (officialCategories.includes(extractedCategory)) {
@@ -279,7 +280,7 @@ ${learningContext}`;
     }
 
     console.log("✅ Gemini AI formatting completed successfully");
-    return `🤖 ${formattedAd}\nCategory: ${category}`;
+    return `[AI Generated] ${formattedAd}\nCategory: ${category}`;
 
   } catch (error) {
     console.error("❌ Gemini AI error:", error);
@@ -296,11 +297,12 @@ export async function POST(request: NextRequest) {
       categoryDisplayNames,
       feedback,
       originalResponse,
+      correctCategory, // New field for user to specify correct category
     } = await request.json();
 
     // Handle feedback submission
     if (feedback && originalResponse) {
-      const category = detectCategory(query);
+      const category = correctCategory || detectCategory(query); // Use user-specified category if provided
       const { adType, formatPattern } = analyzeAdPattern(query);
       
       const feedbackEntry: FeedbackEntry = {
@@ -328,7 +330,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Format ad using AI
-    const formattedAd = await formatAdWithAI(query, categories, categoryDisplayNames);
+    const formattedAd = await formatAdWithAI(query, categories, categoryDisplayNames, correctCategory);
     
     return NextResponse.json({
       response: formattedAd,
