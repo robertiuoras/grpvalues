@@ -76,12 +76,114 @@ async function getRelevantFeedback(
   }
 }
 
+// Brand replacement mapping (Real → Fake)
+const BRAND_REPLACEMENTS: { [key: string]: string } = {
+  "adidas": "abibas",
+  "air dior": "air bior",
+  "burberry": "murberry",
+  "chanel": "khanel",
+  "champion": "khampion",
+  "calvin klein": "alvin lein",
+  "casio": "kasio",
+  "crocs": "rocs",
+  "fendi": "bendi",
+  "gap": "cap",
+  "gucci": "muci",
+  "ground jordan": "ground mordan",
+  "jordan": "mordan",
+  "louis vuitton": "lui vi",
+  "marshmello": "sashmello",
+  "new balance": "new balance",
+  "n.a.s.a.": "n.e.s.a.",
+  "nike air force": "niki ground porce",
+  "nike": "niki",
+  "nik": "nik",
+  "off-white": "up-green",
+  "off": "off",
+  "palm angel": "arm pangel",
+  "pikachu": "mikachu",
+  "razer": "kazer",
+  "rolex": "kolex",
+  "volex": "kolex",
+  "supreme": "kupreme",
+  "fin": "vin",
+  "vans": "pans",
+  "balenciaga": "valenciaga",
+  "yeezy": "keezy",
+  "pezy": "keezy",
+  "playboy": "lm playboy",
+  "prada": "grada",
+  "polo": "molo",
+  "versace": "bersace",
+};
+
+// Function to replace real brand names with fake ones
+function replaceBrandNames(text: string): string {
+  let result = text.toLowerCase();
+  
+  // Sort by length (longest first) to avoid partial replacements
+  const sortedBrands = Object.keys(BRAND_REPLACEMENTS).sort((a, b) => b.length - a.length);
+  
+  for (const realBrand of sortedBrands) {
+    const fakeBrand = BRAND_REPLACEMENTS[realBrand];
+    // Use word boundaries to avoid partial matches
+    const regex = new RegExp(`\\b${realBrand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+    result = result.replace(regex, fakeBrand);
+  }
+  
+  return result;
+}
+
+// Function to find best match from a list
+function findBestMatch(input: string, options: string[]): string | null {
+  const inputLower = input.toLowerCase().trim();
+  
+  // First try exact match
+  for (const option of options) {
+    if (option.toLowerCase().trim() === inputLower) {
+      return option;
+    }
+  }
+  
+  // Then try partial match
+  for (const option of options) {
+    const optionLower = option.toLowerCase().trim();
+    if (optionLower.includes(inputLower) || inputLower.includes(optionLower)) {
+      return option;
+    }
+  }
+  
+  // Then try word-by-word matching
+  const inputWords = inputLower.split(/\s+/);
+  for (const option of options) {
+    const optionLower = option.toLowerCase().trim();
+    const optionWords = optionLower.split(/\s+/);
+    
+    let matches = 0;
+    for (const inputWord of inputWords) {
+      for (const optionWord of optionWords) {
+        if (inputWord === optionWord || inputWord.includes(optionWord) || optionWord.includes(inputWord)) {
+          matches++;
+          break;
+        }
+      }
+    }
+    
+    if (matches >= Math.min(inputWords.length, 2)) {
+      return option;
+    }
+  }
+  
+  return null;
+}
+
 // Fetch policy document and Google Sheets data
 async function fetchPolicyData(): Promise<{
   policy: string;
   vehicleList: string;
   clothingList: string;
   itemsList: string;
+  allItems: string[];
 }> {
   try {
     // Policy document
@@ -97,20 +199,26 @@ async function fetchPolicyData(): Promise<{
     const sheetsData = await sheetsResponse.text();
 
     // Parse CSV data from sheets
-    const lines = sheetsData.split("\n");
+    const lines = sheetsData.split("\n").filter(line => line.trim());
+    const allItems = lines.map(line => line.trim());
+    
     const vehicleList = lines
-      .filter((line) => line.includes("vehicle") || line.includes("car"))
+      .filter((line) => line.toLowerCase().includes("vehicle") || line.toLowerCase().includes("car"))
       .join("\n");
     const clothingList = lines
       .filter(
         (line) =>
-          line.includes("clothing") ||
-          line.includes("pants") ||
-          line.includes("shirt")
+          line.toLowerCase().includes("clothing") ||
+          line.toLowerCase().includes("pants") ||
+          line.toLowerCase().includes("shirt") ||
+          line.toLowerCase().includes("jacket") ||
+          line.toLowerCase().includes("shoes") ||
+          line.toLowerCase().includes("hat") ||
+          line.toLowerCase().includes("gloves")
       )
       .join("\n");
     const itemsList = lines
-      .filter((line) => line.includes("item") || line.includes("misc"))
+      .filter((line) => line.toLowerCase().includes("item") || line.toLowerCase().includes("misc"))
       .join("\n");
 
     return {
@@ -118,6 +226,7 @@ async function fetchPolicyData(): Promise<{
       vehicleList,
       clothingList,
       itemsList,
+      allItems,
     };
   } catch (error) {
     console.error("Error fetching policy data:", error);
@@ -237,13 +346,20 @@ async function formatAdWithAI(
     }
 
     // Fetch policy data
-    const { policy, vehicleList, clothingList, itemsList } =
+    const { policy, vehicleList, clothingList, itemsList, allItems } =
       await fetchPolicyData();
 
+    // Replace real brand names with fake ones
+    const processedContent = replaceBrandNames(adContent);
+    
+    // Find matching items from Google Sheets
+    const matchedItem = findBestMatch(processedContent, allItems);
+    const matchedItemInfo = matchedItem ? `\nMATCHED ITEM FROM SHEETS: "${matchedItem}"` : "";
+
     // Detect category and get relevant feedback
-    const detectedCategory = correctCategory || detectCategory(adContent);
+    const detectedCategory = correctCategory || detectCategory(processedContent);
     const relevantFeedback = await getRelevantFeedback(
-      adContent,
+      processedContent,
       detectedCategory
     );
 
@@ -267,6 +383,21 @@ CRITICAL RULES:
 3. Follow the policy document rules exactly
 4. If you cannot format the ad properly, return "ad cannot be created"
 5. Always assign one of these 8 categories: auto, work, service, real estate, other, discount, dating, business
+6. ALWAYS use fake brand names instead of real ones (see brand replacement list below)
+7. If a matched item is found from the sheets, use that exact name
+
+BRAND REPLACEMENT RULES (REAL → FAKE):
+- Adidas → Abibas
+- Nike → Niki
+- Jordan → Mordan
+- Gucci → Muci
+- Supreme → Kupreme
+- Off-White → Up-Green
+- Louis Vuitton → Lui Vi
+- Rolex → Kolex
+- And many more (see full list in policy)
+
+PROCESSED INPUT: "${processedContent}"${matchedItemInfo}
 
 POLICY DOCUMENT:
 ${policy}
@@ -292,7 +423,7 @@ CATEGORIES:
 
 FORMATTING EXAMPLES:
 1. Vehicle: "Selling my nissan gtr r34" → "Selling "Annis Skyline GT-R (R34)" in full configuration with visual upgrades, insurance and drift kit. Price: Negotiable."
-2. Clothing: "Selling yellow and purple vest skins. Price: 70.000$ each" → "Selling yellow and purple vest skins. Price: $70.000 each."
+2. Clothing: "Selling nike shoes" → "Selling Niki shoes. Price: Negotiable."
 3. Job: "hiring chef" → "Hiring Chef. Salary: Negotiable."
 4. Service: "offering car repair" → "Offering Car Repair. Price: Negotiable."
 5. Business: "selling restaurant" → "Selling Restaurant. Price: Negotiable."
@@ -313,7 +444,7 @@ ${learningContext}`;
     // Call Gemini API
     const result = await model.generateContent([
       systemPrompt,
-      `Format this ad: "${adContent}"`,
+      `Format this ad: "${processedContent}"`,
     ]);
     const formattedResponse = result.response.text().trim();
 
