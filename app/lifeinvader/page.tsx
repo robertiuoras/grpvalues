@@ -552,6 +552,7 @@ export default function App() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -860,12 +861,14 @@ export default function App() {
           categoryDisplayNames: CATEGORY_DISPLAY_NAMES,
           feedback: feedbackText,
           originalResponse: aiResponse,
+          correctCategory: selectedCategory,
         }),
       });
 
       const data = await response.json();
       if (data.feedbackStored) {
         setFeedbackText("");
+        setSelectedCategory("");
         setShowFeedback(false);
         // Show success message
         setModalMessage(
@@ -1814,6 +1817,7 @@ export default function App() {
                       setAIResponse("");
                       setShowFeedback(false);
                       setFeedbackText("");
+                      setSelectedCategory("");
                     }}
                     className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors duration-200"
                     title="Back to Templates"
@@ -1984,6 +1988,23 @@ export default function App() {
                             🤖 Help me improve! Was this formatting correct?
                           </h4>
                           <div className="space-y-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Correct Category (if AI got it wrong):
+                              </label>
+                              <select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                              >
+                                <option value="">Select correct category (optional)</option>
+                                {OFFICIAL_CATEGORIES.map((category) => (
+                                  <option key={category} value={category}>
+                                    {CATEGORY_DISPLAY_NAMES[category] || category}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                             <textarea
                               value={feedbackText}
                               onChange={(e) => setFeedbackText(e.target.value)}
