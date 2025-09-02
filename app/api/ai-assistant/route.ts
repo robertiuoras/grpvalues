@@ -660,6 +660,9 @@ CRITICAL RULES:
 3. Do NOT change the item type (e.g., "vest skins" should stay "vest skins", not become "armoured vest skin")
 4. Only format the structure and price, keep the original item description intact
 5. Format prices with periods for thousands: $70.000 (not $70,000)
+6. DO NOT duplicate words - if input already says "Selling", don't add another "Selling"
+7. DO NOT duplicate "Price:" - if input already has price format, don't add another "Price:"
+8. If input already has proper structure, just clean it up, don't rebuild it
 
 FUZZY MATCHING FOR NAMES:
 - Use fuzzy matching to find exact names even with spelling errors
@@ -717,7 +720,10 @@ FORMATTING GUIDELINES:
    - Category: "auto"
 2. For clothing/item ads: PRESERVE the original item description exactly, only format the structure
    - Example: "Selling yellow and purple vest skins" → "Selling yellow and purple vest skins. Price: $70.000 each."
+   - Example: "Selling Abibas pants, trendy jacket of type 6 and white gloves for men." → "Selling Abibas pants, trendy jacket of type 6 and white gloves for men. Price: Negotiable."
    - Do NOT change "vest skins" to "armoured vest skin" or add extra details
+   - Do NOT duplicate "Selling" if it's already there
+   - Do NOT duplicate "Price:" if it's already there
    - ALWAYS use the EXTRACTED CLOTHING NAME if provided above
    - Category: "other"
 3. For job ads: Use "Hiring [Position] in [location/requirements]. Salary: [amount]"
@@ -795,7 +801,7 @@ IMPORTANT: Always format the ad content provided. Do not reject or refuse to for
     }
 
     console.log("✅ Gemini AI formatting completed successfully");
-    return `${formattedAd}\nCategory: ${category}`;
+    return `🤖 ${formattedAd}\nCategory: ${category}`;
   } catch (error) {
     console.error("❌ Gemini AI error:", error);
     console.log("🔄 Using basic formatting as fallback...");
@@ -2029,7 +2035,7 @@ function formatAdBasic(
     formattedAd += ".";
   }
 
-  return `${formattedAd}\n\nCategory: ${
+  return `⚙️ ${formattedAd}\n\nCategory: ${
     categoryDisplayNames[suggestedCategory] || suggestedCategory
   }`;
 }
