@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "../../../lib/firebaseAdmin";
 
-// Firestore feedback storage functions
+// Firestore feedback interface
 interface FeedbackEntry {
   originalInput: string;
   aiResponse: string;
   userCorrection: string;
   timestamp: Date;
   category: string;
-  adType?: string;
-  formatPattern?: string;
+  adType: string;
+  formatPattern: string;
 }
 
 // Store feedback in Firestore
@@ -18,647 +18,192 @@ async function storeFeedback(feedback: FeedbackEntry): Promise<void> {
   try {
     await db.collection("ai_feedback").add({
       ...feedback,
-      timestamp: new Date(), // Ensure timestamp is a Firestore timestamp
+      timestamp: new Date(),
     });
-    console.log(
-      `📝 Feedback stored in Firestore for category: ${feedback.category}`
-    );
+    console.log(`📝 Feedback stored for category: ${feedback.category}`);
   } catch (error) {
-    console.error("Error storing feedback in Firestore:", error);
+    console.error("Error storing feedback:", error);
     throw error;
   }
 }
 
-// Get relevant feedback from Firestore
-async function getRelevantFeedbackFromFirestore(
-  adContent: string,
-  category: string,
-  limit: number = 3
+// Get relevant feedback from Firestore (simplified to avoid index issues)
+async function getRelevantFeedback(
+  input: string,
+  category: string
 ): Promise<FeedbackEntry[]> {
   try {
-    // Get feedback for the specific category
-    const categoryQuery = await db
+    // Get recent feedback without complex queries to avoid index issues
+    const feedbackQuery = await db
       .collection("ai_feedback")
-      .where("category", "==", category)
       .orderBy("timestamp", "desc")
-      .limit(limit)
+      .limit(10)
       .get();
 
     const feedbacks: FeedbackEntry[] = [];
-    categoryQuery.forEach((doc) => {
+    feedbackQuery.forEach((doc) => {
       const data = doc.data();
       feedbacks.push({
         originalInput: data.originalInput,
         aiResponse: data.aiResponse,
         userCorrection: data.userCorrection,
-        timestamp: data.timestamp.toDate(), // Convert Firestore timestamp to Date
+        timestamp: data.timestamp.toDate(),
         category: data.category,
         adType: data.adType,
         formatPattern: data.formatPattern,
       });
     });
 
-    // If we don't have enough category-specific feedback, get some from other categories
-    if (feedbacks.length < limit) {
-      const remainingLimit = limit - feedbacks.length;
-      const generalQuery = await db
-        .collection("ai_feedback")
-        .orderBy("timestamp", "desc")
-        .limit(remainingLimit)
-        .get();
+    // Filter for relevant feedback based on category and similar content
+    const relevantFeedbacks = feedbacks.filter((feedback) => {
+      // Match by category first
+      if (feedback.category === category) return true;
+      
+      // Match by similar content (simple keyword matching)
+      const inputWords = input.toLowerCase().split(/\s+/);
+      const feedbackWords = feedback.originalInput.toLowerCase().split(/\s+/);
+      const commonWords = inputWords.filter(word => feedbackWords.includes(word));
+      
+      return commonWords.length >= 2; // At least 2 common words
+    });
 
-      generalQuery.forEach((doc) => {
-        const data = doc.data();
-        // Only add if not already in the list
-        const exists = feedbacks.some(
-          (f) =>
-            f.originalInput === data.originalInput &&
-            f.aiResponse === data.aiResponse
-        );
-        if (!exists) {
-          feedbacks.push({
-            originalInput: data.originalInput,
-            aiResponse: data.aiResponse,
-            userCorrection: data.userCorrection,
-            timestamp: data.timestamp.toDate(),
-            category: data.category,
-            adType: data.adType,
-            formatPattern: data.formatPattern,
-          });
-        }
-      });
-    }
-
-    return feedbacks;
+    return relevantFeedbacks.slice(0, 3); // Return top 3 most relevant
   } catch (error) {
-    console.error("Error getting feedback from Firestore:", error);
+    console.error("Error getting feedback:", error);
     return []; // Return empty array on error
   }
 }
 
-// Function to fetch policy documents from Google APIs
-async function fetchPolicyDocuments(): Promise<{
+// Fetch policy document and Google Sheets data
+async function fetchPolicyData(): Promise<{
   policy: string;
   vehicleList: string;
-  motorcyclesList: string;
-  boatsPlanesList: string;
   clothingList: string;
   itemsList: string;
 }> {
   try {
-    const { google } = require("googleapis");
+    // Policy document
+    const policyUrl = "https://docs.google.com/document/d/1hVzGDO5e54jd4-wS9SBMHPQMLyMTN_HJMf22KePaOR8/edit?tab=t.0";
+    const policyResponse = await fetch(policyUrl);
+    const policy = await policyResponse.text();
 
-    // Initialize Google Auth with service account
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        type: "service_account",
-        project_id: "test123-465815",
-        private_key_id: "7d10410caae0693c1ea0c67e0a1e1b3bd675cc89",
-        private_key:
-          "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCyMWD9GP1MsWqM\n8EbbvtU5r/8Dg4OEUdp1/V0ulVD3gywdJFfyn3J2dRsOif8f0gx6fvk/bzGPL1Ce\nDnv2aWdCNf57sOi05jCQ1cef4AMNKV55HO5pZzR1xxpZNeL+JPt5EOHbPpkOZ63Z\nVB19K+g5GhMybeiAeLGAIYIFsG6O4IwK2P83qOW8wUBs5wAWnfukzqJG+lGHf6JY\nd3gL3t8yQXAllbOWPjiOkDA6cRPmDpxtMrsqKhB3JN6LEAzCotuppX1YWIF+AxSI\nzXCvL8IniONggsyVcN51pQ0WZrET3b83rXsnmlMP11ifrQoJY3CQik1fyxgldio5\nHpmY8B0tAgMBAAECggEAFx+aRu3NvPyO56AsicqPT++bR6Dy2aJnl4Ub6PYebiga\n+uMi+IyhZWbX7oCQ11fCH8lHXeh3hW2t5/zYMEdIS4rHLdTstcDjT4A2afQ/YR9b\nr5rGA26Nm7UNIcOA49r3uSOsM2/Bm+FvaXLlar9eYL6V/CbQE4/V9NskTMmy5x5b\nh6gnObWxO5D0ozNQM9yd3ikuRZPThbAsx5EVGgDG5XfhH4Z8sZYVRFtR7jKDBa9R\nLGFMW+qFVpv30YXQu+iuJk8QjbtmY/OhnM6Dr5NBjnf5je3AUyBvFQ6HlVF0VEz9\nZ5SR2dnUS0L6fx8LEQA9qTuuPMcktBL3m4n8Xddt4QKBgQD1N9hghLX4zXeti8e5\n3fFmnS+UkOQk4Zx9nTumHbj9NtVaBoMyTPF7IJQGEBhw0r9uxHcvAcM3sm95hvr0\n6J7ySeK0jDykqQfksggM66GS0Z0qYGp9hlShY8bSNKJO6u+IiG/xeYic+0xtsKji\nHvbN163ylgxT6uSeGqgAIonP3QKBgQC6BxpcRMd13A/RRolLomlu8Vg2EeTVrwhC\nhllf9m36t+VRfB0E29OZnEOG9+1343uFvu74FL+6vO7gQKxRAg2aRGB9yjqXwMRq\nNUGqMv5ik7f6JLRZNPxLWnR6fcxXRTtIaY5B8zE9Cd0HA/sazhq9MoWG8tKS8hvM\njTCKYwFVkQKBgGJQ9awdCWir2KP4OyfGWJcvxnfmb9JpsniapePAXv8HERt7KPbt\n6pPXSAH2ShZSKPacRrzOFBssq40qFUxESBYUkZSZ9WZ/bu6+goPLpYhcCouHBKs3\nRI9AleKJv9msUEWJjnhepetqxgXkopGmoIV/R/rPNjofH3JUda84KdDxAoGBAI9h\nxCaT+KzV9fcWh+IdB2i0aooaVqeApjwoMyDs3q3dKcoZgIBrMvf14nJYC9dZJa7b\nkHL0AydaUj/UeTxi+bsKstihk3G96WX3MGqPrVSriKUrvzn2xfMKgDadWW92dBAH\nE9evKydhv9OVdOifLSrgktyFsloCc/zAYkZ3suKRAoGAGOs0l2df4yEjhDn3B6NN\nZnsiTOJtAZ172r4XbOgwmeG9lm+2tGvd4F8ODOuCdbmmZxtqMjFPph8q/fpD51z7\nFVk+Dhu1fnpMK4e6qr0OM2O4jT1uS8nEF3WHYS5lhcRnUcufZQegrRPJRxFxb2hy\n6ICoi604f6Q+Hz6Q3YUxq0A=\n-----END PRIVATE KEY-----\n",
-        client_email: "project@test123-465815.iam.gserviceaccount.com",
-        client_id: "100036543159103601272",
-        auth_uri: "https://accounts.google.com/o/oauth2/auth",
-        token_uri: "https://oauth2.googleapis.com/token",
-        auth_provider_x509_cert_url:
-          "https://www.googleapis.com/oauth2/v1/certs",
-        client_x509_cert_url:
-          "https://www.googleapis.com/robot/v1/metadata/x509/project%40test123-465815.iam.gserviceaccount.com",
-        universe_domain: "googleapis.com",
-      },
-      scopes: [
-        "https://www.googleapis.com/auth/documents.readonly",
-        "https://www.googleapis.com/auth/spreadsheets.readonly",
-      ],
-    });
+    // Google Sheets data
+    const sheetsUrl = "https://docs.google.com/spreadsheets/d/1Tg8sampEnrUZ0SCfec0dCR2UZGN0pUsf93WaDnyWfv0/edit?gid=1874456586#gid=1874456586";
+    const sheetsResponse = await fetch(sheetsUrl);
+    const sheetsData = await sheetsResponse.text();
 
-    const client = await auth.getClient();
-
-    // Initialize Google APIs
-    const docs = google.docs({ version: "v1", auth: client });
-    const sheets = google.sheets({ version: "v4", auth: client });
-
-    // Fetch policy document with new ID
-    const policyDoc = await docs.documents.get({
-      documentId: "1hVzGDO5e54jd4-wS9SBMHPQMLyMTN_HJMf22KePaOR8",
-    });
-
-    // Extract text from policy document
-    let policyText = "";
-    if (policyDoc.data.content) {
-      policyText = policyDoc.data.content.content
-        .map(
-          (item: any) =>
-            item.paragraph?.elements
-              ?.map((el: any) => el.textRun?.content || "")
-              .join("") || ""
-        )
-        .join("\n");
-    }
-
-    // Fetch all sheets from new spreadsheet ID
-    const spreadsheetId = "1Tg8sampEnrUZ0SCfec0dCR2UZGN0pUsf93WaDnyWfv0";
-
-    const [carsSheet, motorcyclesSheet, boatsSheet, clothingSheet, itemsSheet] =
-      await Promise.all([
-        sheets.spreadsheets.values.get({
-          spreadsheetId,
-          range: "CARS!A:Z",
-        }),
-        sheets.spreadsheets.values.get({
-          spreadsheetId,
-          range: "MOTORCYCLES!A:Z",
-        }),
-        sheets.spreadsheets.values.get({
-          spreadsheetId,
-          range: "BOATS/PLANES/HELICOPTERS!A:Z",
-        }),
-        sheets.spreadsheets.values.get({
-          spreadsheetId,
-          range: "CLOTHING LIST!A:Z",
-        }),
-        sheets.spreadsheets.values.get({
-          spreadsheetId,
-          range: "ITEMS!A:Z",
-        }),
-      ]);
-
-    // Convert sheet data to text format
-    const formatSheetData = (data: any) => {
-      if (!data.values) return "";
-      return data.values.map((row: any[]) => row.join(" | ")).join("\n");
-    };
-
-    console.log(
-      "✅ Successfully fetched all policy documents and sheets from Google APIs"
-    );
+    // Parse CSV data from sheets
+    const lines = sheetsData.split('\n');
+    const vehicleList = lines.filter(line => line.includes('vehicle') || line.includes('car')).join('\n');
+    const clothingList = lines.filter(line => line.includes('clothing') || line.includes('pants') || line.includes('shirt')).join('\n');
+    const itemsList = lines.filter(line => line.includes('item') || line.includes('misc')).join('\n');
 
     return {
-      policy: policyText || getDefaultPolicy(),
-      vehicleList: formatSheetData(carsSheet.data) || getDefaultVehicleList(),
-      motorcyclesList:
-        formatSheetData(motorcyclesSheet.data) || getDefaultMotorcyclesList(),
-      boatsPlanesList:
-        formatSheetData(boatsSheet.data) || getDefaultBoatsPlanesList(),
-      clothingList:
-        formatSheetData(clothingSheet.data) || getDefaultClothingList(),
-      itemsList: formatSheetData(itemsSheet.data) || getDefaultItemsList(),
+      policy,
+      vehicleList,
+      clothingList,
+      itemsList,
     };
   } catch (error) {
-    console.error(
-      "❌ Error fetching policy documents from Google APIs:",
-      error
-    );
-    console.log("🔄 Falling back to hardcoded policy content");
-
-    // Fallback to hardcoded content
-    return {
-      policy: getDefaultPolicy(),
-      vehicleList: getDefaultVehicleList(),
-      motorcyclesList: getDefaultMotorcyclesList(),
-      boatsPlanesList: getDefaultBoatsPlanesList(),
-      clothingList: getDefaultClothingList(),
-      itemsList: getDefaultItemsList(),
-    };
+    console.error("Error fetching policy data:", error);
+    throw error;
   }
 }
 
-// Default policy content functions
-function getDefaultPolicy(): string {
-  return `LIFEINVADER INTERNAL POLICY
-
-Ad Formatting Rules:
-1. Vehicle ads must use approved vehicle names from the official list
-2. All ads must follow the structure: "Selling/Offering/Hiring [Item/Service/Position] in [features]. Price: [Price]."
-3. Prices must be formatted properly (e.g., "$10,000,000" instead of "10000000")
-4. If no price is mentioned in selling ads, use "Price: Negotiable"
-5. If no price is mentioned in buying ads, use "Budget: Negotiable"
-6. Do not include insurance days remaining or extra information after the price
-7. Keep ads professional and policy-compliant
-
-Vehicle Formatting:
-- Use exact vehicle names from approved list
-- Structure: "Selling "[Vehicle Name]" in [features]. Price: [Price]."
-- Features should include: full configuration, visual upgrades, drift kit, insurance
-
-Business Formatting:
-- Structure: "Selling [Business Type] in [location/features]. Price: [Price]."
-- Include location and business features
-
-Service Formatting:
-- Structure: "Offering [Service Type] in [location/features]. Price: [Price]."
-
-Clothing Formatting:
-- Structure: "Selling [Clothing Items] in [condition/features]. Price: [Price]."
-- Use exact brand names from the list (e.g., "Abibas" not "Adidas")
-
-Job Formatting:
-- Structure: "Hiring [Position] in [location/requirements]. Salary: [Salary]."`;
-}
-
-function getDefaultVehicleList(): string {
-  return `APPROVED VEHICLE NAMES:
-Annis Skyline GT-R (R34)
-Annis GT-R I
-Annis RX-7 (FD)
-Annis RX-8
-Annis 350Z
-Declasse Camaro 2020
-Declasse Corvette C7
-Declasse Tahoe
-Dinka NSX 2017
-Elegy RH8
-FMJ
-Gauntlet
-Jester
-Kuruma
-Massacro
-Osiris
-Pegassi Zentorno
-Pegassi Infernus
-Pegassi Reaper
-Progen T20
-Progen Tyrus
-Sultan RS
-T20
-Turismo R
-Vacca
-Zentorno`;
-}
-
-function getDefaultMotorcyclesList(): string {
-  return `APPROVED MOTORCYCLE NAMES:
-Akuma
-Bati 801
-Bati 801RR
-Carbon RS
-Double T
-Faggio
-FCR 1000
-Hakuchou
-Hakuchou Drag
-Lectro
-Nemesis
-PCJ 600
-Ruffian
-Sanchez
-Sovereign
-Vader`;
-}
-
-function getDefaultBoatsPlanesList(): string {
-  return `APPROVED BOATS/PLANES/HELICOPTERS:
-Alpha-Z1
-Besra
-Buzzard Attack Chopper
-Cargobob
-Dodo
-Frogger
-Luxor
-Mallard
-Maverick
-Mesa
-P-996 LAZER
-Seabreeze
-Shamal
-Skylift
-Supervolito
-Supervolito Carbon
-Swift
-Swift Deluxe
-Titan
-Valkyrie
-Valkyrie MOD.0
-Volatus`;
-}
-
-function getDefaultClothingList(): string {
-  return `APPROVED CLOTHING BRANDS:
-Abibas (not Adidas)
-Muci (not Gucci)
-Nike
-Puma
-Reebok
-Under Armour
-Lacoste
-Ralph Lauren
-Tommy Hilfiger
-Calvin Klein
-Levi's
-Wrangler
-Dickies
-Carhartt
-The North Face
-Columbia
-Patagonia`;
-}
-
-function getDefaultItemsList(): string {
-  return `APPROVED ITEMS:
-Electronics
-Phones
-Computers
-Laptops
-Tablets
-Gaming Consoles
-Accessories
-Tools
-Equipment
-Furniture
-Appliances
-Books
-Media
-Sports Equipment
-Musical Instruments`;
-}
-
-// Function to analyze ad type and format pattern
-function analyzeAdPattern(input: string): {
-  adType: string;
-  formatPattern: string;
-} {
+// Detect category from input
+function detectCategory(input: string): string {
   const lowerInput = input.toLowerCase();
-
-  // Determine ad type
-  let adType = "general";
-  if (
-    lowerInput.includes("car") ||
-    lowerInput.includes("vehicle") ||
-    lowerInput.includes("gtr") ||
-    lowerInput.includes("nissan") ||
-    lowerInput.includes("motorcycle") ||
-    lowerInput.includes("boat") ||
-    lowerInput.includes("plane")
-  ) {
-    adType = "vehicle";
-  } else if (
-    lowerInput.includes("pants") ||
-    lowerInput.includes("shirt") ||
-    lowerInput.includes("clothing") ||
-    lowerInput.includes("adidas") ||
-    lowerInput.includes("abibas") ||
-    lowerInput.includes("nike")
-  ) {
-    adType = "clothing";
-  } else if (
-    lowerInput.includes("house") ||
-    lowerInput.includes("apartment") ||
-    lowerInput.includes("property") ||
-    lowerInput.includes("villa") ||
-    lowerInput.includes("mansion")
-  ) {
-    adType = "real estate";
-  } else if (
-    lowerInput.includes("business") ||
-    lowerInput.includes("restaurant") ||
-    lowerInput.includes("store") ||
-    lowerInput.includes("shop")
-  ) {
-    adType = "business";
-  } else if (
-    lowerInput.includes("service") ||
-    lowerInput.includes("repair") ||
-    lowerInput.includes("offering")
-  ) {
-    adType = "service";
-  } else if (
-    lowerInput.includes("hiring") ||
-    lowerInput.includes("job") ||
-    lowerInput.includes("position") ||
-    lowerInput.includes("chef")
-  ) {
-    adType = "job";
+  
+  if (lowerInput.includes('vehicle') || lowerInput.includes('car') || lowerInput.includes('motorcycle') || lowerInput.includes('boat') || lowerInput.includes('plane')) {
+    return 'auto';
   }
-
-  // Determine format pattern
-  let formatPattern = "selling";
-  if (
-    lowerInput.includes("buy") ||
-    lowerInput.includes("looking") ||
-    lowerInput.includes("want") ||
-    lowerInput.includes("need")
-  ) {
-    formatPattern = "buying";
-  } else if (lowerInput.includes("hiring") || lowerInput.includes("job")) {
-    formatPattern = "hiring";
-  } else if (
-    lowerInput.includes("offering") ||
-    lowerInput.includes("service")
-  ) {
-    formatPattern = "offering";
+  if (lowerInput.includes('hiring') || lowerInput.includes('job') || lowerInput.includes('work') || lowerInput.includes('employee')) {
+    return 'work';
   }
+  if (lowerInput.includes('service') || lowerInput.includes('repair') || lowerInput.includes('maintenance') || lowerInput.includes('offering')) {
+    return 'service';
+  }
+  if (lowerInput.includes('house') || lowerInput.includes('apartment') || lowerInput.includes('property') || lowerInput.includes('real estate')) {
+    return 'real estate';
+  }
+  if (lowerInput.includes('looking for') || lowerInput.includes('dating')) {
+    return 'dating';
+  }
+  if (lowerInput.includes('discount') || lowerInput.includes('sale') || lowerInput.includes('special offer')) {
+    return 'discount';
+  }
+  if (lowerInput.includes('business') || lowerInput.includes('store') || lowerInput.includes('restaurant') || lowerInput.includes('trading')) {
+    return 'business';
+  }
+  
+  return 'other'; // Default category
+}
 
+// Analyze ad pattern
+function analyzeAdPattern(input: string): { adType: string; formatPattern: string } {
+  const lowerInput = input.toLowerCase();
+  
+  let adType = 'general';
+  let formatPattern = 'selling';
+  
+  if (lowerInput.includes('hiring') || lowerInput.includes('job')) {
+    adType = 'job';
+    formatPattern = 'hiring';
+  } else if (lowerInput.includes('offering') || lowerInput.includes('service')) {
+    adType = 'service';
+    formatPattern = 'offering';
+  } else if (lowerInput.includes('trading') || lowerInput.includes('business')) {
+    adType = 'business';
+    formatPattern = 'trading';
+  } else if (lowerInput.includes('looking for')) {
+    adType = 'dating';
+    formatPattern = 'looking';
+  } else {
+    adType = 'general';
+    formatPattern = 'selling';
+  }
+  
   return { adType, formatPattern };
 }
 
-// Function to get relevant feedback for similar inputs with pattern matching
-async function getRelevantFeedback(
-  input: string,
-  category: string
-): Promise<string> {
-  try {
-    const feedbacks = await getRelevantFeedbackFromFirestore(
-      input,
-      category,
-      3
-    );
-    const { adType, formatPattern } = analyzeAdPattern(input);
-
-    // First, try to find feedback that matches both ad type and format pattern
-    let relevantFeedbacks = feedbacks.filter((feedback: FeedbackEntry) => {
-      const feedbackPattern = analyzeAdPattern(feedback.originalInput);
-      return (
-        feedbackPattern.adType === adType &&
-        feedbackPattern.formatPattern === formatPattern
-      );
-    });
-
-    // If no exact match, try to find feedback that matches ad type only
-    if (relevantFeedbacks.length === 0) {
-      relevantFeedbacks = feedbacks.filter((feedback: FeedbackEntry) => {
-        const feedbackPattern = analyzeAdPattern(feedback.originalInput);
-        return feedbackPattern.adType === adType;
-      });
-    }
-
-    // If still no match, try to find feedback that matches format pattern only
-    if (relevantFeedbacks.length === 0) {
-      relevantFeedbacks = feedbacks.filter((feedback: FeedbackEntry) => {
-        const feedbackPattern = analyzeAdPattern(feedback.originalInput);
-        return feedbackPattern.formatPattern === formatPattern;
-      });
-    }
-
-    // If still no match, fall back to enhanced keyword similarity
-    if (relevantFeedbacks.length === 0) {
-      relevantFeedbacks = feedbacks.filter((feedback: FeedbackEntry) => {
-        const inputWords = input.toLowerCase().split(/\s+/);
-        const feedbackWords = feedback.originalInput.toLowerCase().split(/\s+/);
-
-        // Count exact word matches
-        const exactMatches = inputWords.filter((word) =>
-          feedbackWords.includes(word)
-        );
-
-        // Count semantic matches (similar words)
-        const semanticMatches = inputWords.filter((inputWord) =>
-          feedbackWords.some(
-            (feedbackWord) => calculateSimilarity(inputWord, feedbackWord) > 0.7
-          )
-        );
-
-        // Count category-specific keyword matches
-        const categoryKeywords: Record<string, string[]> = {
-          auto: [
-            "car",
-            "vehicle",
-            "gtr",
-            "nissan",
-            "bmw",
-            "sell",
-            "buy",
-            "price",
-          ],
-          "clothing store": [
-            "pants",
-            "shoes",
-            "shirt",
-            "adidas",
-            "nike",
-            "sell",
-            "buy",
-            "price",
-          ],
-          office: ["job", "hire", "work", "employee", "position", "salary"],
-          "service station": [
-            "service",
-            "repair",
-            "maintenance",
-            "offer",
-            "work",
-          ],
-          "misc/own business": [
-            "business",
-            "restaurant",
-            "house",
-            "apartment",
-            "sell",
-            "buy",
-            "price",
-          ],
-        };
-
-        const categoryKeyMatches =
-          categoryKeywords[category]?.filter(
-            (keyword: string) =>
-              inputWords.includes(keyword) && feedbackWords.includes(keyword)
-          ) || [];
-
-        const totalMatches =
-          exactMatches.length +
-          semanticMatches.length +
-          categoryKeyMatches.length;
-        return totalMatches >= 2; // At least 2 matches (exact, semantic, or category-specific)
-      });
-    }
-
-    // Take up to 3 most recent relevant feedbacks
-    const recentFeedbacks = relevantFeedbacks
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, 3);
-
-    if (recentFeedbacks.length === 0) {
-      return "";
-    }
-
-    // Create learning instructions from feedback
-    const learningInstructions = `LEARN FROM THESE CORRECTIONS:
-${recentFeedbacks
-  .map(
-    (feedback) =>
-      `❌ WRONG: "${feedback.aiResponse}"\n✅ CORRECT: "${feedback.userCorrection}"\n`
-  )
-  .join("\n")}
-
-APPLY THESE RULES:
-1. NEVER duplicate "Selling", "Price:", or "Budget:" if already present
-2. Use exact formatting patterns from corrections above
-3. Preserve original item descriptions exactly
-4. Use periods for thousands: $70.000 (not $70,000)
-5. Apply these patterns to similar ${adType} ${formatPattern} ads`;
-
-    return learningInstructions;
-  } catch (error) {
-    console.error("Error getting relevant feedback:", error);
-    return "";
-  }
-}
-
-// Function to format ad content using Google Gemini AI (FREE - Recommended)
+// Format ad using Gemini AI
 async function formatAdWithAI(
   adContent: string,
   categories: string[],
   categoryDisplayNames: any
 ): Promise<string> {
-  // Reference to LifeInvader Internal Policy: https://docs.google.com/document/d/1zNTpF4bmcjOVef6XmCvq3x6DxPkWAFNdJJE5mwS5D3o/edit?tab=t.0
-
   try {
-    console.log("🤖 Using Google Gemini AI (FREE) for ad formatting...");
+    console.log("🤖 Using Google Gemini AI for ad formatting...");
 
-    // Check if Gemini API key is available
     const geminiApiKey = process.env.GEMINI_API_KEY;
-
     if (!geminiApiKey || geminiApiKey === "your_gemini_api_key_here") {
-      console.log("❌ Gemini API key not configured, using basic formatting");
-      return formatAdBasic(adContent, categories, categoryDisplayNames);
+      console.log("❌ Gemini API key not configured");
+      return "ad cannot be created";
     }
 
-    // Fetch the actual policy documents
-    const {
-      policy,
-      vehicleList,
-      motorcyclesList,
-      boatsPlanesList,
-      clothingList,
-      itemsList,
-    } = await fetchPolicyDocuments();
+    // Fetch policy data
+    const { policy, vehicleList, clothingList, itemsList } = await fetchPolicyData();
 
-    // Determine the category first to get relevant feedback
+    // Detect category and get relevant feedback
     const detectedCategory = detectCategory(adContent);
-    const relevantFeedback = await getRelevantFeedback(
-      adContent,
-      detectedCategory
-    );
+    const relevantFeedback = await getRelevantFeedback(adContent, detectedCategory);
 
-    // Extract exact names using fuzzy matching
-    const vehicleName = extractVehicleName(adContent, vehicleList);
-    const clothingName = extractClothingName(adContent, clothingList);
+    // Create learning context from feedback
+    const learningContext = relevantFeedback.length > 0 
+      ? `\n\nLEARN FROM THESE CORRECTIONS:\n${relevantFeedback.map(f => 
+          `❌ WRONG: "${f.aiResponse}"\n✅ CORRECT: "${f.userCorrection}"\n`
+        ).join('\n')}`
+      : '';
 
-    // Debug logging
-    console.log(`🔍 Vehicle extraction for "${adContent}":`, vehicleName);
-    console.log(`🔍 Clothing extraction for "${adContent}":`, clothingName);
+    // Create system prompt
+    const systemPrompt = `You are a LifeInvader ad formatter. Format ads according to the policy document.
 
-    // Add extracted names to the prompt for better accuracy
-    const extractedNames = vehicleName
-      ? `\nEXTRACTED VEHICLE NAME: "${vehicleName}"`
-      : "";
-    const extractedClothing = clothingName
-      ? `\nEXTRACTED CLOTHING NAME: "${clothingName}"`
-      : "";
-
-    // Create the system prompt with actual policy context and feedback
-    const systemPrompt = `You are an expert LifeInvader ad formatter. Format user ads according to the LifeInvader Internal Policy.
-
-CRITICAL ANTI-DUPLICATION RULES:
-1. NEVER duplicate "Selling" - if input already says "Selling", don't add another "Selling"
-2. NEVER duplicate "Price:" - if input already has "Price:", don't add another "Price:"
-3. NEVER duplicate "Budget:" - if input already has "Budget:", don't add another "Budget:"
-4. PRESERVE original item descriptions exactly - don't change "vest skins" to "armoured vest skin"
-5. If input already has proper structure, just clean it up, don't rebuild it
-
-EXTRACTED NAMES FROM USER INPUT:${extractedNames}${extractedClothing}
-
-CRITICAL: If a vehicle/clothing name is extracted above, you MUST use that exact name in your response.
+CRITICAL RULES:
+1. NEVER duplicate "Selling", "Price:", or "Budget:" if already present
+2. Use exact names from the provided lists
+3. Follow the policy document rules exactly
+4. If you cannot format the ad properly, return "ad cannot be created"
+5. Always assign one of these 8 categories: auto, work, service, real estate, other, discount, dating, business
 
 POLICY DOCUMENT:
 ${policy}
@@ -666,26 +211,20 @@ ${policy}
 VEHICLE LIST:
 ${vehicleList}
 
-MOTORCYCLES LIST:
-${motorcyclesList}
-
-BOATS/PLANES/HELICOPTERS LIST:
-${boatsPlanesList}
-
 CLOTHING LIST:
 ${clothingList}
 
 ITEMS LIST:
 ${itemsList}
 
-OFFICIAL CATEGORIES (USE ONLY THESE 8):
-- auto: vehicles, cars, motorcycles, boats, planes, helicopters
-- work: jobs, hiring, employment, positions
-- service: services, repairs, maintenance, assistance
-- real estate: houses, apartments, property, real estate
-- other: clothing items, general items, miscellaneous
+CATEGORIES:
+- auto: vehicles, cars, motorcycles, boats, planes
+- work: jobs, hiring, employment
+- service: services, repairs, maintenance
+- real estate: houses, apartments, property
+- other: clothing, general items, miscellaneous
 - discount: discounts, sales, special offers
-- dating: ONLY for ads starting with "Looking for..."
+- dating: only for ads starting with "Looking for..."
 - business: business sales, purchases, companies
 
 FORMATTING EXAMPLES:
@@ -699,1316 +238,53 @@ FORMATTING EXAMPLES:
 PRICE FORMATTING:
 - Use periods for thousands: $70.000 (not $70,000)
 - For millions: $1 Million. (with period)
-- Preserve original price structure (e.g., "each", "per unit")
 
-Output format: Just the formatted ad text, followed by "Category: [OFFICIAL_CATEGORY_NAME]" on a new line.
+Output format: Just the formatted ad text, followed by "Category: [CATEGORY_NAME]" on a new line.
 
-${relevantFeedback}`;
-
-    // Create the user message
-    const userMessage = `Please format this ad according to the LifeInvader Internal Policy: "${adContent}"`;
+${learningContext}`;
 
     // Initialize Gemini AI
     const genAI = new GoogleGenerativeAI(geminiApiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Call Gemini API
-    const result = await model.generateContent([systemPrompt, userMessage]);
-
+    const result = await model.generateContent([systemPrompt, `Format this ad: "${adContent}"`]);
     const formattedResponse = result.response.text().trim();
 
-    if (!formattedResponse) {
-      throw new Error("No response from Gemini");
+    if (!formattedResponse || formattedResponse.toLowerCase().includes('cannot be created')) {
+      return "ad cannot be created";
     }
 
-    // Parse the AI response to extract formatted ad and category
+    // Parse response
     const lines = formattedResponse.trim().split("\n");
     let formattedAd = lines[0];
-    
-    // Apply anti-duplication fixes to the AI response
-    formattedAd = formattedAd
-      .replace(/Selling\s+Selling/g, "Selling") // Remove duplicate "Selling"
-      .replace(/Price:\s*Price:/g, "Price:") // Remove duplicate "Price:"
-      .replace(/Budget:\s*Budget:/g, "Budget:") // Remove duplicate "Budget:"
-      .replace(/\s+/g, " ")
-      .trim();
-    
     const categoryLine = lines.find((line) => line.startsWith("Category:"));
 
-    // Define official categories
-    const officialCategories = [
-      "auto",
-      "work",
-      "service",
-      "real estate",
-      "other",
-      "discount",
-      "dating",
-      "business",
-    ];
+    // Apply anti-duplication fixes
+    formattedAd = formattedAd
+      .replace(/Selling\s+Selling/g, "Selling")
+      .replace(/Price:\s*Price:/g, "Price:")
+      .replace(/Budget:\s*Budget:/g, "Budget:")
+      .replace(/\s+/g, " ")
+      .trim();
 
-    let category = detectedCategory; // Default to detected category
-
+    // Extract category
+    let category = detectedCategory;
     if (categoryLine) {
-      const extractedCategory = categoryLine
-        .replace("Category:", "")
-        .trim()
-        .toLowerCase();
-      // Only use the extracted category if it's an official one
+      const extractedCategory = categoryLine.replace("Category:", "").trim().toLowerCase();
+      const officialCategories = ['auto', 'work', 'service', 'real estate', 'other', 'discount', 'dating', 'business'];
       if (officialCategories.includes(extractedCategory)) {
         category = extractedCategory;
-      } else {
-        console.log(
-          `⚠️ AI returned non-official category: "${extractedCategory}", using detected category: "${detectedCategory}"`
-        );
       }
     }
 
     console.log("✅ Gemini AI formatting completed successfully");
-    
-    // Ensure the Gemini indicator is properly formatted
-    const finalResponse = `🤖 ${formattedAd}\nCategory: ${category}`;
-    console.log("🤖 Final Gemini response:", finalResponse);
-    return finalResponse;
+    return `🤖 ${formattedAd}\nCategory: ${category}`;
+
   } catch (error) {
     console.error("❌ Gemini AI error:", error);
-    console.log("🔄 Using basic formatting as fallback...");
-    return formatAdBasic(adContent, categories, categoryDisplayNames);
+    return "ad cannot be created";
   }
-}
-
-// Function to calculate similarity between two strings (fuzzy matching)
-function calculateSimilarity(str1: string, str2: string): number {
-  const s1 = str1.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const s2 = str2.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-  if (s1 === s2) return 1.0;
-  if (s1.includes(s2) || s2.includes(s1)) return 0.9;
-
-  // For vehicle names, check if words match
-  const s1Words = s1.split(/\s+/);
-  const s2Words = s2.split(/\s+/);
-
-  let wordMatches = 0;
-  for (const word1 of s1Words) {
-    for (const word2 of s2Words) {
-      if (word1 === word2) {
-        wordMatches++;
-      } else if (word1.includes(word2) || word2.includes(word1)) {
-        wordMatches += 0.8;
-      }
-    }
-  }
-
-  if (wordMatches > 0) {
-    return Math.min(
-      0.95,
-      wordMatches / Math.max(s1Words.length, s2Words.length)
-    );
-  }
-
-  // Simple Levenshtein-like similarity for character-level matching
-  const longer = s1.length > s2.length ? s1 : s2;
-  const shorter = s1.length > s2.length ? s2 : s1;
-
-  if (longer.length === 0) return 1.0;
-
-  const distance = longer.length - shorter.length;
-  const maxDistance = Math.floor(longer.length * 0.3); // Allow 30% difference
-
-  if (distance > maxDistance) return 0;
-
-  let matches = 0;
-  for (let i = 0; i < shorter.length; i++) {
-    if (longer.includes(shorter[i])) matches++;
-  }
-
-  return matches / longer.length;
-}
-
-// Function to find best match from a list using fuzzy matching
-function findBestMatch(
-  input: string,
-  options: string[]
-): { match: string; similarity: number } | null {
-  let bestMatch = null;
-  let bestSimilarity = 0;
-
-  for (const option of options) {
-    const similarity = calculateSimilarity(input, option);
-    if (similarity > bestSimilarity && similarity > 0.6) {
-      // Minimum 60% similarity
-      bestSimilarity = similarity;
-      bestMatch = option;
-    }
-  }
-
-  return bestMatch ? { match: bestMatch, similarity: bestSimilarity } : null;
-}
-
-// Function to extract and match vehicle names from input
-function extractVehicleName(input: string, vehicleList: string): string {
-  const lowerInput = input.toLowerCase();
-  const vehicleLines = vehicleList.split("\n").filter((line) => line.trim());
-  const vehicleNames = vehicleLines
-    .map((line) => line.split("|")[0]?.trim())
-    .filter((name) => name);
-
-  // First, try exact matches
-  for (const vehicleName of vehicleNames) {
-    if (lowerInput.includes(vehicleName.toLowerCase())) {
-      return vehicleName;
-    }
-  }
-
-  // Then try fuzzy matching for common vehicle keywords
-  const vehicleKeywords = [
-    "gtr",
-    "r34",
-    "skyline",
-    "nissan",
-    "mazda",
-    "bmw",
-    "mercedes",
-    "ferrari",
-    "lamborghini",
-    "porsche",
-    "audi",
-    "toyota",
-    "honda",
-    "ford",
-    "dodge",
-    "chevrolet",
-    "camaro",
-    "tahoe",
-    "nsx",
-    "elegy",
-    "fmj",
-    "gauntlet",
-    "jester",
-    "land cruiser",
-    "supra",
-    "tundra",
-    "r8",
-    "rs6",
-    "rs7",
-    "pariah",
-    "huayra",
-    "performante",
-    "re-7b",
-    "schafter",
-    "tempesta",
-    "tezeract",
-    "m3",
-    "m4",
-    "vagner",
-    "raptor",
-    "x80",
-    "zentorno",
-    "mustang",
-    "corvette",
-    "rx7",
-    "progen",
-    "p1",
-    "t20",
-    "chiron",
-    "truffade",
-    "motorcycle",
-    "bike",
-    "boat",
-    "plane",
-    "helicopter",
-  ];
-
-  // Debug: Log available vehicle names
-  console.log("🔍 Available vehicle names:", vehicleNames.slice(0, 10)); // First 10 for debugging
-
-  // Try fuzzy matching for common vehicle keywords
-  for (const keyword of vehicleKeywords) {
-    if (lowerInput.includes(keyword)) {
-      console.log(`🔍 Found keyword "${keyword}" in input`);
-      const match = findBestMatch(keyword, vehicleNames);
-      if (match) {
-        console.log(
-          `🔍 Found match for "${keyword}": "${match.match}" (similarity: ${match.similarity})`
-        );
-        return match.match;
-      }
-    }
-  }
-
-  // Try fuzzy matching the entire input against vehicle names
-  const inputWords = lowerInput.split(/\s+/).filter((word) => word.length > 2);
-  console.log(`🔍 Input words:`, inputWords);
-
-  for (const word of inputWords) {
-    const match = findBestMatch(word, vehicleNames);
-    if (match && match.similarity > 0.7) {
-      console.log(
-        `🔍 Found match for word "${word}": "${match.match}" (similarity: ${match.similarity})`
-      );
-      return match.match;
-    }
-  }
-
-  // Try partial matching for vehicle names
-  for (const vehicleName of vehicleNames) {
-    const lowerVehicleName = vehicleName.toLowerCase();
-    const vehicleWords = lowerVehicleName.split(/\s+/);
-
-    for (const inputWord of inputWords) {
-      for (const vehicleWord of vehicleWords) {
-        if (
-          vehicleWord.includes(inputWord) ||
-          inputWord.includes(vehicleWord)
-        ) {
-          if (vehicleWord.length > 2 && inputWord.length > 2) {
-            console.log(
-              `🔍 Found partial match: "${inputWord}" matches "${vehicleWord}" in "${vehicleName}"`
-            );
-            return vehicleName;
-          }
-        }
-      }
-    }
-  }
-
-  console.log("🔍 No vehicle match found");
-  return "";
-}
-
-// Function to extract and match clothing names from input
-function extractClothingName(input: string, clothingList: string): string {
-  const lowerInput = input.toLowerCase();
-  const clothingLines = clothingList.split("\n").filter((line) => line.trim());
-  const clothingNames = clothingLines
-    .map((line) => line.split("|")[0]?.trim())
-    .filter((name) => name);
-
-  // First, try exact matches
-  for (const clothingName of clothingNames) {
-    if (lowerInput.includes(clothingName.toLowerCase())) {
-      return clothingName;
-    }
-  }
-
-  // Then try fuzzy matching for common clothing keywords
-  const clothingKeywords = [
-    "adidas",
-    "abibas",
-    "nike",
-    "puma",
-    "reebok",
-    "under armour",
-    "new balance",
-    "converse",
-    "vans",
-    "jordan",
-    "yeezy",
-    "supreme",
-    "off-white",
-    "gucci",
-    "louis vuitton",
-    "balenciaga",
-    "versace",
-    "prada",
-    "chanel",
-    "pants",
-    "shirt",
-    "hoodie",
-    "shoes",
-    "sneakers",
-    "jacket",
-    "dress",
-    "skirt",
-    "jeans",
-    "sweater",
-    "coat",
-    "suit",
-    "tie",
-    "hat",
-    "cap",
-    "bag",
-    "purse",
-    "wallet",
-    "belt",
-    "watch",
-    "jewelry",
-    "ring",
-    "necklace",
-    "bracelet",
-    "earrings",
-    "sunglasses",
-    "glasses",
-  ];
-
-  for (const keyword of clothingKeywords) {
-    if (lowerInput.includes(keyword)) {
-      const match = findBestMatch(keyword, clothingNames);
-      if (match) {
-        return match.match;
-      }
-    }
-  }
-
-  return "";
-}
-
-// Function to format price according to policy rules
-function formatPrice(price: string): string {
-  // Remove any non-numeric characters except decimal points
-  const numericPrice = price.replace(/[^\d.]/g, "");
-
-  // Parse as number
-  const num = parseFloat(numericPrice);
-  if (isNaN(num)) return price; // Return original if not a valid number
-
-  // Format according to policy: use period (.) for thousands, not comma
-  if (num >= 1000000) {
-    return `$${num / 1000000} Million.`;
-  } else if (num >= 1000) {
-    return `$${num.toLocaleString("en-US").replace(/,/g, ".")}`;
-  } else {
-    return `$${num}`;
-  }
-}
-
-// Function to detect category from input with improved logic
-function detectCategory(input: string): string {
-  const lowerInput = input.toLowerCase();
-
-  // Check for buying vs selling intent first
-  const isBuying =
-    lowerInput.includes("buy") ||
-    lowerInput.includes("looking") ||
-    lowerInput.includes("want") ||
-    lowerInput.includes("need");
-  const isSelling =
-    lowerInput.includes("sell") ||
-    lowerInput.includes("selling") ||
-    lowerInput.includes("offering");
-  const isHiring =
-    lowerInput.includes("hiring") ||
-    lowerInput.includes("job") ||
-    lowerInput.includes("position") ||
-    lowerInput.includes("employee");
-  const isService =
-    lowerInput.includes("service") ||
-    lowerInput.includes("offering") ||
-    lowerInput.includes("repair") ||
-    lowerInput.includes("maintenance");
-  const isDating =
-    lowerInput.includes("looking for") ||
-    lowerInput.includes("sugar") ||
-    lowerInput.includes("dating") ||
-    lowerInput.includes("relationship") ||
-    lowerInput.includes("girlfriend") ||
-    lowerInput.includes("boyfriend");
-
-  // Vehicle detection - comprehensive with priority
-  const vehicleKeywords = [
-    "vehicle",
-    "car",
-    "gtr",
-    "r34",
-    "rx7",
-    "mustang",
-    "corvette",
-    "skyline",
-    "nissan",
-    "mazda",
-    "bmw",
-    "mercedes",
-    "ferrari",
-    "lamborghini",
-    "porsche",
-    "audi",
-    "toyota",
-    "honda",
-    "ford",
-    "dodge",
-    "chevrolet",
-    "camaro",
-    "tahoe",
-    "nsx",
-    "elegy",
-    "fmj",
-    "gauntlet",
-    "jester",
-    "land cruiser",
-    "supra",
-    "tundra",
-    "r8",
-    "rs6",
-    "rs7",
-    "pariah",
-    "huayra",
-    "performante",
-    "re-7b",
-    "schafter",
-    "tempesta",
-    "tezeract",
-    "m3",
-    "m4",
-    "vagner",
-    "raptor",
-    "x80",
-    "zentorno",
-    "drift",
-    "tuned",
-    "engine",
-    "transmission",
-    "wheels",
-    "brakes",
-    "spoiler",
-    "neon",
-    "insurance",
-    "motorcycle",
-    "bike",
-    "boat",
-    "plane",
-    "helicopter",
-  ];
-
-  if (vehicleKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "auto";
-  }
-
-  // Clothing detection - comprehensive
-  const clothingKeywords = [
-    "clothing",
-    "clothes",
-    "shirt",
-    "pants",
-    "trousers",
-    "hoodie",
-    "shoes",
-    "sneakers",
-    "jacket",
-    "dress",
-    "skirt",
-    "jeans",
-    "sweater",
-    "coat",
-    "suit",
-    "tie",
-    "hat",
-    "cap",
-    "bag",
-    "purse",
-    "wallet",
-    "belt",
-    "watch",
-    "jewelry",
-    "jewellery",
-    "ring",
-    "necklace",
-    "bracelet",
-    "earrings",
-    "sunglasses",
-    "glasses",
-    "luminous",
-    "glowing",
-    "gucci",
-    "muci",
-    "designer",
-    "brand",
-    "fashion",
-    "style",
-    "outfit",
-    "wardrobe",
-    "adidas",
-    "abibas",
-    "nike",
-  ];
-
-  if (clothingKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "other";
-  }
-
-  // Real estate detection - comprehensive
-  const realEstateKeywords = [
-    "villa",
-    "mansion",
-    "house",
-    "apartment",
-    "property",
-    "real estate",
-    "vinewood",
-    "hills",
-    "garage",
-    "warehouse",
-    "rooftop",
-    "helipad",
-    "pool",
-    "tennis",
-    "interior",
-    "plantation",
-    "garden",
-    "swimming",
-    "penthouse",
-    "condo",
-    "townhouse",
-    "duplex",
-    "studio",
-    "loft",
-    "bungalow",
-    "cottage",
-    "cabin",
-    "chalet",
-    "beach house",
-    "lake house",
-  ];
-
-  if (realEstateKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "real estate";
-  }
-
-  // Job detection - high priority
-  const jobKeywords = [
-    "hiring",
-    "job",
-    "position",
-    "chef",
-    "employee",
-    "staff",
-    "worker",
-    "vacancy",
-    "employment",
-    "career",
-    "salary",
-    "wage",
-    "pay",
-    "manager",
-    "assistant",
-    "driver",
-    "security",
-    "guard",
-    "mechanic",
-    "technician",
-    "sales",
-    "marketing",
-    "accountant",
-    "lawyer",
-    "doctor",
-    "nurse",
-    "teacher",
-    "instructor",
-    "trainer",
-    "consultant",
-  ];
-
-  if (jobKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "work";
-  }
-
-  // Service detection
-  const serviceKeywords = [
-    "service",
-    "repair",
-    "offering",
-    "maintenance",
-    "help",
-    "assistance",
-    "consulting",
-    "support",
-    "installation",
-    "cleaning",
-    "transport",
-    "delivery",
-    "towing",
-    "moving",
-    "construction",
-    "renovation",
-    "painting",
-    "plumbing",
-    "electrical",
-    "carpentry",
-    "landscaping",
-    "gardening",
-    "catering",
-    "photography",
-    "videography",
-    "design",
-    "web design",
-    "graphic design",
-    "tutoring",
-    "coaching",
-    "training",
-  ];
-
-  if (serviceKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "service";
-  }
-
-  // Business detection - broader
-  const businessKeywords = [
-    "business",
-    "restaurant",
-    "store",
-    "shop",
-    "company",
-    "enterprise",
-    "firm",
-    "corporation",
-    "establishment",
-    "venue",
-    "facility",
-    "operation",
-    "franchise",
-    "outlet",
-    "branch",
-    "office",
-    "warehouse",
-    "factory",
-    "manufacturing",
-    "retail",
-    "wholesale",
-    "import",
-    "export",
-    "trading",
-    "investment",
-    "consulting firm",
-  ];
-
-  if (businessKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "business";
-  }
-
-  // Dating detection
-  if (isDating) {
-    return "dating";
-  }
-
-  // Discount detection
-  const discountKeywords = [
-    "discount",
-    "sale",
-    "special offer",
-    "promotion",
-    "deal",
-    "bargain",
-    "clearance",
-    "reduced",
-    "cheap",
-    "affordable",
-    "on sale",
-    "limited time",
-    "offer",
-  ];
-
-  if (discountKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "discount";
-  }
-
-  // Default based on intent
-  if (isHiring) return "work";
-  if (isService) return "service";
-  if (isBuying || isSelling) return "other"; // Default for buying/selling
-
-  return "other"; // Final default
-}
-
-// Fallback basic formatting function
-function formatAdBasic(
-  adContent: string,
-  categories: string[],
-  categoryDisplayNames: any
-): string {
-  const content = adContent.trim();
-  const lowerContent = content.toLowerCase();
-
-  // Determine category based on content - USING ONLY 8 OFFICIAL CATEGORIES
-  let suggestedCategory = "auto";
-
-  if (
-    lowerContent.includes("car") ||
-    lowerContent.includes("vehicle") ||
-    lowerContent.includes("auto") ||
-    lowerContent.includes("nissan") ||
-    lowerContent.includes("gtr") ||
-    lowerContent.includes("tuned") ||
-    lowerContent.includes("engine") ||
-    lowerContent.includes("transmission") ||
-    lowerContent.includes("wheels") ||
-    lowerContent.includes("brakes") ||
-    lowerContent.includes("drift") ||
-    lowerContent.includes("neon") ||
-    lowerContent.includes("spoiler") ||
-    lowerContent.includes("windows") ||
-    lowerContent.includes("insurance")
-  ) {
-    suggestedCategory = "auto";
-  } else if (
-    lowerContent.includes("clothing") ||
-    lowerContent.includes("shirt") ||
-    lowerContent.includes("pants") ||
-    lowerContent.includes("shoes") ||
-    lowerContent.includes("jacket") ||
-    lowerContent.includes("hat") ||
-    lowerContent.includes("mask")
-  ) {
-    suggestedCategory = "other";
-  } else if (
-    lowerContent.includes("job") ||
-    lowerContent.includes("work") ||
-    lowerContent.includes("hire") ||
-    lowerContent.includes("employment") ||
-    lowerContent.includes("position") ||
-    lowerContent.includes("vacancy")
-  ) {
-    suggestedCategory = "work";
-  } else if (
-    lowerContent.includes("service") ||
-    lowerContent.includes("repair") ||
-    lowerContent.includes("maintenance") ||
-    lowerContent.includes("help") ||
-    lowerContent.includes("assistance")
-  ) {
-    suggestedCategory = "service";
-  } else if (
-    lowerContent.includes("business") ||
-    lowerContent.includes("company") ||
-    lowerContent.includes("enterprise")
-  ) {
-    suggestedCategory = "business";
-  } else if (
-    lowerContent.includes("house") ||
-    lowerContent.includes("apartment") ||
-    lowerContent.includes("property") ||
-    lowerContent.includes("villa") ||
-    lowerContent.includes("mansion")
-  ) {
-    suggestedCategory = "real estate";
-  } else if (
-    lowerContent.includes("discount") ||
-    lowerContent.includes("sale") ||
-    lowerContent.includes("special offer") ||
-    lowerContent.includes("promotion")
-  ) {
-    suggestedCategory = "discount";
-  } else if (
-    lowerContent.includes("looking for") ||
-    lowerContent.includes("dating") ||
-    lowerContent.includes("relationship")
-  ) {
-    suggestedCategory = "dating";
-  } else if (
-    lowerContent.includes("sale") ||
-    lowerContent.includes("selling") ||
-    lowerContent.includes("buy") ||
-    lowerContent.includes("purchase")
-  ) {
-    suggestedCategory = "other";
-  }
-
-  // Format the ad content according to LifeInvader Internal Policy
-  let formattedAd = content;
-
-  // Extract and format price according to policy
-  let priceMatch = formattedAd.match(/(\d+)\s*(million|k|thousand)/i);
-  if (!priceMatch) {
-    // Look for large numbers that might be prices (like 10000000, 1200000)
-    const largeNumberMatch = formattedAd.match(/(\d{7,})/);
-    if (largeNumberMatch) {
-      const amount = parseInt(largeNumberMatch[1]);
-      if (amount >= 1000000) {
-        // Format with commas as thousands separator
-        const formattedPrice = `$${amount.toLocaleString()}`;
-        formattedAd = formattedAd.replace(largeNumberMatch[1], formattedPrice);
-        priceMatch = [formattedPrice, amount.toString(), "million"];
-      }
-    }
-  } else {
-    const amount = parseInt(priceMatch[1]);
-    const unit = priceMatch[2].toLowerCase();
-    let formattedPrice;
-    if (unit === "million") {
-      // Convert millions to full number with commas
-      const fullAmount = amount * 1000000;
-      formattedPrice = `$${fullAmount.toLocaleString()}`;
-    } else if (unit === "k" || unit === "thousand") {
-      // Convert thousands to full number with commas
-      const fullAmount = amount * 1000;
-      formattedPrice = `$${fullAmount.toLocaleString()}`;
-    } else {
-      formattedPrice = `$${amount.toLocaleString()}`;
-    }
-    formattedAd = formattedAd.replace(priceMatch[0], formattedPrice);
-  }
-
-  // Extract price for final formatting
-  let price = "";
-  if (priceMatch) {
-    if (priceMatch[2] && priceMatch[2].toLowerCase() === "million") {
-      const millions = parseFloat(priceMatch[1]);
-      if (millions === Math.floor(millions)) {
-        price = `$${millions} Million`;
-      } else {
-        price = `$${millions.toFixed(1)} Million`;
-      }
-    } else if (priceMatch[2] && priceMatch[2].toLowerCase() === "k") {
-      price = `$${priceMatch[1]}K`;
-    } else {
-      // Handle the case where we formatted a large number
-      price = priceMatch[0];
-    }
-  } else {
-    // No price found - determine if it's a selling or buying ad
-    const isBuyingAd =
-      lowerContent.includes("buy") ||
-      lowerContent.includes("looking") ||
-      lowerContent.includes("want") ||
-      lowerContent.includes("need");
-    if (isBuyingAd) {
-      price = "Budget: Negotiable";
-    } else {
-      price = "Price: Negotiable";
-    }
-  }
-
-  // Format based on category
-  if (suggestedCategory === "auto") {
-    // Vehicle formatting according to policy
-    // Map vehicle names to approved names from policy
-    const vehicleMappings: { [key: string]: string } = {
-      "nissan gtr r34": "Annis Skyline GT-R (R34)",
-      "nissan gtr": "Annis GT-R I",
-      "gtr r34": "Annis Skyline GT-R (R34)",
-      gtr: "Annis GT-R I",
-      skyline: "Annis Skyline GT-R (R34)",
-      r34: "Annis Skyline GT-R (R34)",
-      "nissan 350z": "Annis 350Z",
-      "350z": "Annis 350Z",
-      "mazda rx7": "Annis RX-7 (FD)",
-      "mazda rx-7": "Annis RX-7 (FD)",
-      rx7: "Annis RX-7 (FD)",
-      "rx-7": "Annis RX-7 (FD)",
-      "mazda rx8": "Annis RX-8",
-      "mazda rx-8": "Annis RX-8",
-      rx8: "Annis RX-8",
-      "rx-8": "Annis RX-8",
-      camaro: "Declasse Camaro 2020",
-      corvette: "Declasse Corvette C7",
-      tahoe: "Declasse Tahoe",
-      "honda nsx": "Dinka NSX 2017",
-      nsx: "Dinka NSX 2017",
-      elegy: "Elegy RH8",
-      "ford mustang": "FMJ",
-      mustang: "FMJ",
-      "dodge challenger": "Gauntlet",
-      challenger: "Gauntlet",
-      "honda civic": "Jester",
-      civic: "Jester",
-      "land cruiser": "Karin Land Cruiser 200",
-      "toyota supra": "Karin Supra A80",
-      supra: "Karin Supra A80",
-      "toyota tundra": "Karin Tundra 2021",
-      tundra: "Karin Tundra 2021",
-      "audi r8": "Obey R8",
-      r8: "Obey R8",
-      "audi rs6": "Obey RS6",
-      rs6: "Obey RS6",
-      "audi rs7": "Obey RS7",
-      rs7: "Obey RS7",
-      pariah: "Pariah",
-      "pagani huayra": "Pegassi Huayra BC",
-      huayra: "Pegassi Huayra BC",
-      "lamborghini performante": "Pegassi Performante (LP640)",
-      performante: "Pegassi Performante (LP640)",
-      "re-7b": "RE-7B",
-      "mercedes schafter": "Schafter",
-      schafter: "Schafter",
-      "lamborghini tempesta": "Tempesta",
-      tempesta: "Tempesta",
-      tezeract: "Tezeract",
-      "bmw m3 e46": "Ubermacht M3 (E46)",
-      "bmw m3": "Ubermacht M3 (G80)",
-      m3: "Ubermacht M3 (G80)",
-      "bmw m4": "Ubermacht M4 (G82)",
-      m4: "Ubermacht M4 (G82)",
-      vagner: "Vagner",
-      "ford mustang gt500": "Vapid Mustang GT500",
-      "mustang gt500": "Vapid Mustang GT500",
-      "ford raptor": "Vapid Raptor (F150)",
-      raptor: "Vapid Raptor (F150)",
-      "x80 proto": "X80 Proto",
-      "lamborghini zentorno": "Zentorno",
-      zentorno: "Zentorno",
-      // Add more mappings based on the policy document
-      nissan: "Annis Skyline GT-R (R34)",
-      mazda: "Annis RX-7 (FD)",
-      honda: "Dinka NSX 2017",
-      toyota: "Karin Supra A80",
-      ford: "FMJ",
-      dodge: "Gauntlet",
-      audi: "Obey R8",
-      bmw: "Ubermacht M3 (G80)",
-      pagani: "Pegassi Huayra BC",
-      lamborghini: "Pegassi Performante (LP640)",
-    };
-
-    // Replace vehicle names with policy-approved names and format user's price
-    let vehicleName = "Vehicle";
-    let correctPrice = formatPrice(price); // Format user's price with commas
-
-    // Vehicle name and price mappings from the policy document
-    const vehiclePriceMappings: {
-      [key: string]: { name: string; price: string };
-    } = {
-      "nissan gtr r34": {
-        name: "Annis Skyline GT-R (R34)",
-        price: "$4.5 Million",
-      },
-      "gtr r34": { name: "Annis Skyline GT-R (R34)", price: "$4.5 Million" },
-      skyline: { name: "Annis Skyline GT-R (R34)", price: "$4.5 Million" },
-      r34: { name: "Annis Skyline GT-R (R34)", price: "$4.5 Million" },
-      "nissan gtr": { name: "Annis GT-R I", price: "$3.8 Million" },
-      gtr: { name: "Annis GT-R I", price: "$3.8 Million" },
-      "nissan 350z": { name: "Annis 350Z", price: "$2.75 Million" },
-      "350z": { name: "Annis 350Z", price: "$2.75 Million" },
-      "mazda rx7": { name: "Annis RX-7 (FD)", price: "$450K" },
-      "mazda rx-7": { name: "Annis RX-7 (FD)", price: "$450K" },
-      rx7: { name: "Annis RX-7 (FD)", price: "$450K" },
-      "rx-7": { name: "Annis RX-7 (FD)", price: "$450K" },
-      "mazda rx8": { name: "Annis RX-8", price: "$1.3 Million" },
-      "mazda rx-8": { name: "Annis RX-8", price: "$1.3 Million" },
-      rx8: { name: "Annis RX-8", price: "$1.3 Million" },
-      "rx-8": { name: "Annis RX-8", price: "$1.3 Million" },
-      camaro: { name: "Declasse Camaro 2020", price: "$4.5 Million" },
-      corvette: { name: "Declasse Corvette C7", price: "$4.4 Million" },
-      tahoe: { name: "Declasse Tahoe", price: "$1.5 Million" },
-      "honda nsx": { name: "Dinka NSX 2017", price: "$10 Million" },
-      nsx: { name: "Dinka NSX 2017", price: "$10 Million" },
-      elegy: { name: "Elegy RH8", price: "$1.2 Million" },
-      "ford mustang": { name: "FMJ", price: "$3.2 Million" },
-      mustang: { name: "FMJ", price: "$3.2 Million" },
-      "dodge challenger": { name: "Gauntlet", price: "$530K" },
-      challenger: { name: "Gauntlet", price: "$530K" },
-      "honda civic": { name: "Jester", price: "$2.8 Million" },
-      civic: { name: "Jester", price: "$2.8 Million" },
-      "land cruiser": { name: "Karin Land Cruiser 200", price: "$3.2 Million" },
-      "toyota supra": { name: "Karin Supra A80", price: "$2.5 Million" },
-      supra: { name: "Karin Supra A80", price: "$2.5 Million" },
-      "toyota tundra": { name: "Karin Tundra 2021", price: "$3 Million" },
-      tundra: { name: "Karin Tundra 2021", price: "$3 Million" },
-      "audi r8": { name: "Obey R8", price: "$2.8 Million" },
-      r8: { name: "Obey R8", price: "$2.8 Million" },
-      "audi rs6": { name: "Obey RS6", price: "$3.2 Million" },
-      rs6: { name: "Obey RS6", price: "$3.2 Million" },
-      "audi rs7": { name: "Obey RS7", price: "$3.2 Million" },
-      rs7: { name: "Obey RS7", price: "$3.2 Million" },
-      pariah: { name: "Pariah", price: "$2.3 Million" },
-      "pagani huayra": { name: "Pegassi Huayra BC", price: "$9 Million" },
-      huayra: { name: "Pegassi Huayra BC", price: "$9 Million" },
-      "lamborghini performante": {
-        name: "Pegassi Performante (LP640)",
-        price: "$5 Million",
-      },
-      performante: { name: "Pegassi Performante (LP640)", price: "$5 Million" },
-      "re-7b": { name: "RE-7B", price: "$3.7 Million" },
-      schafter: { name: "Schafter", price: "$1.35 Million" },
-      tempesta: { name: "Tempesta", price: "$3.59 Million" },
-      tezeract: { name: "Tezeract", price: "$4.25 Million" },
-      "bmw m3": { name: "Ubermacht M3 (G80)", price: "$3.8 Million" },
-      m3: { name: "Ubermacht M3 (G80)", price: "$3.8 Million" },
-      "bmw m4": { name: "Ubermacht M4 (G82)", price: "$3.5 Million" },
-      m4: { name: "Ubermacht M4 (G82)", price: "$3.5 Million" },
-      vagner: { name: "Vagner", price: "$2.85 Million" },
-      "ford mustang gt500": {
-        name: "Vapid Mustang GT500",
-        price: "$4.5 Million",
-      },
-      "mustang gt500": { name: "Vapid Mustang GT500", price: "$4.5 Million" },
-      "ford raptor": { name: "Vapid Raptor (F150)", price: "$4.5 Million" },
-      raptor: { name: "Vapid Raptor (F150)", price: "$4.5 Million" },
-      "x80 proto": { name: "X80 Proto", price: "$4.2 Million" },
-      x80: { name: "X80 Proto", price: "$4.2 Million" },
-      zentorno: { name: "Zentorno", price: "$2.999 Million" },
-    };
-
-    for (const [key, value] of Object.entries(vehiclePriceMappings)) {
-      if (lowerContent.includes(key.toLowerCase())) {
-        vehicleName = value.name;
-        correctPrice = value.price;
-        break;
-      }
-    }
-
-    // Structure vehicle ad according to policy format
-    const features = [];
-    if (
-      lowerContent.includes("chip upgrade") ||
-      lowerContent.includes("chip-tuned") ||
-      lowerContent.includes("tuned") ||
-      lowerContent.includes("pro engine") ||
-      lowerContent.includes("pro transmission") ||
-      lowerContent.includes("pro wheels") ||
-      lowerContent.includes("pro brakes")
-    ) {
-      features.push("full configuration");
-    }
-    if (
-      lowerContent.includes("neon") ||
-      lowerContent.includes("spoiler") ||
-      lowerContent.includes("wheels") ||
-      lowerContent.includes("custom spoiler") ||
-      lowerContent.includes("big wheels")
-    ) {
-      features.push("visual upgrades");
-    }
-    if (lowerContent.includes("drift")) {
-      features.push("drift kit");
-    }
-    if (lowerContent.includes("insurance")) {
-      features.push("insurance");
-    }
-
-    // Use the vehicle name we found earlier
-    // vehicleName is already set from the mapping loop above
-
-    // Format according to LifeInvader Internal Policy
-    formattedAd = `Selling "${vehicleName}" in ${features.join(
-      ", "
-    )}. Price: ${correctPrice}.`;
-  } else if (suggestedCategory === "business") {
-    // Business/Real Estate ad formatting according to LifeInvader Internal Policy
-
-    // Check if it's real estate/property
-    if (
-      lowerContent.includes("house") ||
-      lowerContent.includes("villa") ||
-      lowerContent.includes("property")
-    ) {
-      let propertyType = "property";
-      if (lowerContent.includes("house")) propertyType = "house";
-      else if (lowerContent.includes("villa")) propertyType = "villa";
-
-      // Extract property number if present
-      const numberMatch = content.match(/(\d+)/);
-      const propertyNumber = numberMatch ? ` №${numberMatch[1]}` : "";
-
-      formattedAd = `Selling ${propertyType}${propertyNumber}. Price: ${price}.`;
-    } else {
-      // Regular business formatting
-      const businessKeywords = [
-        "restaurant",
-        "shop",
-        "store",
-        "business",
-        "company",
-        "enterprise",
-      ];
-
-      let businessType = "Business";
-      for (const keyword of businessKeywords) {
-        if (lowerContent.includes(keyword)) {
-          businessType = keyword.charAt(0).toUpperCase() + keyword.slice(1);
-          break;
-        }
-      }
-
-      // Extract location and features according to policy
-      const features = [];
-
-      // Location features
-      if (lowerContent.includes("downtown")) features.push("downtown location");
-      else if (lowerContent.includes("north side"))
-        features.push("north side location");
-      else if (lowerContent.includes("south side"))
-        features.push("south side location");
-      else if (lowerContent.includes("east side"))
-        features.push("east side location");
-      else if (lowerContent.includes("west side"))
-        features.push("west side location");
-      else if (lowerContent.includes("center"))
-        features.push("center location");
-
-      // Business features
-      if (
-        lowerContent.includes("established") ||
-        lowerContent.includes("customer base")
-      ) {
-        features.push("established customer base");
-      }
-      if (
-        lowerContent.includes("equipped") ||
-        lowerContent.includes("kitchen")
-      ) {
-        features.push("fully equipped");
-      }
-      if (
-        lowerContent.includes("good location") ||
-        lowerContent.includes("prime location")
-      ) {
-        features.push("prime location");
-      }
-
-      const featuresText =
-        features.length > 0 ? ` in ${features.join(", ")}` : "";
-      formattedAd = `Selling ${businessType}${featuresText}. Price: ${price}.`;
-    }
-  } else if (suggestedCategory === "service") {
-    // Service ad formatting according to LifeInvader Internal Policy
-    const serviceKeywords = [
-      "repair",
-      "maintenance",
-      "service",
-      "help",
-      "assistance",
-    ];
-    let serviceType = "Service";
-
-    for (const keyword of serviceKeywords) {
-      if (lowerContent.includes(keyword)) {
-        serviceType = keyword.charAt(0).toUpperCase() + keyword.slice(1);
-        break;
-      }
-    }
-
-    // Extract service features according to policy
-    const features = [];
-
-    if (
-      lowerContent.includes("experienced") ||
-      lowerContent.includes("mechanics")
-    ) {
-      features.push("experienced mechanics");
-    }
-    if (
-      lowerContent.includes("reasonable") ||
-      lowerContent.includes("prices")
-    ) {
-      features.push("reasonable prices");
-    }
-    if (
-      lowerContent.includes("call for quote") ||
-      lowerContent.includes("contact")
-    ) {
-      features.push("call for quote");
-    }
-
-    const featuresText =
-      features.length > 0 ? ` in ${features.join(", ")}` : "";
-    formattedAd = `Offering ${serviceType} Services${featuresText}. Price: ${price}.`;
-  } else if (suggestedCategory === "other") {
-    // Clothing ad formatting according to LifeInvader Internal Policy
-    // Preserve original clothing names and brand names exactly as written
-    let clothingDescription = content;
-
-    // Handle specific brand name corrections
-    if (lowerContent.includes("adidas")) {
-      clothingDescription = clothingDescription.replace(/adidas/gi, "Abibas");
-    }
-    if (lowerContent.includes("gucci")) {
-      clothingDescription = clothingDescription.replace(/gucci/gi, "Muci");
-    }
-
-    // Extract clothing features according to policy
-    const features = [];
-
-    if (
-      lowerContent.includes("brand new") ||
-      lowerContent.includes("new condition")
-    ) {
-      features.push("brand new condition");
-    } else if (lowerContent.includes("good condition")) {
-      features.push("good condition");
-    }
-    if (
-      lowerContent.includes("various sizes") ||
-      lowerContent.includes("sizes available")
-    ) {
-      features.push("various sizes available");
-    }
-
-    const featuresText =
-      features.length > 0 ? ` in ${features.join(", ")}` : "";
-    formattedAd = `Selling ${clothingDescription}${featuresText}. Price: ${price}.`;
-  } else if (suggestedCategory === "work") {
-    // Job ad formatting according to LifeInvader Internal Policy
-    const jobKeywords = ["chef", "manager", "worker", "employee", "staff"];
-    let position = "Position";
-
-    for (const keyword of jobKeywords) {
-      if (lowerContent.includes(keyword)) {
-        position = keyword.charAt(0).toUpperCase() + keyword.slice(1);
-        break;
-      }
-    }
-
-    // Extract job features according to policy
-    const features = [];
-
-    if (lowerContent.includes("experienced")) {
-      position = "Experienced " + position;
-    }
-    if (
-      lowerContent.includes("downtown") ||
-      lowerContent.includes("location")
-    ) {
-      features.push("downtown location");
-    }
-    if (
-      lowerContent.includes("competitive") ||
-      lowerContent.includes("salary")
-    ) {
-      features.push("competitive salary");
-    }
-    if (
-      lowerContent.includes("benefits") ||
-      lowerContent.includes("included")
-    ) {
-      features.push("benefits included");
-    }
-
-    const featuresText =
-      features.length > 0 ? ` in ${features.join(", ")}` : "";
-    formattedAd = `Hiring ${position}${featuresText}. Salary: ${price}.`;
-  } else if (suggestedCategory === "real estate") {
-    // Real estate ad formatting
-    let propertyType = "property";
-    if (lowerContent.includes("house")) propertyType = "house";
-    else if (lowerContent.includes("apartment")) propertyType = "apartment";
-    else if (lowerContent.includes("villa")) propertyType = "villa";
-    else if (lowerContent.includes("mansion")) propertyType = "mansion";
-
-    // Extract property number if present
-    const numberMatch = content.match(/(\d+)/);
-    const propertyNumber = numberMatch ? ` №${numberMatch[1]}` : "";
-
-    formattedAd = `Selling ${propertyType}${propertyNumber}. Price: ${price}.`;
-  } else if (suggestedCategory === "discount") {
-    // Discount ad formatting
-    formattedAd = `Special Offer: ${content}. Price: ${price}.`;
-  } else if (suggestedCategory === "dating") {
-    // Dating ad formatting
-    formattedAd = content; // Keep original format for dating ads
-  } else {
-    // Generic ad formatting
-    formattedAd = `Selling Item. Price: ${price}.`;
-  }
-
-  // Anti-duplication fixes
-  formattedAd = formattedAd
-    .replace(/Selling\s+Selling/g, "Selling") // Remove duplicate "Selling"
-    .replace(/Price:\s*Price:/g, "Price:") // Remove duplicate "Price:"
-    .replace(/Budget:\s*Budget:/g, "Budget:") // Remove duplicate "Budget:"
-    .replace(/(^|\.\s+)([a-z])/g, (match, p1, p2) => p1 + p2.toUpperCase())
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (
-    !formattedAd.endsWith(".") &&
-    !formattedAd.endsWith("!") &&
-    !formattedAd.endsWith("?")
-  ) {
-    formattedAd += ".";
-  }
-
-  return `⚙️ ${formattedAd}\n\nCategory: ${
-    categoryDisplayNames[suggestedCategory] || suggestedCategory
-  }`;
 }
 
 export async function POST(request: NextRequest) {
@@ -2026,6 +302,7 @@ export async function POST(request: NextRequest) {
     if (feedback && originalResponse) {
       const category = detectCategory(query);
       const { adType, formatPattern } = analyzeAdPattern(query);
+      
       const feedbackEntry: FeedbackEntry = {
         originalInput: query,
         aiResponse: originalResponse,
@@ -2036,101 +313,27 @@ export async function POST(request: NextRequest) {
         formatPattern: formatPattern,
       };
 
-      // Store in Firestore
+      // Store feedback
       await storeFeedback(feedbackEntry);
 
-      console.log(
-        `📝 Feedback stored for category: ${category} (${adType} ${formatPattern})`
-      );
+      console.log(`📝 Feedback stored for category: ${category} (${adType} ${formatPattern})`);
       console.log(`Original: "${query}"`);
       console.log(`AI Response: "${originalResponse}"`);
       console.log(`User Correction: "${feedback}"`);
-      
-      // Also store feedback for general selling patterns
-      if (category !== "other") {
-        const generalFeedbackEntry: FeedbackEntry = {
-          ...feedbackEntry,
-          category: "other", // Store as general selling pattern
-        };
-        await storeFeedback(generalFeedbackEntry);
-        console.log(`📝 Feedback stored for category: other (general selling)`);
-      }
 
       return NextResponse.json({
-        response: `Thank you for the feedback! I've learned from your correction for ${adType} ${formatPattern} ads and will apply this knowledge to future similar requests.`,
+        response: `Thank you for the feedback! I've learned from your correction and will apply this knowledge to future similar requests.`,
         feedbackStored: true,
       });
     }
 
-    // Simple AI logic for now - can be enhanced with actual AI service
-    const lowerQuery = query.toLowerCase();
-
-    // Handle template categorization - only when explicitly asking about templates
-    if (
-      lowerQuery.includes("what category") ||
-      lowerQuery.includes("template category") ||
-      lowerQuery.includes("which category")
-    ) {
-      // Try to find matching templates
-      const searchTerm = lowerQuery
-        .replace(/what category|template category|which category/gi, "")
-        .trim();
-      const matchingTemplates = templates.filter(
-        (template: any) =>
-          template.name.toLowerCase().includes(searchTerm) ||
-          template.description.toLowerCase().includes(searchTerm)
-      );
-
-      if (matchingTemplates.length > 0) {
-        const template = matchingTemplates[0];
-        return NextResponse.json({
-          response: `Based on your query, I found a similar template:
-
-**Template**: ${template.name}
-**Category**: ${template.displayCategory}
-**Type**: ${template.type}
-**Description**: ${template.description}
-
-This template belongs to the "${template.displayCategory}" category. You can use this as a reference for creating similar ads.`,
-        });
-      }
-
-      return NextResponse.json({
-        response: `I can help you find the right category for your template. Please provide more details about the template you're asking about, or share the template name/description so I can suggest the appropriate category from our available options:
-
-${categories
-  .map((cat: string) => `• ${categoryDisplayNames[cat] || cat}`)
-  .join("\n")}`,
-      });
-    }
-
-    if (lowerQuery.includes("vehicle") || lowerQuery.includes("clothing")) {
-      return NextResponse.json({
-        response: `For vehicle and clothing compliance:
-
-**Vehicles**: Ensure all vehicle references follow the approved list in the Vehicle/Clothing document. Common approved vehicles include standard civilian cars, trucks, and motorcycles.
-
-**Clothing**: All clothing items must be from the approved clothing list. Avoid referencing specific brands unless they're explicitly approved.
-
-**Best Practices**:
-- Use generic terms when possible
-- Reference the Vehicle/Clothing list document for specific items
-- Avoid brand names unless approved
-- Keep descriptions factual and compliant
-
-For specific items, please check the Vehicle/Clothing List document linked above.`,
-      });
-    }
-
-    // Default behavior - format any input as an ad using AI-like logic
-    const formattedAd = await formatAdWithAI(
-      query,
-      categories,
-      categoryDisplayNames
-    );
+    // Format ad using AI
+    const formattedAd = await formatAdWithAI(query, categories, categoryDisplayNames);
+    
     return NextResponse.json({
       response: formattedAd,
     });
+
   } catch (error) {
     console.error("AI Assistant error:", error);
     return NextResponse.json(
