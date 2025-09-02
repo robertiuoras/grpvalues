@@ -654,7 +654,12 @@ async function formatAdWithAI(
     // Create the system prompt with actual policy context and feedback
     const systemPrompt = `You are an expert LifeInvader ad formatter. Your job is to format user ads according to the LifeInvader Internal Policy.
 
-IMPORTANT: Format ANY ad content provided by the user. Do NOT reject ads that don't fit predefined structures.
+CRITICAL RULES:
+1. PRESERVE the original item description as closely as possible
+2. Do NOT add extra information that wasn't in the original input
+3. Do NOT change the item type (e.g., "vest skins" should stay "vest skins", not become "armoured vest skin")
+4. Only format the structure and price, keep the original item description intact
+5. Format prices with periods for thousands: $70.000 (not $70,000)
 
 FUZZY MATCHING FOR NAMES:
 - Use fuzzy matching to find exact names even with spelling errors
@@ -710,7 +715,9 @@ FORMATTING GUIDELINES:
    - ALWAYS use the EXTRACTED VEHICLE NAME if provided above
    - Do not substitute with other vehicle names
    - Category: "auto"
-2. For clothing/item ads: Use correct brand names (Abibas, Niki, etc.) and include condition/features
+2. For clothing/item ads: PRESERVE the original item description exactly, only format the structure
+   - Example: "Selling yellow and purple vest skins" → "Selling yellow and purple vest skins. Price: $70.000 each."
+   - Do NOT change "vest skins" to "armoured vest skin" or add extra details
    - ALWAYS use the EXTRACTED CLOTHING NAME if provided above
    - Category: "other"
 3. For job ads: Use "Hiring [Position] in [location/requirements]. Salary: [amount]"
@@ -729,6 +736,11 @@ FORMATTING GUIDELINES:
    - Category: "other"
 10. Use periods (.) for thousands separator: $1.000.000
 11. For millions: $1 Million. (with period)
+
+PRICE FORMATTING RULES:
+- Always use periods for thousands: $70.000 (not $70,000)
+- For millions: $1 Million. (with period)
+- Preserve the original price structure (e.g., "each", "per unit", etc.)
 
 IMPORTANT: Always format the ad content provided. Do not reject or refuse to format any ad.${relevantFeedback}`;
 
