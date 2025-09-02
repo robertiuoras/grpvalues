@@ -690,7 +690,7 @@ ${clothingList}
 ITEMS LIST:
 ${itemsList}
 
-OFFICIAL CATEGORIES (USE ONLY THESE):
+OFFICIAL CATEGORIES (USE ONLY THESE 8 CATEGORIES):
 - auto: for vehicles, cars, motorcycles, boats, planes, helicopters
 - work: for jobs, hiring, employment, positions
 - service: for services, repairs, maintenance, assistance
@@ -702,7 +702,7 @@ OFFICIAL CATEGORIES (USE ONLY THESE):
 
 Output format: Just the formatted ad text, followed by "Category: [OFFICIAL_CATEGORY_NAME]" on a new line.
 
-CRITICAL: You MUST use ONLY the official categories listed above. Do NOT use any other category names like "Family", "Clothing Store", "Office", etc.
+CRITICAL: You MUST use ONLY these 8 official categories. Do NOT use any other category names like "Family", "Clothing Store", "Office", "Service Station", "Misc/Own Business", etc. Only use: auto, work, service, real estate, other, discount, dating, business.
 
 FORMATTING GUIDELINES:
 1. For vehicle ads: Use quotes around vehicle names and include "in full configuration with visual upgrades, insurance and drift kit"
@@ -722,10 +722,12 @@ FORMATTING GUIDELINES:
    - Category: "real estate"
 7. For dating ads: Format naturally as "Looking for [description]" or similar
    - Category: "dating" (ONLY for ads starting with "Looking for...")
-8. For any other ads: Format naturally and appropriately for the content
+8. For discount ads: Format naturally with discount information
+   - Category: "discount"
+9. For any other ads: Format naturally and appropriately for the content
    - Category: "other"
-9. Use periods (.) for thousands separator: $1.000.000
-10. For millions: $1 Million. (with period)
+10. Use periods (.) for thousands separator: $1.000.000
+11. For millions: $1 Million. (with period)
 
 IMPORTANT: Always format the ad content provided. Do not reject or refuse to format any ad.${relevantFeedback}`;
 
@@ -1237,7 +1239,7 @@ function detectCategory(input: string): string {
   ];
 
   if (clothingKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "clothing store";
+    return "other";
   }
 
   // Real estate detection - comprehensive
@@ -1275,7 +1277,7 @@ function detectCategory(input: string): string {
   ];
 
   if (realEstateKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "misc/own business"; // Real estate falls under misc/own business
+    return "real estate";
   }
 
   // Job detection - high priority
@@ -1313,7 +1315,7 @@ function detectCategory(input: string): string {
   ];
 
   if (jobKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "office";
+    return "work";
   }
 
   // Service detection
@@ -1352,7 +1354,7 @@ function detectCategory(input: string): string {
   ];
 
   if (serviceKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "service station";
+    return "service";
   }
 
   // Business detection - broader
@@ -1386,20 +1388,41 @@ function detectCategory(input: string): string {
   ];
 
   if (businessKeywords.some((keyword) => lowerInput.includes(keyword))) {
-    return "misc/own business";
+    return "business";
   }
 
   // Dating detection
   if (isDating) {
-    return "misc/own business"; // Dating ads fall under misc/own business
+    return "dating";
+  }
+
+  // Discount detection
+  const discountKeywords = [
+    "discount",
+    "sale",
+    "special offer",
+    "promotion",
+    "deal",
+    "bargain",
+    "clearance",
+    "reduced",
+    "cheap",
+    "affordable",
+    "on sale",
+    "limited time",
+    "offer",
+  ];
+
+  if (discountKeywords.some((keyword) => lowerInput.includes(keyword))) {
+    return "discount";
   }
 
   // Default based on intent
-  if (isHiring) return "office";
-  if (isService) return "service station";
-  if (isBuying || isSelling) return "misc/own business"; // Default for buying/selling
+  if (isHiring) return "work";
+  if (isService) return "service";
+  if (isBuying || isSelling) return "other"; // Default for buying/selling
 
-  return "misc/own business"; // Final default
+  return "other"; // Final default
 }
 
 // Fallback basic formatting function
@@ -1411,7 +1434,7 @@ function formatAdBasic(
   const content = adContent.trim();
   const lowerContent = content.toLowerCase();
 
-  // Determine category based on content
+  // Determine category based on content - USING ONLY 8 OFFICIAL CATEGORIES
   let suggestedCategory = "auto";
 
   if (
@@ -1441,7 +1464,7 @@ function formatAdBasic(
     lowerContent.includes("hat") ||
     lowerContent.includes("mask")
   ) {
-    suggestedCategory = "clothing store";
+    suggestedCategory = "other";
   } else if (
     lowerContent.includes("job") ||
     lowerContent.includes("work") ||
@@ -1450,7 +1473,7 @@ function formatAdBasic(
     lowerContent.includes("position") ||
     lowerContent.includes("vacancy")
   ) {
-    suggestedCategory = "office";
+    suggestedCategory = "work";
   } else if (
     lowerContent.includes("service") ||
     lowerContent.includes("repair") ||
@@ -1458,20 +1481,41 @@ function formatAdBasic(
     lowerContent.includes("help") ||
     lowerContent.includes("assistance")
   ) {
-    suggestedCategory = "service station";
+    suggestedCategory = "service";
   } else if (
     lowerContent.includes("business") ||
     lowerContent.includes("company") ||
     lowerContent.includes("enterprise")
   ) {
-    suggestedCategory = "misc/own business";
+    suggestedCategory = "business";
+  } else if (
+    lowerContent.includes("house") ||
+    lowerContent.includes("apartment") ||
+    lowerContent.includes("property") ||
+    lowerContent.includes("villa") ||
+    lowerContent.includes("mansion")
+  ) {
+    suggestedCategory = "real estate";
+  } else if (
+    lowerContent.includes("discount") ||
+    lowerContent.includes("sale") ||
+    lowerContent.includes("special offer") ||
+    lowerContent.includes("promotion")
+  ) {
+    suggestedCategory = "discount";
+  } else if (
+    lowerContent.includes("looking for") ||
+    lowerContent.includes("dating") ||
+    lowerContent.includes("relationship")
+  ) {
+    suggestedCategory = "dating";
   } else if (
     lowerContent.includes("sale") ||
     lowerContent.includes("selling") ||
     lowerContent.includes("buy") ||
     lowerContent.includes("purchase")
   ) {
-    suggestedCategory = "misc/own business";
+    suggestedCategory = "other";
   }
 
   // Format the ad content according to LifeInvader Internal Policy
@@ -1743,7 +1787,7 @@ function formatAdBasic(
     formattedAd = `Selling "${vehicleName}" in ${features.join(
       ", "
     )}. Price: ${correctPrice}.`;
-  } else if (suggestedCategory === "misc/own business") {
+  } else if (suggestedCategory === "business") {
     // Business/Real Estate ad formatting according to LifeInvader Internal Policy
 
     // Check if it's real estate/property
@@ -1820,7 +1864,7 @@ function formatAdBasic(
         features.length > 0 ? ` in ${features.join(", ")}` : "";
       formattedAd = `Selling ${businessType}${featuresText}. Price: ${price}.`;
     }
-  } else if (suggestedCategory === "service station") {
+  } else if (suggestedCategory === "service") {
     // Service ad formatting according to LifeInvader Internal Policy
     const serviceKeywords = [
       "repair",
@@ -1863,7 +1907,7 @@ function formatAdBasic(
     const featuresText =
       features.length > 0 ? ` in ${features.join(", ")}` : "";
     formattedAd = `Offering ${serviceType} Services${featuresText}. Price: ${price}.`;
-  } else if (suggestedCategory === "clothing store") {
+  } else if (suggestedCategory === "other") {
     // Clothing ad formatting according to LifeInvader Internal Policy
     // Preserve original clothing names and brand names exactly as written
     let clothingDescription = content;
@@ -1897,7 +1941,7 @@ function formatAdBasic(
     const featuresText =
       features.length > 0 ? ` in ${features.join(", ")}` : "";
     formattedAd = `Selling ${clothingDescription}${featuresText}. Price: ${price}.`;
-  } else if (suggestedCategory === "office") {
+  } else if (suggestedCategory === "work") {
     // Job ad formatting according to LifeInvader Internal Policy
     const jobKeywords = ["chef", "manager", "worker", "employee", "staff"];
     let position = "Position";
@@ -1937,6 +1981,25 @@ function formatAdBasic(
     const featuresText =
       features.length > 0 ? ` in ${features.join(", ")}` : "";
     formattedAd = `Hiring ${position}${featuresText}. Salary: ${price}.`;
+  } else if (suggestedCategory === "real estate") {
+    // Real estate ad formatting
+    let propertyType = "property";
+    if (lowerContent.includes("house")) propertyType = "house";
+    else if (lowerContent.includes("apartment")) propertyType = "apartment";
+    else if (lowerContent.includes("villa")) propertyType = "villa";
+    else if (lowerContent.includes("mansion")) propertyType = "mansion";
+
+    // Extract property number if present
+    const numberMatch = content.match(/(\d+)/);
+    const propertyNumber = numberMatch ? ` №${numberMatch[1]}` : "";
+
+    formattedAd = `Selling ${propertyType}${propertyNumber}. Price: ${price}.`;
+  } else if (suggestedCategory === "discount") {
+    // Discount ad formatting
+    formattedAd = `Special Offer: ${content}. Price: ${price}.`;
+  } else if (suggestedCategory === "dating") {
+    // Dating ad formatting
+    formattedAd = content; // Keep original format for dating ads
   } else {
     // Generic ad formatting
     formattedAd = `Selling Item. Price: ${price}.`;

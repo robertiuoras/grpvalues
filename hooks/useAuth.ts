@@ -8,17 +8,17 @@ export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(() => {
     // On client-side, check if access codes are required
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const accessCodeRequired = Cookies.get("accessCodeRequired");
       const codesNotRequired = accessCodeRequired === "false";
-      
+
       // If access codes are not required, check for existing admin cookies
       if (codesNotRequired) {
         const authStatus = Cookies.get("isAuthenticated");
         const roleCookie = Cookies.get("userRole");
         return !(authStatus === "true" && roleCookie === "admin");
       }
-      
+
       return true; // Loading if access codes are required
     }
     return true; // Default to loading on server-side
@@ -32,9 +32,11 @@ export function useAuth() {
   useEffect(() => {
     const accessCodeRequired = Cookies.get("accessCodeRequired");
     const codesNotRequired = accessCodeRequired === "false";
-    
+
     if (codesNotRequired) {
-      console.log("useAuth: Access codes not required, setting loading to false immediately");
+      console.log(
+        "useAuth: Access codes not required, setting loading to false immediately"
+      );
       setIsLoading(false);
     }
   }, []);
@@ -45,30 +47,34 @@ export function useAuth() {
       // Check if access codes are required FIRST
       const accessCodeRequired = Cookies.get("accessCodeRequired");
       const codesNotRequired = accessCodeRequired === "false";
-      
+
       // If access codes are not required, check for existing admin cookies
       if (codesNotRequired) {
         console.log(
           "useAuth: Access codes not required, checking for existing admin cookies."
         );
-        
+
         // Check for existing admin cookies
         const authStatus = Cookies.get("isAuthenticated");
         const roleCookie = Cookies.get("userRole");
         const userIdCookie = Cookies.get("userId");
-        
+
         if (authStatus === "true" && roleCookie === "admin") {
-          console.log("useAuth: Found admin cookies, setting authenticated state");
+          console.log(
+            "useAuth: Found admin cookies, setting authenticated state"
+          );
           setIsAuthenticated(true);
           setUserRole("admin");
           setUserId(userIdCookie || null);
         } else {
-          console.log("useAuth: No admin cookies found, setting unauthenticated state");
+          console.log(
+            "useAuth: No admin cookies found, setting unauthenticated state"
+          );
           setIsAuthenticated(false);
           setUserRole(null);
           setUserId(null);
         }
-        
+
         setIsLoading(false);
         return;
       }
@@ -92,6 +98,21 @@ export function useAuth() {
       let userIsAuthenticated = false;
       let role = null;
       let currentUserId = null; // Variable to hold the userId
+
+      // Check for admin authentication first (regardless of timestamp)
+      if (authStatus === "true" && roleCookie === "admin") {
+        console.log(
+          "useAuth: Found admin authentication, setting authenticated state"
+        );
+        userIsAuthenticated = true;
+        role = "admin";
+        currentUserId = idCookie || null;
+        setIsAuthenticated(true);
+        setUserRole("admin");
+        setUserId(currentUserId);
+        setIsLoading(false);
+        return;
+      }
 
       if (authStatus === "true" && authTimestamp && idCookie) {
         // Check for userId cookie too
@@ -142,7 +163,7 @@ export function useAuth() {
       setUserRole(role);
       setUserId(currentUserId); // Update userId state
       setIsLoading(false);
-      
+
       console.log(
         "useAuth: State updated - isAuthenticated:",
         userIsAuthenticated,
@@ -153,7 +174,7 @@ export function useAuth() {
         "isLoading:",
         false
       );
-      
+
       // Only redirect if access codes are required
       if (!codesNotRequired) {
         // Redirect if not authenticated AND not already on the login page

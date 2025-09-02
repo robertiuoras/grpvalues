@@ -45,22 +45,37 @@ export default function ActiveUsersPage() {
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
+    if (parts.length === 2) return parts.pop()?.split(";").shift();
     return null;
   };
 
   // Check if access codes are required (client-side only) - moved outside useEffect for render scope
-  const accessCodeRequiredCookie = typeof window !== 'undefined' ? getCookie("accessCodeRequired") : null;
+  const accessCodeRequiredCookie =
+    typeof window !== "undefined" ? getCookie("accessCodeRequired") : null;
   const codesNotRequired = accessCodeRequiredCookie === "false";
-  
+
   // Check for admin authentication even when access codes are disabled
   const hasAdminAuth = isAuthenticated && userRole === "admin";
-  const hasAdminCookies = typeof window !== 'undefined' ? 
-    (getCookie("userRole") === "admin" && getCookie("isAuthenticated") === "true") : false;
-  
-  // When access codes are disabled, check for admin cookies directly
-  // When access codes are enabled, check for authenticated admin
-  const isAdminUser = codesNotRequired ? hasAdminCookies : hasAdminAuth;
+  const hasAdminCookies =
+    typeof window !== "undefined"
+      ? getCookie("userRole") === "admin" &&
+        getCookie("isAuthenticated") === "true"
+      : false;
+
+  // Admin access logic: Allow access if user has admin auth OR admin cookies
+  // This ensures admin access works regardless of access code requirement status
+  const isAdminUser = hasAdminAuth || hasAdminCookies;
+
+  // Debug logging for admin authentication
+  console.log("Admin Panel Debug:", {
+    isAuthenticated,
+    userRole,
+    hasAdminAuth,
+    hasAdminCookies,
+    isAdminUser,
+    codesNotRequired,
+    accessCodeRequiredCookie,
+  });
 
   // Helper function to format time properly
   const formatTime = (timeString: string | null) => {
@@ -150,9 +165,9 @@ export default function ActiveUsersPage() {
         }
       };
 
-              fetchUsersData(); // Initial fetch
-        fetchAccessCodeRequirement(); // Fetch access code requirement status
-        checkCookieValue(); // Check cookie value for consistency
+      fetchUsersData(); // Initial fetch
+      fetchAccessCodeRequirement(); // Fetch access code requirement status
+      checkCookieValue(); // Check cookie value for consistency
 
       // Set up a refresh interval (e.g., every 30 seconds)
       const intervalId = setInterval(fetchUsersData, 30 * 1000);
@@ -302,7 +317,7 @@ export default function ActiveUsersPage() {
       </div>
     );
   }
-  
+
   // Frontend RBAC: Always require admin authentication, regardless of access code requirement
   if (!isAdminUser) {
     return (
