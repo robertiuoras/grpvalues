@@ -8,6 +8,8 @@ import {
   PencilIcon,
   TrashIcon,
   CheckIcon, // Replaced SaveIcon with CheckIcon
+  SunIcon,
+  MoonIcon,
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useAuth } from "../../hooks/useAuth"; // Corrected import path for useAuth hook
@@ -418,20 +420,33 @@ interface ConfirmationModalProps {
 }
 
 // MOVED: ConfirmationModal component definition moved outside the App component
-const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+const ConfirmationModal: React.FC<
+  ConfirmationModalProps & { isDarkMode?: boolean }
+> = ({
   message,
   onConfirm,
   onCancel,
   isConfirm,
   title,
+  isDarkMode = false,
 }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[100]">
-      <div className="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full relative text-center">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
+      <div
+        className={`rounded-xl shadow-2xl p-8 max-w-sm w-full relative text-center transition-colors duration-300 ${
+          isDarkMode ? "bg-gray-800" : "bg-white"
+        }`}
+      >
+        <h2
+          className={`text-xl font-bold mb-4 ${
+            isDarkMode ? "text-gray-100" : "text-gray-800"
+          }`}
+        >
           {title || (isConfirm ? "Confirm Action" : "Notice")}
         </h2>
-        <p className="text-gray-700 mb-6">{message}</p>
+        <p className={`mb-6 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+          {message}
+        </p>
         <div className="flex justify-center gap-4">
           {isConfirm && (
             <button
@@ -445,7 +460,9 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             onClick={onCancel}
             className={`px-6 py-2 rounded-lg ${
               isConfirm
-                ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                ? isDarkMode
+                  ? "bg-gray-600 hover:bg-gray-500 text-gray-200"
+                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             } font-semibold transition-colors duration-200`}
           >
@@ -535,6 +552,9 @@ export default function App() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+
+  // Theme state
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Effect for debouncing the search query
   useEffect(() => {
@@ -1226,8 +1246,20 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 font-inter text-gray-800 p-4 sm:p-6 md:p-8">
-      <main className="max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl p-6 sm:p-8 lg:p-10 border border-gray-100">
+    <div
+      className={`min-h-screen font-inter p-4 sm:p-6 md:p-8 transition-colors duration-300 ${
+        isDarkMode
+          ? "bg-gradient-to-br from-gray-900 to-gray-800 text-gray-100"
+          : "bg-gradient-to-br from-gray-50 to-gray-200 text-gray-800"
+      }`}
+    >
+      <main
+        className={`max-w-7xl mx-auto rounded-3xl shadow-2xl p-6 sm:p-8 lg:p-10 border transition-colors duration-300 ${
+          isDarkMode
+            ? "bg-gray-800 border-gray-700"
+            : "bg-white border-gray-100"
+        }`}
+      >
         <h1 className="text-5xl md:text-6xl font-extrabold text-center mb-10 bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-800 to-red-900 to-red-900 drop-shadow-lg py-3 rounded-xl">
           {mainTitle}
         </h1>
@@ -1256,6 +1288,27 @@ export default function App() {
           >
             📝 Format My Ad
           </button>
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`px-4 py-3 font-semibold rounded-lg transition-all duration-300 hover:scale-105 shadow-lg flex items-center gap-2 ${
+              isDarkMode
+                ? "bg-yellow-500 hover:bg-yellow-600 text-white"
+                : "bg-gray-800 hover:bg-gray-900 text-white"
+            }`}
+            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {isDarkMode ? (
+              <>
+                <SunIcon className="w-5 h-5" />
+                Light
+              </>
+            ) : (
+              <>
+                <MoonIcon className="w-5 h-5" />
+                Dark
+              </>
+            )}
+          </button>
         </div>
 
         <div className="mb-6 flex justify-center px-2 relative">
@@ -1265,8 +1318,14 @@ export default function App() {
               placeholder="Search all templates by name, description, or type..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full px-5 py-3 rounded-lg bg-white text-black border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${
-                isAnimating ? "bg-green-50 border-green-500" : ""
+              className={`w-full px-5 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ${
+                isDarkMode
+                  ? `bg-gray-700 text-white border-gray-600 ${
+                      isAnimating ? "bg-green-900 border-green-500" : ""
+                    }`
+                  : `bg-white text-black border-gray-300 ${
+                      isAnimating ? "bg-green-50 border-green-500" : ""
+                    }`
               }`}
             />
 
@@ -1287,7 +1346,11 @@ export default function App() {
                     onClick={() => {
                       animateAutocomplete(suggestedTemplate);
                     }}
-                    className="text-gray-500/70 hover:text-gray-700 cursor-pointer font-normal transition-colors duration-200 pr-8 text-build"
+                    className={`cursor-pointer font-normal transition-colors duration-200 pr-8 text-build ${
+                      isDarkMode
+                        ? "text-gray-400/70 hover:text-gray-200"
+                        : "text-gray-500/70 hover:text-gray-700"
+                    }`}
                   >
                     {suggestedTemplate.slice(searchQuery.length).toLowerCase()}
                   </button>
@@ -1336,6 +1399,8 @@ export default function App() {
                 ${
                   showMyAds
                     ? "bg-red-700 text-white shadow-xl"
+                    : isDarkMode
+                    ? "bg-gray-600 text-gray-200 hover:bg-gray-500"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
             >
@@ -1357,6 +1422,8 @@ export default function App() {
                   ${
                     activeCategory === cat && searchQuery === "" // Highlight only if active and no search
                       ? "bg-red-700 text-white shadow-xl ring-2 ring-red-300 hover:bg-red-800"
+                      : isDarkMode
+                      ? "bg-gray-600 text-gray-200 hover:bg-gray-500 hover:text-red-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-red-700 focus:outline-none focus:ring-1 focus:ring-gray-400"
                   }`}
               >
@@ -1380,21 +1447,43 @@ export default function App() {
           </div>
         )}
 
-        <section className="min-h-[400px] bg-white rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-xl">
+        <section
+          className={`min-h-[400px] rounded-2xl p-4 sm:p-6 border shadow-xl transition-colors duration-300 ${
+            isDarkMode
+              ? "bg-gray-700 border-gray-600"
+              : "bg-white border-gray-200"
+          }`}
+        >
           {authLoading ? ( // Auth loading is always top priority
-            <p className="text-gray-700 text-center py-20 text-xl animate-pulse font-medium">
+            <p
+              className={`text-center py-20 text-xl animate-pulse font-medium ${
+                isDarkMode ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
               Checking authentication...
             </p>
           ) : showMyAds && loadingMyAds ? ( // NEW: Specific loading message for user ads
-            <p className="text-gray-700 text-center py-20 text-xl animate-pulse font-medium">
+            <p
+              className={`text-center py-20 text-xl animate-pulse font-medium ${
+                isDarkMode ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
               Loading your ads...
             </p>
           ) : !showMyAds && loading ? ( // Existing loading for templates
-            <p className="text-gray-700 text-center py-20 text-xl animate-pulse font-medium">
+            <p
+              className={`text-center py-20 text-xl animate-pulse font-medium ${
+                isDarkMode ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
               Loading templates, please wait...
             </p>
           ) : filteredTemplates.length === 0 ? (
-            <p className="text-gray-500 text-center py-20 text-xl font-medium">
+            <p
+              className={`text-center py-20 text-xl font-medium ${
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
               {showMyAds
                 ? "You haven't saved any ads yet."
                 : "No templates found matching your criteria."}
@@ -1414,16 +1503,26 @@ export default function App() {
                   return (
                     <div
                       key={itemId} // Use robust itemId for key
-                      className="relative p-4 bg-gradient-to-br from-white to-gray-50 text-gray-800 border border-gray-200 rounded-lg shadow-md hover:shadow-lg hover:border-red-400 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between group"
+                      className={`relative p-4 border rounded-lg shadow-md hover:shadow-lg hover:border-red-400 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between group ${
+                        isDarkMode
+                          ? "bg-gradient-to-br from-gray-600 to-gray-700 text-gray-100 border-gray-500"
+                          : "bg-gradient-to-br from-white to-gray-50 text-gray-800 border-gray-200"
+                      }`}
                     >
                       <div className="flex-grow mb-3">
-                        <h3 className="font-bold text-lg text-red-700 mb-2 leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
+                        <h3
+                          className={`font-bold text-lg mb-2 leading-tight overflow-hidden text-ellipsis whitespace-nowrap ${
+                            isDarkMode ? "text-red-400" : "text-red-700"
+                          }`}
+                        >
                           {t.name ?? ""}{" "}
                           {/* Add nullish coalescing for safety */}
                         </h3>
                         <div className="mb-2">
                           <p
-                            className={`text-gray-700 text-xs leading-relaxed ${
+                            className={`text-xs leading-relaxed ${
+                              isDarkMode ? "text-gray-300" : "text-gray-700"
+                            } ${
                               expandedDescriptions.has(itemId)
                                 ? ""
                                 : "overflow-hidden text-ellipsis whitespace-nowrap"
@@ -1434,7 +1533,11 @@ export default function App() {
                           {t.description && t.description.length > 120 && (
                             <button
                               onClick={() => toggleDescriptionExpansion(itemId)}
-                              className="text-red-600 hover:text-red-700 text-xs font-medium mt-1 transition-colors duration-200"
+                              className={`text-xs font-medium mt-1 transition-colors duration-200 ${
+                                isDarkMode
+                                  ? "text-red-400 hover:text-red-300"
+                                  : "text-red-600 hover:text-red-700"
+                              }`}
                             >
                               {expandedDescriptions.has(itemId)
                                 ? "See Less"
@@ -1444,14 +1547,28 @@ export default function App() {
                         </div>
                         {/* Add Type display with custom icon and bold text */}
                         {t.type && (
-                          <div className="flex items-center gap-3 text-gray-600 text-sm font-medium">
-                            <span className="text-gray-500">Type:</span>
+                          <div
+                            className={`flex items-center gap-3 text-sm font-medium ${
+                              isDarkMode ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
+                            <span
+                              className={
+                                isDarkMode ? "text-gray-500" : "text-gray-500"
+                              }
+                            >
+                              Type:
+                            </span>
                             <img
                               src={getTypeIcon(t.type)}
                               alt={`${t.type} icon`}
                               className="w-6 h-6 object-contain rounded-lg shadow-sm"
                             />
-                            <span className="font-bold text-base">
+                            <span
+                              className={`font-bold text-base ${
+                                isDarkMode ? "text-gray-200" : "text-gray-800"
+                              }`}
+                            >
                               {t.type}
                             </span>
                           </div>
@@ -1525,8 +1642,16 @@ export default function App() {
       {/* Add/Edit Ad Modal */}
       {showAddEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full relative">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+          <div
+            className={`rounded-xl shadow-2xl p-8 max-w-md w-full relative transition-colors duration-300 ${
+              isDarkMode ? "bg-gray-800" : "bg-white"
+            }`}
+          >
+            <h2
+              className={`text-2xl font-bold mb-6 text-center ${
+                isDarkMode ? "text-gray-100" : "text-gray-800"
+              }`}
+            >
               {currentAdToEdit ? "Edit Your Ad" : "Add New Ad"}
             </h2>
             <button
@@ -1534,10 +1659,18 @@ export default function App() {
                 setShowAddEditModal(false);
                 resetAdForm();
               }}
-              className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+              className={`absolute top-4 right-4 p-2 rounded-full transition-colors duration-300 ${
+                isDarkMode
+                  ? "bg-gray-700 hover:bg-gray-600"
+                  : "bg-gray-100 hover:bg-gray-200"
+              }`}
               title="Close"
             >
-              <XCircleIcon className="w-6 h-6 text-gray-600" />
+              <XCircleIcon
+                className={`w-6 h-6 ${
+                  isDarkMode ? "text-gray-300" : "text-gray-600"
+                }`}
+              />
             </button>
 
             {adFormError && (
@@ -1556,7 +1689,9 @@ export default function App() {
               <div>
                 <label
                   htmlFor="adName"
-                  className="block text-sm font-medium text-gray-700"
+                  className={`block text-sm font-medium ${
+                    isDarkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
                 >
                   Ad Name
                 </label>
@@ -1565,7 +1700,11 @@ export default function App() {
                   id="adName"
                   value={newAdName}
                   onChange={(e) => setNewAdName(e.target.value)}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                  className={`mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 transition-colors duration-300 ${
+                    isDarkMode
+                      ? "bg-gray-700 border-gray-600 text-white"
+                      : "bg-white border-gray-300 text-gray-900"
+                  }`}
                   required
                   disabled={adFormLoading}
                 />
@@ -1573,7 +1712,9 @@ export default function App() {
               <div>
                 <label
                   htmlFor="adDescription"
-                  className="block text-sm font-medium text-gray-700"
+                  className={`block text-sm font-medium ${
+                    isDarkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
                 >
                   Description
                 </label>
@@ -1582,14 +1723,22 @@ export default function App() {
                   value={newAdDescription}
                   onChange={(e) => setNewAdDescription(e.target.value)}
                   rows={4}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 resize-none"
+                  className={`mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 resize-none transition-colors duration-300 ${
+                    isDarkMode
+                      ? "bg-gray-700 border-gray-600 text-white"
+                      : "bg-white border-gray-300 text-gray-900"
+                  }`}
                   required
                   disabled={adFormLoading}
                 ></textarea>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    isDarkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
                   Type
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -1609,7 +1758,11 @@ export default function App() {
                       onClick={() => setNewAdType(type)}
                       className={`p-3 rounded-lg border-2 transition-all duration-200 flex flex-col items-center gap-1 ${
                         newAdType === type
-                          ? "border-red-500 bg-red-50 text-red-700"
+                          ? isDarkMode
+                            ? "border-red-500 bg-red-900/30 text-red-400"
+                            : "border-red-500 bg-red-50 text-red-700"
+                          : isDarkMode
+                          ? "border-gray-600 bg-gray-700 text-gray-300 hover:border-gray-500"
                           : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
                       }`}
                       disabled={adFormLoading}
@@ -1919,6 +2072,7 @@ export default function App() {
           onCancel={modalOnCancel}
           isConfirm={isModalConfirm}
           title={modalTitle}
+          isDarkMode={isDarkMode}
         />
       )}
     </div>

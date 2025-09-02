@@ -572,25 +572,20 @@ async function getRelevantFeedback(
     }
 
     // Create learning instructions from feedback
-    const learningInstructions = `ENHANCED MACHINE LEARNING RULES:
-1. Learn from user corrections and apply to similar ${adType} ${formatPattern} ads
-2. Use exact formatting patterns from successful corrections
-3. Apply category-specific rules consistently
-4. Remember price formatting preferences (periods for thousands, "Million." for millions)
-5. Use correct vehicle/clothing names from approved lists
-6. Follow policy document examples and rules exactly
-7. Pay attention to specific word choices and sentence structure from corrections
-8. Apply learned patterns to future ${adType} ${formatPattern} ads automatically
-9. Remember exact formatting rules from policy document
-10. Use fuzzy matching to find correct names even with spelling errors
-
-RECENT CORRECTIONS TO LEARN FROM:
+    const learningInstructions = `LEARN FROM THESE CORRECTIONS:
 ${recentFeedbacks
   .map(
     (feedback) =>
-      `Original: "${feedback.originalInput}" → Corrected: "${feedback.userCorrection}"`
+      `❌ WRONG: "${feedback.aiResponse}"\n✅ CORRECT: "${feedback.userCorrection}"\n`
   )
-  .join("\n")}`;
+  .join("\n")}
+
+APPLY THESE RULES:
+1. NEVER duplicate "Selling", "Price:", or "Budget:" if already present
+2. Use exact formatting patterns from corrections above
+3. Preserve original item descriptions exactly
+4. Use periods for thousands: $70.000 (not $70,000)
+5. Apply these patterns to similar ${adType} ${formatPattern} ads`;
 
     return learningInstructions;
   } catch (error) {
@@ -652,36 +647,20 @@ async function formatAdWithAI(
       : "";
 
     // Create the system prompt with actual policy context and feedback
-    const systemPrompt = `You are an expert LifeInvader ad formatter. Your job is to format user ads according to the LifeInvader Internal Policy.
+    const systemPrompt = `You are an expert LifeInvader ad formatter. Format user ads according to the LifeInvader Internal Policy.
 
-CRITICAL RULES:
-1. PRESERVE the original item description as closely as possible
-2. Do NOT add extra information that wasn't in the original input
-3. Do NOT change the item type (e.g., "vest skins" should stay "vest skins", not become "armoured vest skin")
-4. Only format the structure and price, keep the original item description intact
-5. Format prices with periods for thousands: $70.000 (not $70,000)
-6. DO NOT duplicate words - if input already says "Selling", don't add another "Selling"
-7. DO NOT duplicate "Price:" - if input already has price format, don't add another "Price:"
-8. If input already has proper structure, just clean it up, don't rebuild it
-
-FUZZY MATCHING FOR NAMES:
-- Use fuzzy matching to find exact names even with spelling errors
-- For vehicles: Match user input to exact vehicle names from the lists
-- For clothing: Match user input to exact brand names from the lists
-- Examples: "nissan gtr" → "Annis Skyline GT-R (R34)", "adidas pants" → "Abibas pants"
-
-EXACT NAMES FROM LISTS:
-- Use EXACT vehicle names from Vehicle List (with fuzzy matching)
-- Use EXACT motorcycle names from Motorcycles List (with fuzzy matching)
-- Use EXACT boat/plane/helicopter names from Boats/Planes/Helicopters List (with fuzzy matching)
-- Use EXACT clothing brands from Clothing List (with fuzzy matching)
-- Use EXACT item names from Items List (with fuzzy matching)
+CRITICAL ANTI-DUPLICATION RULES:
+1. NEVER duplicate "Selling" - if input already says "Selling", don't add another "Selling"
+2. NEVER duplicate "Price:" - if input already has "Price:", don't add another "Price:"
+3. NEVER duplicate "Budget:" - if input already has "Budget:", don't add another "Budget:"
+4. PRESERVE original item descriptions exactly - don't change "vest skins" to "armoured vest skin"
+5. If input already has proper structure, just clean it up, don't rebuild it
 
 EXTRACTED NAMES FROM USER INPUT:${extractedNames}${extractedClothing}
 
-CRITICAL: If a vehicle name is extracted above, you MUST use that exact name in your response. Do not substitute it with any other vehicle name.
+CRITICAL: If a vehicle/clothing name is extracted above, you MUST use that exact name in your response.
 
-ACTUAL POLICY DOCUMENT FROM GOOGLE DOCS:
+POLICY DOCUMENT:
 ${policy}
 
 VEHICLE LIST:
@@ -699,56 +678,32 @@ ${clothingList}
 ITEMS LIST:
 ${itemsList}
 
-OFFICIAL CATEGORIES (USE ONLY THESE 8 CATEGORIES):
-- auto: for vehicles, cars, motorcycles, boats, planes, helicopters
-- work: for jobs, hiring, employment, positions
-- service: for services, repairs, maintenance, assistance
-- real estate: for houses, apartments, property, real estate
-- other: for clothing items, general items, miscellaneous
-- discount: for discounts, sales, special offers
+OFFICIAL CATEGORIES (USE ONLY THESE 8):
+- auto: vehicles, cars, motorcycles, boats, planes, helicopters
+- work: jobs, hiring, employment, positions
+- service: services, repairs, maintenance, assistance
+- real estate: houses, apartments, property, real estate
+- other: clothing items, general items, miscellaneous
+- discount: discounts, sales, special offers
 - dating: ONLY for ads starting with "Looking for..."
-- business: for business sales, purchases, companies
+- business: business sales, purchases, companies
+
+FORMATTING EXAMPLES:
+1. Vehicle: "Selling my nissan gtr r34" → "Selling "Annis Skyline GT-R (R34)" in full configuration with visual upgrades, insurance and drift kit. Price: Negotiable."
+2. Clothing: "Selling yellow and purple vest skins. Price: 70.000$ each" → "Selling yellow and purple vest skins. Price: $70.000 each."
+3. Job: "hiring chef" → "Hiring Chef. Salary: Negotiable."
+4. Service: "offering car repair" → "Offering Car Repair. Price: Negotiable."
+5. Business: "selling restaurant" → "Selling Restaurant. Price: Negotiable."
+6. Real Estate: "selling house" → "Selling House. Price: Negotiable."
+
+PRICE FORMATTING:
+- Use periods for thousands: $70.000 (not $70,000)
+- For millions: $1 Million. (with period)
+- Preserve original price structure (e.g., "each", "per unit")
 
 Output format: Just the formatted ad text, followed by "Category: [OFFICIAL_CATEGORY_NAME]" on a new line.
 
-CRITICAL: You MUST use ONLY these 8 official categories. Do NOT use any other category names like "Family", "Clothing Store", "Office", "Service Station", "Misc/Own Business", etc. Only use: auto, work, service, real estate, other, discount, dating, business.
-
-FORMATTING GUIDELINES:
-1. For vehicle ads: Use quotes around vehicle names and include "in full configuration with visual upgrades, insurance and drift kit"
-   - ALWAYS use the EXTRACTED VEHICLE NAME if provided above
-   - Do not substitute with other vehicle names
-   - Category: "auto"
-2. For clothing/item ads: PRESERVE the original item description exactly, only format the structure
-   - Example: "Selling yellow and purple vest skins" → "Selling yellow and purple vest skins. Price: $70.000 each."
-   - Example: "Selling Abibas pants, trendy jacket of type 6 and white gloves for men." → "Selling Abibas pants, trendy jacket of type 6 and white gloves for men. Price: Negotiable."
-   - Do NOT change "vest skins" to "armoured vest skin" or add extra details
-   - Do NOT duplicate "Selling" if it's already there
-   - Do NOT duplicate "Price:" if it's already there
-   - ALWAYS use the EXTRACTED CLOTHING NAME if provided above
-   - Category: "other"
-3. For job ads: Use "Hiring [Position] in [location/requirements]. Salary: [amount]"
-   - Category: "work"
-4. For service ads: Use "Offering [Service Type] in [location/features]. Price: [amount]"
-   - Category: "service"
-5. For business ads: Use "Selling [Business Type] in [location/features]. Price: [amount]"
-   - Category: "business"
-6. For real estate ads: Use "Selling [Property Type] in [location/features]. Price: [amount]"
-   - Category: "real estate"
-7. For dating ads: Format naturally as "Looking for [description]" or similar
-   - Category: "dating" (ONLY for ads starting with "Looking for...")
-8. For discount ads: Format naturally with discount information
-   - Category: "discount"
-9. For any other ads: Format naturally and appropriately for the content
-   - Category: "other"
-10. Use periods (.) for thousands separator: $1.000.000
-11. For millions: $1 Million. (with period)
-
-PRICE FORMATTING RULES:
-- Always use periods for thousands: $70.000 (not $70,000)
-- For millions: $1 Million. (with period)
-- Preserve the original price structure (e.g., "each", "per unit", etc.)
-
-IMPORTANT: Always format the ad content provided. Do not reject or refuse to format any ad.${relevantFeedback}`;
+${relevantFeedback}`;
 
     // Create the user message
     const userMessage = `Please format this ad according to the LifeInvader Internal Policy: "${adContent}"`;
@@ -768,7 +723,16 @@ IMPORTANT: Always format the ad content provided. Do not reject or refuse to for
 
     // Parse the AI response to extract formatted ad and category
     const lines = formattedResponse.trim().split("\n");
-    const formattedAd = lines[0];
+    let formattedAd = lines[0];
+    
+    // Apply anti-duplication fixes to the AI response
+    formattedAd = formattedAd
+      .replace(/Selling\s+Selling/g, "Selling") // Remove duplicate "Selling"
+      .replace(/Price:\s*Price:/g, "Price:") // Remove duplicate "Price:"
+      .replace(/Budget:\s*Budget:/g, "Budget:") // Remove duplicate "Budget:"
+      .replace(/\s+/g, " ")
+      .trim();
+    
     const categoryLine = lines.find((line) => line.startsWith("Category:"));
 
     // Define official categories
@@ -801,7 +765,11 @@ IMPORTANT: Always format the ad content provided. Do not reject or refuse to for
     }
 
     console.log("✅ Gemini AI formatting completed successfully");
-    return `🤖 ${formattedAd}\nCategory: ${category}`;
+    
+    // Ensure the Gemini indicator is properly formatted
+    const finalResponse = `🤖 ${formattedAd}\nCategory: ${category}`;
+    console.log("🤖 Final Gemini response:", finalResponse);
+    return finalResponse;
   } catch (error) {
     console.error("❌ Gemini AI error:", error);
     console.log("🔄 Using basic formatting as fallback...");
@@ -2021,8 +1989,11 @@ function formatAdBasic(
     formattedAd = `Selling Item. Price: ${price}.`;
   }
 
-  // Basic formatting for all ads according to policy
+  // Anti-duplication fixes
   formattedAd = formattedAd
+    .replace(/Selling\s+Selling/g, "Selling") // Remove duplicate "Selling"
+    .replace(/Price:\s*Price:/g, "Price:") // Remove duplicate "Price:"
+    .replace(/Budget:\s*Budget:/g, "Budget:") // Remove duplicate "Budget:"
     .replace(/(^|\.\s+)([a-z])/g, (match, p1, p2) => p1 + p2.toUpperCase())
     .replace(/\s+/g, " ")
     .trim();
@@ -2074,6 +2045,16 @@ export async function POST(request: NextRequest) {
       console.log(`Original: "${query}"`);
       console.log(`AI Response: "${originalResponse}"`);
       console.log(`User Correction: "${feedback}"`);
+      
+      // Also store feedback for general selling patterns
+      if (category !== "other") {
+        const generalFeedbackEntry: FeedbackEntry = {
+          ...feedbackEntry,
+          category: "other", // Store as general selling pattern
+        };
+        await storeFeedback(generalFeedbackEntry);
+        console.log(`📝 Feedback stored for category: other (general selling)`);
+      }
 
       return NextResponse.json({
         response: `Thank you for the feedback! I've learned from your correction for ${adType} ${formatPattern} ads and will apply this knowledge to future similar requests.`,
