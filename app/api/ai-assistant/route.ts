@@ -599,7 +599,7 @@ ${recentFeedbacks
   }
 }
 
-// Function to format ad content using Gemini AI
+// Function to format ad content using Google Gemini AI (FREE - Recommended)
 async function formatAdWithAI(
   adContent: string,
   categories: string[],
@@ -608,12 +608,13 @@ async function formatAdWithAI(
   // Reference to LifeInvader Internal Policy: https://docs.google.com/document/d/1zNTpF4bmcjOVef6XmCvq3x6DxPkWAFNdJJE5mwS5D3o/edit?tab=t.0
 
   try {
+    console.log("🤖 Using Google Gemini AI (FREE) for ad formatting...");
+
     // Check if Gemini API key is available
     const geminiApiKey = process.env.GEMINI_API_KEY;
 
     if (!geminiApiKey || geminiApiKey === "your_gemini_api_key_here") {
-      // Fallback to basic formatting if no API key
-      console.log("Gemini API key not configured, using basic formatting");
+      console.log("❌ Gemini API key not configured, using basic formatting");
       return formatAdBasic(adContent, categories, categoryDisplayNames);
     }
 
@@ -781,14 +782,11 @@ IMPORTANT: Always format the ad content provided. Do not reject or refuse to for
       }
     }
 
-    // Only store feedback when user actually provides corrections
-    // Removed automatic storage of every request to avoid database bloat
-
-    // Return formatted ad with category
+    console.log("✅ Gemini AI formatting completed successfully");
     return `${formattedAd}\nCategory: ${category}`;
   } catch (error) {
-    console.error("Gemini API error:", error);
-    // Fallback to basic formatting
+    console.error("❌ Gemini AI error:", error);
+    console.log("🔄 Using basic formatting as fallback...");
     return formatAdBasic(adContent, categories, categoryDisplayNames);
   }
 }
