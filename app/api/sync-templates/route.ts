@@ -186,17 +186,26 @@ export async function POST(request: NextRequest) {
                   range: `${categoryData.sheetName}!A:Z`,
                 });
 
-                // Write data at specific row positions to preserve gaps
-                for (const [rowNum, templateData] of rowMap) {
-                  await sheets.spreadsheets.values.update({
-                    spreadsheetId: YOUR_SHEET_ID,
-                    range: `${categoryData.sheetName}!A${rowNum}:C${rowNum}`,
-                    valueInputOption: "RAW",
-                    requestBody: {
-                      values: [templateData],
-                    },
-                  });
+                // Write data in batches to avoid quota limits
+                // Create a 2D array with all data, preserving row positions
+                const allRows: string[][] = [];
+                for (let i = 1; i <= maxRow; i++) {
+                  if (rowMap.has(i)) {
+                    allRows.push(rowMap.get(i)!);
+                  } else {
+                    allRows.push(['', '', '']); // Empty row to preserve gap
+                  }
                 }
+
+                // Write all data at once
+                await sheets.spreadsheets.values.update({
+                  spreadsheetId: YOUR_SHEET_ID,
+                  range: `${categoryData.sheetName}!A1:C${maxRow}`,
+                  valueInputOption: "RAW",
+                  requestBody: {
+                    values: allRows,
+                  },
+                });
 
                 console.log(
                   `📝 Updated ${categoryData.sheetName} sheet: ${changes.length} changes (${changes.filter(c => c.type === 'new').length} new, ${changes.filter(c => c.type === 'updated').length} updated, ${changes.filter(c => c.type === 'removed').length} removed)`
@@ -236,8 +245,8 @@ export async function POST(request: NextRequest) {
         totalTemplates += templates.length;
         successCount++;
 
-        // Add a small delay between categories to avoid overwhelming the API
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Add a longer delay between categories to avoid quota limits
+        await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (error) {
         console.error(`❌ Error syncing ${categoryName}:`, error);
         syncResults.push({
@@ -251,7 +260,7 @@ export async function POST(request: NextRequest) {
         errorCount++;
         
         // Add delay even for failed categories
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
 
