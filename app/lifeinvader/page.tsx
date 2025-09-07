@@ -200,54 +200,54 @@ const getCategoryIcon = (category: string) => {
 // YOU WILL NEED TO REPLACE PLACEHOLDER URLS WITH YOUR ACTUAL PUBLISHED CSV LINKS.
 const SHEET_URLS: { [key: string]: string } = {
   "24 7 store":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=81154121&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=81154121&single=true&output=csv",
   "ammunition store":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=536670718&single=true&output=csv",
-  atm: "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1896199672&single=true&output=csv",
-  bars: "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=554665436&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=536670718&single=true&output=csv",
+  atm: "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1896199672&single=true&output=csv",
+  bars: "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=554665436&single=true&output=csv",
   "car sharing":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1677731615&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1677731615&single=true&output=csv",
   "chip tuning":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=2124493753&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=2124493753&single=true&output=csv",
   "car wash":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1560289993&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1560289993&single=true&output=csv",
   "clothing store":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1115970352&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1115970352&single=true&output=csv",
   "electrical station":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=890789305&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=890789305&single=true&output=csv",
   family:
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=611727212&single=true&output=csv",
-  farm: "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=693525264&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=611727212&single=true&output=csv",
+  farm: "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=693525264&single=true&output=csv",
   "gas station":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1752119158&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1752119158&single=true&output=csv",
   "hair salon":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=313635912&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=313635912&single=true&output=csv",
   "jewellery store":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1913432171&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1913432171&single=true&output=csv",
   "juice shop":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1340443336&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1340443336&single=true&output=csv",
   "law firm":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1563186625&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1563186625&single=true&output=csv",
   "misc/own business":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1861170946&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1861170946&single=true&output=csv",
   office:
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=55176013&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=55176013&single=true&output=csv",
   "oil well":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1090149393&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1090149393&single=true&output=csv",
   organisation:
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=76653452&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=76653452&single=true&output=csv",
   parking:
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1397100388&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1397100388&single=true&output=csv",
   "pet shop":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=120656855&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=120656855&single=true&output=csv",
   "service station":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=488626062&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=488626062&single=true&output=csv",
   "tattoo parlor":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1491755766&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1491755766&single=true&output=csv",
   "taxi cab":
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1643962212&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=1643962212&single=true&output=csv",
   warehouse:
-    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=366962962&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=366962962&single=true&output=csv",
 };
 
 // All available categories from SHEET_URLS for LifeInvader templates
@@ -1335,75 +1335,6 @@ export default function App() {
           {mainTitle}
         </h1>
 
-        {/* Sync Templates Section */}
-        <div className="flex flex-col gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={syncTemplates}
-              disabled={isSyncing}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                isSyncing
-                  ? "bg-gray-400 cursor-not-allowed text-white"
-                  : "bg-blue-500 hover:bg-blue-600 text-white shadow-md hover:shadow-lg"
-              }`}
-            >
-              {isSyncing ? "🔄 Syncing..." : "🔄 Sync Templates"}
-            </button>
-
-            {lastSyncTime && (
-              <div className="text-sm text-gray-600">
-                <div className="font-medium">Last sync:</div>
-                <div>{lastSyncTime}</div>
-              </div>
-            )}
-          </div>
-
-          {isSyncing && syncProgress.total > 0 && (
-            <div className="w-full">
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>
-                  Progress: {syncProgress.current}/{syncProgress.total}{" "}
-                  categories
-                </span>
-                <span>
-                  {Math.round(
-                    (syncProgress.current / syncProgress.total) * 100
-                  )}
-                  %
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                  style={{
-                    width: `${
-                      (syncProgress.current / syncProgress.total) * 100
-                    }%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-          )}
-
-          {syncStatus && (
-            <div
-              className={`text-sm font-medium ${
-                syncStatus.includes("failed")
-                  ? "text-red-600"
-                  : "text-green-600"
-              }`}
-            >
-              {syncStatus}
-            </div>
-          )}
-
-          {syncError && (
-            <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-              <div className="font-medium">Error:</div>
-              <div>{syncError}</div>
-            </div>
-          )}
-        </div>
 
         {/* Top Navigation Buttons */}
         <div className="flex justify-center gap-4 mb-8">

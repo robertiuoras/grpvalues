@@ -41,6 +41,16 @@ export default function ActiveUsersPage() {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
 
+  // Sync-related state variables
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<string>("");
+  const [syncProgress, setSyncProgress] = useState<{
+    current: number;
+    total: number;
+  }>({ current: 0, total: 0 });
+
   // Helper function to get cookie value
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
@@ -308,6 +318,59 @@ export default function ActiveUsersPage() {
     }
   };
 
+  // Sync templates function
+  const syncTemplates = async () => {
+    setIsSyncing(true);
+    setSyncError(null);
+    setSyncStatus("Starting comprehensive sync...");
+    setSyncProgress({ current: 0, total: 25 }); // 25 categories
+
+    try {
+      console.log("🔄 Syncing all template categories...");
+
+      const response = await fetch("/api/sync-templates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Sync failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ Sync result:", result);
+
+      setSyncStatus(
+        `Synced ${result.data.successCount} categories with ${result.data.totalTemplates} templates!`
+      );
+      setSyncProgress({
+        current: result.data.successCount,
+        total: 25,
+      });
+
+      // Update last sync time
+      setLastSyncTime(new Date().toLocaleString());
+
+      setSyncStatus("Sync completed successfully!");
+
+      // Clear status after 5 seconds
+      setTimeout(() => {
+        setSyncStatus("");
+        setSyncProgress({ current: 0, total: 0 });
+      }, 5000);
+    } catch (error) {
+      console.error("❌ Sync error:", error);
+      setSyncError(
+        error instanceof Error ? error.message : "Unknown error occurred"
+      );
+      setSyncStatus("Sync failed!");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // Only show loading if we don't have admin access and are still loading
   if (isLoading && !isAdminUser) {
     return (
@@ -510,6 +573,103 @@ export default function ActiveUsersPage() {
             to any player ID to modify it. Changes are saved immediately to
             Firebase.
           </p>
+        </div>
+      </div>
+
+      {/* Template Sync Section */}
+      <div className="mb-6 flex flex-col items-center gap-4">
+        <div className="text-center max-w-2xl">
+          <h3 className="text-lg font-semibold text-green-300 mb-2">
+            🔄 Template Sync
+          </h3>
+          <p className="text-sm text-gray-400 mb-4">
+            Sync LifeInvader templates from the original Google Sheet to ensure
+            your website has the latest data. This fetches all categories and
+            updates the template system.
+          </p>
+          <div className="text-xs text-gray-500 space-y-1">
+            <p>
+              <strong>Manual Sync:</strong> Click the button below to sync immediately
+            </p>
+            <p>
+              <strong>Automatic Sync:</strong> Runs daily at 6 AM UTC via cron job
+            </p>
+            <p>
+              <strong>Note:</strong> This syncs from the original sheet to your copy
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center gap-4 w-full max-w-md">
+          <button
+            onClick={syncTemplates}
+            disabled={isSyncing}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+              isSyncing
+                ? "bg-gray-600 cursor-not-allowed text-white"
+                : "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
+            }`}
+          >
+            {isSyncing ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Syncing...
+              </>
+            ) : (
+              <>
+                🔄 Sync Templates
+              </>
+            )}
+          </button>
+
+          {lastSyncTime && (
+            <div className="text-sm text-gray-400 text-center">
+              <div className="font-medium">Last sync:</div>
+              <div>{lastSyncTime}</div>
+            </div>
+          )}
+
+          {isSyncing && syncProgress.total > 0 && (
+            <div className="w-full">
+              <div className="flex justify-between text-sm text-gray-400 mb-1">
+                <span>
+                  Progress: {syncProgress.current}/{syncProgress.total} categories
+                </span>
+                <span>
+                  {Math.round((syncProgress.current / syncProgress.total) * 100)}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div
+                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${
+                      (syncProgress.current / syncProgress.total) * 100
+                    }%`,
+                  }}
+                ></div>
+              </div>
+            </div>
+          )}
+
+          {syncStatus && (
+            <div
+              className={`text-sm font-medium px-4 py-2 rounded-lg ${
+                syncStatus.includes("failed")
+                  ? "bg-red-900/40 border border-red-700 text-red-300"
+                  : "bg-green-900/40 border border-green-700 text-green-300"
+              }`}
+            >
+              {syncStatus}
+            </div>
+          )}
+
+          {syncError && (
+            <div className="text-sm text-red-300 bg-red-900/40 border border-red-700 p-3 rounded-lg w-full">
+              <div className="font-medium">Error:</div>
+              <div>{syncError}</div>
+            </div>
+          )}
         </div>
       </div>
 
