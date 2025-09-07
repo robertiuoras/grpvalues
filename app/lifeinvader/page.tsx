@@ -1604,7 +1604,7 @@ export default function App() {
                   return (
                     <div
                       key={itemId} // Use robust itemId for key
-                      className={`relative p-4 border rounded-lg shadow-md hover:shadow-lg hover:border-red-400 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between group ${
+                      className={`relative p-4 border rounded-lg shadow-md hover:shadow-lg hover:border-red-400 transition-all duration-300 transform hover:-translate-y-1 flex flex-col group min-h-[200px] ${
                         isDarkMode
                           ? "bg-gradient-to-br from-gray-600 to-gray-700 text-gray-100 border-gray-500"
                           : "bg-gradient-to-br from-white to-gray-50 text-gray-800 border-gray-200"
@@ -1619,22 +1619,21 @@ export default function App() {
                           {t.name ?? ""}{" "}
                           {/* Add nullish coalescing for safety */}
                         </h3>
-                        <div className="mb-2">
+                        <div className="mb-2 flex-grow">
                           <p
-                            className={`text-xs leading-relaxed ${
+                            className={`text-sm leading-relaxed ${
                               isDarkMode ? "text-gray-300" : "text-gray-700"
                             } ${
                               expandedDescriptions.has(itemId)
                                 ? ""
                                 : "overflow-hidden text-ellipsis whitespace-nowrap"
                             }`}
-                          >
-                            {t.description ?? ""}
-                          </p>
-                          {t.description && t.description.length > 120 && (
+                            dangerouslySetInnerHTML={{ __html: t.description ?? "" }}
+                          />
+                          {t.description && t.description.length > 50 && (
                             <button
                               onClick={() => toggleDescriptionExpansion(itemId)}
-                              className={`text-xs font-medium mt-1 transition-colors duration-200 ${
+                              className={`text-sm font-medium mt-2 transition-colors duration-200 ${
                                 isDarkMode
                                   ? "text-red-400 hover:text-red-300"
                                   : "text-red-600 hover:text-red-700"
