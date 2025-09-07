@@ -3,39 +3,39 @@ import { getGoogleClients } from "../../../lib/googleClient";
 
 // Original sheet base URL (the one you don't have edit access to)
 const ORIGINAL_SHEET_BASE =
-  "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=";
+  "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/export?format=csv&gid=";
 
 // Your copy sheet ID (the one you control)
 const YOUR_SHEET_ID = "18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4";
 
-// Category mappings with their gid values
+// Category mappings with their gid values and correct sheet names
 const CATEGORY_GIDS = {
-  "24 7 store": "81154121",
-  "ammunition store": "536670718",
-  atm: "1896199672",
-  bars: "554665436",
-  "car sharing": "1677731615",
-  "chip tuning": "2124493753",
-  "car wash": "1560289993",
-  "clothing store": "1115970352",
-  "electrical station": "890789305",
-  family: "611727212",
-  farm: "693525264",
-  "gas station": "1752119158",
-  "hair salon": "313635912",
-  "jewellery store": "1913432171",
-  "juice shop": "1340443336",
-  "law firm": "1563186625",
-  "misc/own business": "1861170946",
-  office: "55176013",
-  "oil well": "1090149393",
-  organisation: "76653452",
-  parking: "1397100388",
-  "pet shop": "120656855",
-  "service station": "488626062",
-  "tattoo parlor": "1491755766",
-  "taxi cab": "1643962212",
-  warehouse: "366962962",
+  "24 7 store": { gid: "81154121", sheetName: "24/7 Store" },
+  "ammunition store": { gid: "536670718", sheetName: "Ammunition Store" },
+  atm: { gid: "1896199672", sheetName: "ATM" },
+  bars: { gid: "554665436", sheetName: "Bars" },
+  "car sharing": { gid: "1677731615", sheetName: "Car Sharing" },
+  "chip tuning": { gid: "2124493753", sheetName: "Chip Tuning" },
+  "car wash": { gid: "1560289993", sheetName: "Car Wash" },
+  "clothing store": { gid: "1115970352", sheetName: "Clothing Store" },
+  "electrical station": { gid: "890789305", sheetName: "Electrical Station" },
+  family: { gid: "611727212", sheetName: "Family" },
+  farm: { gid: "693525264", sheetName: "Farm" },
+  "gas station": { gid: "1752119158", sheetName: "Gas Station" },
+  "hair salon": { gid: "313635912", sheetName: "Hair Salon" },
+  "jewellery store": { gid: "1913432171", sheetName: "Jewelry Store" },
+  "juice shop": { gid: "1340443336", sheetName: "Juice Shop" },
+  "law firm": { gid: "1563186625", sheetName: "Law Firm" },
+  "misc/own business": { gid: "1861170946", sheetName: "Misc / Own Business" },
+  office: { gid: "55176013", sheetName: "Office" },
+  "oil well": { gid: "1090149393", sheetName: "Oil Well" },
+  organisation: { gid: "76653452", sheetName: "Organisation" },
+  parking: { gid: "1397100388", sheetName: "Parking" },
+  "pet shop": { gid: "120656855", sheetName: "Pet Shop" },
+  "service station": { gid: "488626062", sheetName: "Service Station" },
+  "tattoo parlor": { gid: "1491755766", sheetName: "Tattoo Parlor" },
+  "taxi cab": { gid: "1643962212", sheetName: "Taxi Cab" },
+  warehouse: { gid: "366962962", sheetName: "Warehouse" },
 };
 
 export async function POST(request: NextRequest) {
@@ -51,12 +51,12 @@ export async function POST(request: NextRequest) {
     let errorCount = 0;
 
     // Sync each category individually
-    for (const [categoryName, gid] of Object.entries(CATEGORY_GIDS)) {
+    for (const [categoryName, categoryData] of Object.entries(CATEGORY_GIDS)) {
       try {
-        console.log(`📊 Syncing category: ${categoryName} (gid: ${gid})`);
+        console.log(`📊 Syncing category: ${categoryName} (gid: ${categoryData.gid})`);
 
         // Fetch from original sheet
-        const originalUrl = `${ORIGINAL_SHEET_BASE}${gid}&single=true&output=csv`;
+        const originalUrl = `${ORIGINAL_SHEET_BASE}${categoryData.gid}`;
         const originalResponse = await fetch(originalUrl);
 
         if (!originalResponse.ok) {
@@ -87,34 +87,36 @@ export async function POST(request: NextRequest) {
         // Write to your copy sheet
         if (templates.length > 0) {
           // Convert templates to array format for Google Sheets
-          const values = templates.map(template => [
+          const values = templates.map((template) => [
             template.name,
             template.description,
-            template.type
+            template.type,
           ]);
 
           // Clear the existing data in the target sheet
           await sheets.spreadsheets.values.clear({
             spreadsheetId: YOUR_SHEET_ID,
-            range: `${categoryName}!A:Z`,
+            range: `${categoryData.sheetName}!A:Z`,
           });
 
           // Write the new data
           await sheets.spreadsheets.values.update({
             spreadsheetId: YOUR_SHEET_ID,
-            range: `${categoryName}!A1`,
+            range: `${categoryData.sheetName}!A1`,
             valueInputOption: "RAW",
             requestBody: {
-              values: values
+              values: values,
             },
           });
 
-          console.log(`📝 Written ${templates.length} templates to ${categoryName} sheet`);
+          console.log(
+            `📝 Written ${templates.length} templates to ${categoryData.sheetName} sheet`
+          );
         }
 
         syncResults.push({
           category: categoryName,
-          gid: gid,
+          gid: categoryData.gid,
           templateCount: templates.length,
           success: true,
           templates: templates,
@@ -126,10 +128,11 @@ export async function POST(request: NextRequest) {
         console.error(`❌ Error syncing ${categoryName}:`, error);
         syncResults.push({
           category: categoryName,
-          gid: gid,
+          gid: categoryData.gid,
           templateCount: 0,
           success: false,
-          error: error instanceof Error ? error.message : "Unknown error occurred",
+          error:
+            error instanceof Error ? error.message : "Unknown error occurred",
         });
         errorCount++;
       }
@@ -155,9 +158,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("❌ Sync error:", error);
     return NextResponse.json(
-      { 
-        error: "Failed to sync templates", 
-        details: error instanceof Error ? error.message : "Unknown error occurred" 
+      {
+        error: "Failed to sync templates",
+        details:
+          error instanceof Error ? error.message : "Unknown error occurred",
       },
       { status: 500 }
     );
