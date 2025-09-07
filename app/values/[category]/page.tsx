@@ -26,7 +26,7 @@ const formatSlug = (slug: string) =>
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
-interface GrandRPItem {
+interface GRPValuesItem {
   name: string;
   value: string;
   sheetName: string;
@@ -80,7 +80,7 @@ const allClothingSubcategories = [
   { display: "Watches", slug: "watch", gender: "women" },
 ];
 
-const extractExtraNumber = (item: GrandRPItem): number => {
+const extractExtraNumber = (item: GRPValuesItem): number => {
   const match = item.name.match(/Extra\s*(\d+)/i);
   return match ? parseInt(match[1], 10) : 1000;
 };
@@ -203,7 +203,7 @@ export default function CategoryPage({
   const [selectedLuminousSubcategory, setSelectedLuminousSubcategory] =
     useState<"shirts" | "pants" | null>(null);
 
-  const [items, setItems] = useState<GrandRPItem[]>([]);
+  const [items, setItems] = useState<GRPValuesItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -232,7 +232,7 @@ export default function CategoryPage({
           const errorText = await res.text();
           throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
         }
-        const data: GrandRPItem[] = await res.json();
+        const data: GRPValuesItem[] = await res.json();
         setItems(
           data.sort((a, b) => extractExtraNumber(a) - extractExtraNumber(b))
         );
@@ -261,7 +261,7 @@ export default function CategoryPage({
         const errorText = await res.text();
         throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
       }
-      const data: GrandRPItem[] = await res.json();
+      const data: GRPValuesItem[] = await res.json();
 
       let sorted = data;
       if (selectedMainCategory === "desertscarfmask") {
@@ -304,7 +304,7 @@ export default function CategoryPage({
         const errorText = await res.text();
         throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
       }
-      const data: GrandRPItem[] = await res.json();
+      const data: GRPValuesItem[] = await res.json();
       setItems(
         data.sort((a, b) => extractExtraNumber(a) - extractExtraNumber(b))
       );

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Development Helper Script for Grand RP Values
+# Development Helper Script for GRP Values
 # Automatically detects and fixes Webpack module errors
 
-echo "🔧 Grand RP Values Development Helper"
+echo "🔧 GRP Values Development Helper"
 echo "====================================="
 
 # Function to check if Next.js is running

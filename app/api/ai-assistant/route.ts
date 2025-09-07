@@ -167,14 +167,14 @@ function normalizeInput(input: string): string {
 // Function to normalize house numbers and other formatting
 function normalizeFormatting(input: string): string {
   let normalized = input;
-  
+
   // Convert "No" to "№" for house numbers
   normalized = normalized.replace(/\bNo(\d+)\b/gi, "№$1");
-  
+
   // Convert "type" or "extra" to "of type" format
   // Match patterns like "type 15", "extra 15", "type15", "extra15"
   normalized = normalized.replace(/\b(type|extra)\s*(\d+)\b/gi, "of type $2");
-  
+
   return normalized;
 }
 
@@ -765,12 +765,12 @@ ${learningContext}`;
     const categoryLine = lines.find((line) => line.startsWith("Category:"));
 
     // Apply anti-duplication fixes
-  formattedAd = formattedAd
+    formattedAd = formattedAd
       .replace(/Selling\s+Selling/g, "Selling")
       .replace(/Price:\s*Price:/g, "Price:")
       .replace(/Budget:\s*Budget:/g, "Budget:")
-    .replace(/\s+/g, " ")
-    .trim();
+      .replace(/\s+/g, " ")
+      .trim();
 
     // Extract category
     let category = correctCategory || detectedCategory;

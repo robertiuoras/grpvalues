@@ -150,7 +150,7 @@ export function Header() {
             </Link>
           )}
           {renderHomeLink(
-            "Grand RP Values",
+            "GRP Values",
             "text-3xl font-bold text-blue-400 hover:text-blue-300 transition-colors duration-300"
           )}
         </div>

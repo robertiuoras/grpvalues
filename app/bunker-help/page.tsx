@@ -75,7 +75,7 @@ export default function BunkerHelpPage() {
           </h1>
           <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
             Master the art of industrial warfare. Optimize your bunker, manage
-            workers, and dominate the production chain in Grand RP.
+            workers, and dominate the production chain in GRP Values.
           </p>
         </div>
 

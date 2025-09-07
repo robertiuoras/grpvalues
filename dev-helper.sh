@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Development Helper Script for Grand RP Values
+# Development Helper Script for GRP Values
 # This script helps prevent CSS breaking issues by managing build cache
 
-echo "🧹 Development Helper for Grand RP Values"
+echo "🧹 Development Helper for GRP Values"
 echo "=========================================="
 
 # Function to clean cache

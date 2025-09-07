@@ -30,7 +30,7 @@ function PublicHomePage() {
     {
       name: "Beginner Help",
       path: "/beginner-help",
-      description: "Get started with Grand RP and learn the basics.",
+      description: "Get started with GRP Values and learn the basics.",
       icon: <HelpCircle size={40} className="text-red-400" />,
     },
     {
@@ -82,11 +82,11 @@ function PublicHomePage() {
       {/* Main content goes here */}
       <div className="text-center mb-8 mt-8">
         <h1 className="text-3xl md:text-4xl font-extrabold mb-4 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-          Welcome to Grand RP Values
+          Welcome to GRP Values
         </h1>
         <p className="text-lg md:text-xl text-gray-300 mb-6 max-w-4xl mx-auto">
           Your ultimate resource for accurate market values of vehicles,
-          clothing, and items in Grand RP. Get real-time pricing data to make
+          clothing, and items in GRP Values. Get real-time pricing data to make
           informed trading decisions.
         </p>
       </div>
@@ -226,7 +226,7 @@ export default function HomePage() {
     {
       name: "Beginner Help",
       path: "/beginner-help",
-      description: "Get started with Grand RP and learn the basics.",
+      description: "Get started with GRP Values and learn the basics.",
       icon: <HelpCircle size={40} className="text-red-400" />,
     },
     {
@@ -336,7 +336,7 @@ export default function HomePage() {
 
       <div className="flex flex-col items-center w-full max-w-7xl mx-auto px-4 py-8 relative">
         <h1 className="text-5xl font-extrabold text-blue-400 mb-6 drop-shadow-lg text-center">
-          Welcome to Grand RP Values
+          Welcome to GRP Values
         </h1>
         <p className="text-xl text-gray-300 mb-8 text-center max-w-3xl">
           Select a category below to explore the current market values.
@@ -353,7 +353,7 @@ export default function HomePage() {
                 🤝 Built by Players, for Players
               </h3>
               <p className="text-sm leading-relaxed">
-                This platform is maintained and updated by the Grand RP
+                This platform is maintained and updated by the GRP Values
                 community. All values, templates, and features are contributed
                 by active players who understand the market dynamics and
                 community needs.
