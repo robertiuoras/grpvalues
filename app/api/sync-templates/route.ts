@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
           gid: gid,
           templateCount: 0,
           success: false,
-          error: error.message,
+          error: error instanceof Error ? error.message : "Unknown error occurred",
         });
         errorCount++;
       }
@@ -124,7 +124,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("❌ Sync error:", error);
     return NextResponse.json(
-      { error: "Failed to sync templates", details: error.message },
+      { 
+        error: "Failed to sync templates", 
+        details: error instanceof Error ? error.message : "Unknown error occurred" 
+      },
       { status: 500 }
     );
   }

@@ -39,7 +39,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("❌ Cron sync error:", error);
     return NextResponse.json(
-      { error: "Cron sync failed", details: error.message },
+      { 
+        error: "Cron sync failed", 
+        details: error instanceof Error ? error.message : "Unknown error occurred" 
+      },
       { status: 500 }
     );
   }
