@@ -47,7 +47,7 @@ async function getRelevantFeedback(
         originalInput: data.originalInput,
         aiResponse: data.aiResponse,
         userCorrection: data.userCorrection,
-        timestamp: data.timestamp.toDate(),
+            timestamp: data.timestamp.toDate(),
         category: data.category,
         adType: data.adType,
         formatPattern: data.formatPattern,
@@ -60,11 +60,11 @@ async function getRelevantFeedback(
       if (feedback.category === category) return true;
 
       // Match by similar content (simple keyword matching)
-      const inputWords = input.toLowerCase().split(/\s+/);
-      const feedbackWords = feedback.originalInput.toLowerCase().split(/\s+/);
+        const inputWords = input.toLowerCase().split(/\s+/);
+        const feedbackWords = feedback.originalInput.toLowerCase().split(/\s+/);
       const commonWords = inputWords.filter((word) =>
-        feedbackWords.includes(word)
-      );
+          feedbackWords.includes(word)
+        );
 
       return commonWords.length >= 2; // At least 2 common words
     });
@@ -139,9 +139,63 @@ function replaceBrandNames(text: string): string {
   return result;
 }
 
+// Function to normalize common typos and variations
+function normalizeInput(input: string): string {
+  const typos: { [key: string]: string } = {
+    'buyig': 'buying',
+    'seling': 'selling',
+    'purchasing': 'buying',
+    'purchase': 'buying',
+    'sell': 'selling',
+    'buy': 'buying',
+    'lumi': 'luminous',
+    'luminus': 'luminous',
+    'luminos': 'luminous',
+    'lumin': 'luminous'
+  };
+  
+  let normalized = input.toLowerCase().trim();
+  
+  // Replace common typos
+  for (const [typo, correct] of Object.entries(typos)) {
+    normalized = normalized.replace(new RegExp(typo, 'gi'), correct);
+  }
+  
+  return normalized;
+}
+
+// Function to handle color/luminous matching for items
+function findItemWithColorOrLuminous(input: string, options: string[]): string | null {
+  const inputLower = normalizeInput(input);
+  
+  // Check if input contains color or luminous
+  const hasColor = /\b(red|blue|green|yellow|orange|purple|pink|black|white|gray|grey|brown|silver|gold|cyan|magenta|lime|maroon|navy|olive|teal|aqua|fuchsia|silver|gold)\b/i.test(input);
+  const hasLuminous = /\b(luminous|lumi|luminus|luminos|lumin)\b/i.test(input);
+  
+  if (!hasColor && !hasLuminous) {
+    return null;
+  }
+  
+  // Extract the base item name (remove color/luminous words)
+  let baseItem = inputLower
+    .replace(/\b(red|blue|green|yellow|orange|purple|pink|black|white|gray|grey|brown|silver|gold|cyan|magenta|lime|maroon|navy|olive|teal|aqua|fuchsia|silver|gold)\b/gi, '')
+    .replace(/\b(luminous|lumi|luminus|luminos|lumin)\b/gi, '')
+    .trim();
+  
+  // Find matching item
+  for (const option of options) {
+    const optionLower = option.toLowerCase().trim();
+    if (optionLower.includes(baseItem) || baseItem.includes(optionLower)) {
+      return option;
+    }
+  }
+  
+  return null;
+}
+
 // Function to find best match from a list
 function findBestMatch(input: string, options: string[]): string | null {
-  const inputLower = input.toLowerCase().trim();
+  const inputLower = normalizeInput(input);
 
   // First try exact match
   for (const option of options) {
@@ -209,33 +263,51 @@ async function fetchPolicyData(): Promise<{
     // Google Sheets data - Individual sheets for exact matching
     const sheetUrls = {
       cars: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjuFIpuM_5_WX-1OWOUegJ1adaTatCiFUFhFw0Nmodm5ZgljB-aSfWFMvVSTAmerdfFBfBKeW7syCV/pub?gid=0&single=true&output=csv",
-      motorcycles: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjuFIpuM_5_WX-1OWOUegJ1adaTatCiFUFhFw0Nmodm5ZgljB-aSfWFMvVSTAmerdfFBfBKeW7syCV/pub?gid=843250620&single=true&output=csv",
-      boatsPlanesHelicopters: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjuFIpuM_5_WX-1OWOUegJ1adaTatCiFUFhFw0Nmodm5ZgljB-aSfWFMvVSTAmerdfFBfBKeW7syCV/pub?gid=783555750&single=true&output=csv",
-      clothing: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjuFIpuM_5_WX-1OWOUegJ1adaTatCiFUFhFw0Nmodm5ZgljB-aSfWFMvVSTAmerdfFBfBKeW7syCV/pub?gid=1874456586&single=true&output=csv",
-      items: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjuFIpuM_5_WX-1OWOUegJ1adaTatCiFUFhFw0Nmodm5ZgljB-aSfWFMvVSTAmerdfFBfBKeW7syCV/pub?gid=1618313015&single=true&output=csv"
+      motorcycles:
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjuFIpuM_5_WX-1OWOUegJ1adaTatCiFUFhFw0Nmodm5ZgljB-aSfWFMvVSTAmerdfFBfBKeW7syCV/pub?gid=843250620&single=true&output=csv",
+      boatsPlanesHelicopters:
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjuFIpuM_5_WX-1OWOUegJ1adaTatCiFUFhFw0Nmodm5ZgljB-aSfWFMvVSTAmerdfFBfBKeW7syCV/pub?gid=783555750&single=true&output=csv",
+      clothing:
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjuFIpuM_5_WX-1OWOUegJ1adaTatCiFUFhFw0Nmodm5ZgljB-aSfWFMvVSTAmerdfFBfBKeW7syCV/pub?gid=1874456586&single=true&output=csv",
+      items:
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vRjuFIpuM_5_WX-1OWOUegJ1adaTatCiFUFhFw0Nmodm5ZgljB-aSfWFMvVSTAmerdfFBfBKeW7syCV/pub?gid=1618313015&single=true&output=csv",
     };
 
     // Fetch data from each sheet
-    const [carsResponse, motorcyclesResponse, boatsResponse, clothingResponse, itemsResponse] = await Promise.all([
+    const [
+      carsResponse,
+      motorcyclesResponse,
+      boatsResponse,
+      clothingResponse,
+      itemsResponse,
+    ] = await Promise.all([
       fetch(sheetUrls.cars),
       fetch(sheetUrls.motorcycles),
       fetch(sheetUrls.boatsPlanesHelicopters),
       fetch(sheetUrls.clothing),
-      fetch(sheetUrls.items)
+      fetch(sheetUrls.items),
     ]);
 
-    const [carsData, motorcyclesData, boatsData, clothingData, itemsData] = await Promise.all([
-      carsResponse.text(),
-      motorcyclesResponse.text(),
-      boatsResponse.text(),
-      clothingResponse.text(),
-      itemsResponse.text()
-    ]);
+    const [carsData, motorcyclesData, boatsData, clothingData, itemsData] =
+      await Promise.all([
+        carsResponse.text(),
+        motorcyclesResponse.text(),
+        boatsResponse.text(),
+        clothingResponse.text(),
+        itemsResponse.text(),
+      ]);
 
     // Parse CSV data from each sheet
     const parseSheetData = (data: string) => {
       const lines = data.split("\n").filter((line) => line.trim());
-      return lines.map((line) => line.trim()).filter(item => item && item !== "A,STATE VALUE,B,STATE VALUE,C,STATE VALUE,D,STATE VALUE,E,STATE VALUE,F,STATE VALUE,G,STATE VALUE,H,STATE VALUE,I,STATE VALUE,J,STATE VALUE,K,STATE VALUE,L,STATE VALUE,M,STATE VALUE,N,STATE VALUE,O,STATE VALUE,P,STATE VALUE,R,STATE VALUE,S,STATE VALUE,T,STATE VALUE,U,STATE VALUE,V,STATE VALUE,W,STATE VALUE,X,STATE VALUE,Y,STATE VALUE,Z,STATE VALUE,*");
+      return lines
+        .map((line) => line.trim())
+        .filter(
+          (item) =>
+            item &&
+            item !==
+              "A,STATE VALUE,B,STATE VALUE,C,STATE VALUE,D,STATE VALUE,E,STATE VALUE,F,STATE VALUE,G,STATE VALUE,H,STATE VALUE,I,STATE VALUE,J,STATE VALUE,K,STATE VALUE,L,STATE VALUE,M,STATE VALUE,N,STATE VALUE,O,STATE VALUE,P,STATE VALUE,R,STATE VALUE,S,STATE VALUE,T,STATE VALUE,U,STATE VALUE,V,STATE VALUE,W,STATE VALUE,X,STATE VALUE,Y,STATE VALUE,Z,STATE VALUE,*"
+        );
     };
 
     const carsList = parseSheetData(carsData);
@@ -245,10 +317,18 @@ async function fetchPolicyData(): Promise<{
     const itemsList = parseSheetData(itemsData);
 
     // Combine all items for general reference
-    const allItems = [...carsList, ...motorcyclesList, ...boatsList, ...clothingList, ...itemsList];
+    const allItems = [
+      ...carsList,
+      ...motorcyclesList,
+      ...boatsList,
+      ...clothingList,
+      ...itemsList,
+    ];
 
     // Create category-specific lists for better matching
-    const vehicleList = [...carsList, ...motorcyclesList, ...boatsList].join("\n");
+    const vehicleList = [...carsList, ...motorcyclesList, ...boatsList].join(
+      "\n"
+    );
     const clothingListText = clothingList.join("\n");
     const itemListText = itemsList.join("\n");
 
@@ -383,48 +463,91 @@ async function formatAdWithAI(
     }
 
     // Fetch policy data
-    const { 
-      policy, 
-      vehicleList, 
-      clothingList, 
-      itemsList, 
+    const {
+      policy,
+      vehicleList,
+      clothingList,
+      itemsList,
       allItems,
       carsList,
       motorcyclesList,
       boatsList,
       clothingListItems,
-      itemsListItems
+      itemsListItems,
     } = await fetchPolicyData();
 
     // Replace real brand names with fake ones
     const processedContent = replaceBrandNames(adContent);
+    
+    // Detect if it's selling or buying based on price/budget if not explicitly mentioned
+    const normalizedInput = normalizeInput(processedContent);
+    const hasSelling = normalizedInput.includes('selling');
+    const hasBuying = normalizedInput.includes('buying');
+    const hasPrice = /\b(price|budget|cost|worth|value)\b/i.test(processedContent);
+    
+    // If neither selling nor buying is mentioned but price is, assume selling
+    if (!hasSelling && !hasBuying && hasPrice) {
+      // This will be handled in the AI prompt
+    }
 
     // Find matching items from Google Sheets using category-specific lists
     let matchedItem = null;
-    const inputLower = processedContent.toLowerCase();
-    
-    // Try to match from specific categories first
-    if (inputLower.includes('car') || inputLower.includes('vehicle') || inputLower.includes('auto')) {
-      matchedItem = findBestMatch(processedContent, carsList);
+    const inputLower = normalizeInput(processedContent);
+
+    // First try color/luminous matching for items
+    if (inputLower.includes("clothing") || inputLower.includes("shirt") || inputLower.includes("pants") || inputLower.includes("shoes") || inputLower.includes("hat")) {
+      matchedItem = findItemWithColorOrLuminous(processedContent, clothingListItems);
     }
-    if (!matchedItem && (inputLower.includes('motorcycle') || inputLower.includes('bike'))) {
+    if (!matchedItem && (inputLower.includes("item") || inputLower.includes("tool") || inputLower.includes("equipment"))) {
+      matchedItem = findItemWithColorOrLuminous(processedContent, itemsListItems);
+    }
+
+    // Try to match from specific categories first
+    if (
+      inputLower.includes("car") ||
+      inputLower.includes("vehicle") ||
+      inputLower.includes("auto")
+    ) {
+      matchedItem = matchedItem || findBestMatch(processedContent, carsList);
+    }
+    if (
+      !matchedItem &&
+      (inputLower.includes("motorcycle") || inputLower.includes("bike"))
+    ) {
       matchedItem = findBestMatch(processedContent, motorcyclesList);
     }
-    if (!matchedItem && (inputLower.includes('boat') || inputLower.includes('plane') || inputLower.includes('helicopter'))) {
+    if (
+      !matchedItem &&
+      (inputLower.includes("boat") ||
+        inputLower.includes("plane") ||
+        inputLower.includes("helicopter"))
+    ) {
       matchedItem = findBestMatch(processedContent, boatsList);
     }
-    if (!matchedItem && (inputLower.includes('clothing') || inputLower.includes('shirt') || inputLower.includes('pants') || inputLower.includes('shoes') || inputLower.includes('hat'))) {
+    if (
+      !matchedItem &&
+      (inputLower.includes("clothing") ||
+        inputLower.includes("shirt") ||
+        inputLower.includes("pants") ||
+        inputLower.includes("shoes") ||
+        inputLower.includes("hat"))
+    ) {
       matchedItem = findBestMatch(processedContent, clothingListItems);
     }
-    if (!matchedItem && (inputLower.includes('item') || inputLower.includes('tool') || inputLower.includes('equipment'))) {
+    if (
+      !matchedItem &&
+      (inputLower.includes("item") ||
+        inputLower.includes("tool") ||
+        inputLower.includes("equipment"))
+    ) {
       matchedItem = findBestMatch(processedContent, itemsListItems);
     }
-    
+
     // Fallback to all items if no specific match found
     if (!matchedItem) {
       matchedItem = findBestMatch(processedContent, allItems);
     }
-    
+
     const matchedItemInfo = matchedItem
       ? `\nMATCHED ITEM FROM SHEETS: "${matchedItem}"`
       : "";
@@ -459,6 +582,8 @@ CRITICAL RULES:
 5. Always assign one of these 8 categories: auto, work, service, real estate, other, discount, dating, business
 6. ALWAYS use fake brand names instead of real ones (see brand replacement list below)
 7. If a matched item is found from the sheets, use that exact name
+8. For color/luminous items: Format as "Selling [COLOR] [LUMINOUS] [EXACT_ITEM_NAME]" (e.g., "Selling Red Luminous [Item Name]")
+9. If no "selling" or "buying" is mentioned but price/budget is present, assume it's "selling"
 
 BRAND REPLACEMENT RULES (REAL → FAKE):
 - Adidas → Abibas
@@ -505,10 +630,12 @@ CATEGORIES:
 FORMATTING EXAMPLES:
 1. Vehicle: "Selling my nissan gtr r34" → "Selling "Annis Skyline GT-R (R34)" in full configuration with visual upgrades, insurance and drift kit. Price: Negotiable."
 2. Clothing: "Selling nike shoes" → "Selling Niki shoes. Price: Negotiable."
-3. Job: "hiring chef" → "Hiring Chef. Salary: Negotiable."
-4. Service: "offering car repair" → "Offering Car Repair. Price: Negotiable."
-5. Business: "selling restaurant" → "Selling Restaurant. Price: Negotiable."
-6. Real Estate: "selling house" → "Selling House. Price: Negotiable."
+3. Color/Luminous: "Selling red luminous hat" → "Selling Red Luminous [Exact Hat Name from List]. Price: Negotiable."
+4. Price-based: "nike shoes $50" → "Selling Niki shoes. Price: $50."
+5. Job: "hiring chef" → "Hiring Chef. Salary: Negotiable."
+6. Service: "offering car repair" → "Offering Car Repair. Price: Negotiable."
+7. Business: "selling restaurant" → "Selling Restaurant. Price: Negotiable."
+8. Real Estate: "selling house" → "Selling House. Price: Negotiable."
 
 PRICE FORMATTING:
 - Use periods for thousands: $70.000 (not $70,000)
@@ -542,12 +669,12 @@ ${learningContext}`;
     const categoryLine = lines.find((line) => line.startsWith("Category:"));
 
     // Apply anti-duplication fixes
-    formattedAd = formattedAd
+  formattedAd = formattedAd
       .replace(/Selling\s+Selling/g, "Selling")
       .replace(/Price:\s*Price:/g, "Price:")
       .replace(/Budget:\s*Budget:/g, "Budget:")
-      .replace(/\s+/g, " ")
-      .trim();
+    .replace(/\s+/g, " ")
+    .trim();
 
     // Extract category
     let category = correctCategory || detectedCategory;
@@ -556,16 +683,16 @@ ${learningContext}`;
         .replace("Category:", "")
         .trim()
         .toLowerCase();
-      const officialCategories = [
-        "auto",
-        "work",
-        "service",
-        "real estate",
-        "other",
-        "discount",
-        "dating",
-        "business",
-      ];
+    const officialCategories = [
+      "auto",
+      "work",
+      "service",
+      "real estate",
+      "other",
+      "discount",
+      "dating",
+      "business",
+    ];
       if (officialCategories.includes(extractedCategory)) {
         category = extractedCategory;
       }
