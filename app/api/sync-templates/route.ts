@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
               name: parts[0] || "",
               description: parts[1] || "",
               type: parts[2] || "",
-              row: index + 1,
+              originalRow: index + 1, // Keep track of original row position
               category: categoryName,
             };
           })
@@ -121,44 +121,53 @@ export async function POST(request: NextRequest) {
             console.log(`📝 No existing data found for ${categoryData.sheetName}, will create new`);
           }
 
-          // Convert new templates to array format for Google Sheets
+          // Convert new templates to array format for Google Sheets, preserving original row positions
           const newValues = templates.map((template) => [
             template.name,
             template.description,
             template.type,
           ]);
 
+          // Create a map of row positions to preserve gaps
+          const rowMap = new Map<number, string[]>();
+          templates.forEach((template, index) => {
+            rowMap.set(template.originalRow, newValues[index]);
+          });
+
+          // Find the maximum row number to determine the range
+          const maxRow = Math.max(...templates.map(t => t.originalRow));
+
           // Compare existing data with new data to find differences
           const changes = [];
           let hasChanges = false;
 
-          // Check for new or updated templates
-          for (const newTemplate of newValues) {
-            const existingTemplate = existingData.find(
-              (existing) => existing[0] === newTemplate[0]
-            );
+          // Check for new or updated templates (comparing by name and position)
+          for (const [rowNum, newTemplate] of rowMap) {
+            const existingTemplate = existingData[rowNum - 1]; // Convert to 0-based index
 
             if (!existingTemplate) {
               // New template
-              changes.push({ type: 'new', data: newTemplate });
+              changes.push({ type: 'new', data: newTemplate, row: rowNum });
               hasChanges = true;
             } else if (
+              existingTemplate[0] !== newTemplate[0] ||
               existingTemplate[1] !== newTemplate[1] ||
               existingTemplate[2] !== newTemplate[2]
             ) {
               // Updated template
-              changes.push({ type: 'updated', data: newTemplate });
+              changes.push({ type: 'updated', data: newTemplate, row: rowNum });
               hasChanges = true;
             }
           }
 
-          // Check for removed templates
-          for (const existingTemplate of existingData) {
-            const stillExists = newValues.find(
-              (newTemplate) => newTemplate[0] === existingTemplate[0]
-            );
-            if (!stillExists) {
-              changes.push({ type: 'removed', data: existingTemplate });
+          // Check for removed templates (templates that exist in copy but not in original)
+          for (let i = 0; i < existingData.length; i++) {
+            const existingTemplate = existingData[i];
+            const originalRow = i + 1;
+            const stillExists = rowMap.has(originalRow);
+            
+            if (!stillExists && existingTemplate[0]) {
+              changes.push({ type: 'removed', data: existingTemplate, row: originalRow });
               hasChanges = true;
             }
           }
@@ -177,15 +186,17 @@ export async function POST(request: NextRequest) {
                   range: `${categoryData.sheetName}!A:Z`,
                 });
 
-                // Write the new data
-                await sheets.spreadsheets.values.update({
-                  spreadsheetId: YOUR_SHEET_ID,
-                  range: `${categoryData.sheetName}!A1`,
-                  valueInputOption: "RAW",
-                  requestBody: {
-                    values: newValues,
-                  },
-                });
+                // Write data at specific row positions to preserve gaps
+                for (const [rowNum, templateData] of rowMap) {
+                  await sheets.spreadsheets.values.update({
+                    spreadsheetId: YOUR_SHEET_ID,
+                    range: `${categoryData.sheetName}!A${rowNum}:C${rowNum}`,
+                    valueInputOption: "RAW",
+                    requestBody: {
+                      values: [templateData],
+                    },
+                  });
+                }
 
                 console.log(
                   `📝 Updated ${categoryData.sheetName} sheet: ${changes.length} changes (${changes.filter(c => c.type === 'new').length} new, ${changes.filter(c => c.type === 'updated').length} updated, ${changes.filter(c => c.type === 'removed').length} removed)`
