@@ -164,6 +164,29 @@ function normalizeInput(input: string): string {
   return normalized;
 }
 
+// Function to normalize and convert price formats
+function normalizePrice(input: string): string {
+  // Convert common price abbreviations
+  let normalized = input;
+  
+  // Convert "11m" to "$11 Million."
+  normalized = normalized.replace(/\b(\d+(?:\.\d+)?)\s*m\b/gi, '$$$1 Million.');
+  
+  // Convert "25k" to "$25.000"
+  normalized = normalized.replace(/\b(\d+(?:\.\d+)?)\s*k\b/gi, '$$$1.000');
+  
+  // Convert "1.5m" to "$1.5 Million."
+  normalized = normalized.replace(/\b(\d+(?:\.\d+)?)\s*million\b/gi, '$$$1 Million.');
+  
+  // Convert "$11 Million" to "$11 Million." (add period if missing)
+  normalized = normalized.replace(/\$(\d+(?:\.\d+)?)\s*Million(?!\.)/gi, '$$$1 Million.');
+  
+  // Preserve specific details like "25 g.s." - don't modify these
+  // This will be handled in the main processing
+  
+  return normalized;
+}
+
 // Function to handle color/luminous matching for items
 function findItemWithColorOrLuminous(
   input: string,
@@ -486,7 +509,10 @@ async function formatAdWithAI(
     } = await fetchPolicyData();
 
     // Replace real brand names with fake ones
-    const processedContent = replaceBrandNames(adContent);
+    let processedContent = replaceBrandNames(adContent);
+    
+    // Normalize price formats
+    processedContent = normalizePrice(processedContent);
 
     // Detect if it's selling or buying based on price/budget if not explicitly mentioned
     const normalizedInput = normalizeInput(processedContent);
@@ -613,6 +639,8 @@ CRITICAL RULES:
 8. For color/luminous items: Format as "Selling [color] [luminous] [EXACT_ITEM_NAME]" (e.g., "Selling red luminous [Item Name]")
 9. If no "selling" or "buying" is mentioned but price/budget is present, assume it's "selling"
 10. Use proper articles: "Selling a house", "Selling an apartment", "Selling house No64"
+11. Preserve specific details from original ad: "25 g.s." should remain as "25 g.s."
+12. Convert price abbreviations: "11m" → "$11 Million.", "25k" → "$25.000"
 
 BRAND REPLACEMENT RULES (REAL → FAKE):
 - Adidas → Abibas
@@ -661,16 +689,21 @@ FORMATTING EXAMPLES:
 2. Clothing: "Selling nike shoes" → "Selling Niki shoes. Price: Negotiable."
 3. Color/Luminous: "Selling red luminous hat" → "Selling red luminous [Exact Hat Name from List]. Price: Negotiable."
 4. Price-based: "nike shoes $50" → "Selling Niki shoes. Price: $50."
-5. Job: "hiring chef" → "Hiring Chef. Salary: Negotiable."
-6. Service: "offering car repair" → "Offering Car Repair. Price: Negotiable."
-7. Business: "selling restaurant" → "Selling Restaurant. Price: Negotiable."
-8. Real Estate: "selling house" → "Selling a house. Price: Negotiable."
-9. Real Estate: "selling apartment" → "Selling an apartment. Price: Negotiable."
-10. Real Estate: "selling house No64" → "Selling house No64. Price: Negotiable."
+5. Price conversion: "selling car 11m" → "Selling a car. Price: $11 Million."
+6. Price conversion: "selling item 25k" → "Selling an item. Price: $25.000."
+7. Preserve details: "selling 25 g.s." → "Selling 25 g.s. Price: Negotiable."
+8. Job: "hiring chef" → "Hiring Chef. Salary: Negotiable."
+9. Service: "offering car repair" → "Offering Car Repair. Price: Negotiable."
+10. Business: "selling restaurant" → "Selling Restaurant. Price: Negotiable."
+11. Real Estate: "selling house" → "Selling a house. Price: Negotiable."
+12. Real Estate: "selling apartment" → "Selling an apartment. Price: Negotiable."
+13. Real Estate: "selling house No64" → "Selling house No64. Price: Negotiable."
 
 PRICE FORMATTING:
 - Use periods for thousands: $70.000 (not $70,000)
 - For millions: $1 Million. (with period)
+- Convert abbreviations: "11m" → "$11 Million.", "25k" → "$25.000"
+- Preserve specific details: "25 g.s." should remain as "25 g.s."
 
 ARTICLE USAGE:
 - Use "a" before consonant sounds: "Selling a house", "Selling a car"
