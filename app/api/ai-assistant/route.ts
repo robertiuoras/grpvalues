@@ -169,7 +169,11 @@ function normalizeFormatting(input: string): string {
   let normalized = input;
   
   // Convert "No" to "№" for house numbers
-  normalized = normalized.replace(/\bNo(\d+)\b/gi, '№$1');
+  normalized = normalized.replace(/\bNo(\d+)\b/gi, "№$1");
+  
+  // Convert "type" or "extra" to "of type" format
+  // Match patterns like "type 15", "extra 15", "type15", "extra15"
+  normalized = normalized.replace(/\b(type|extra)\s*(\d+)\b/gi, "of type $2");
   
   return normalized;
 }
@@ -661,6 +665,7 @@ CRITICAL RULES:
 11. Preserve specific details from original ad: "25 g.s." should remain as "25 g.s."
 12. Convert price abbreviations: "11m" → "$11 Million.", "25k" → "$25.000"
 13. Use "№" instead of "No" for house numbers: "house №64" not "house No64"
+14. For "type" or "extra" with numbers: Format as "of type [number]" (e.g., "type 15" → "of type 15")
 
 BRAND REPLACEMENT RULES (REAL → FAKE):
 - Adidas → Abibas
@@ -718,6 +723,8 @@ FORMATTING EXAMPLES:
 11. Real Estate: "selling house" → "Selling a house. Price: Negotiable."
 12. Real Estate: "selling apartment" → "Selling an apartment. Price: Negotiable."
 13. Real Estate: "selling house №64" → "Selling house №64. Price: Negotiable."
+14. Type/Extra: "selling car type 15" → "Selling a car of type 15. Price: Negotiable."
+15. Type/Extra: "buying item extra 25" → "Buying an item of type 25. Budget: Negotiable."
 
 PRICE FORMATTING:
 - Use periods for thousands: $70.000 (not $70,000)
