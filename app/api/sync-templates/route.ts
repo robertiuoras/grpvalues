@@ -164,25 +164,51 @@ export async function POST(request: NextRequest) {
           }
 
           if (hasChanges) {
-            // Clear the existing data in the target sheet
-            await sheets.spreadsheets.values.clear({
-              spreadsheetId: YOUR_SHEET_ID,
-              range: `${categoryData.sheetName}!A:Z`,
-            });
+            // Retry logic for sheet operations (handles locks)
+            const maxRetries = 3;
+            let retryCount = 0;
+            let success = false;
 
-            // Write the new data
-            await sheets.spreadsheets.values.update({
-              spreadsheetId: YOUR_SHEET_ID,
-              range: `${categoryData.sheetName}!A1`,
-              valueInputOption: "RAW",
-              requestBody: {
-                values: newValues,
-              },
-            });
+            while (retryCount < maxRetries && !success) {
+              try {
+                // Clear the existing data in the target sheet
+                await sheets.spreadsheets.values.clear({
+                  spreadsheetId: YOUR_SHEET_ID,
+                  range: `${categoryData.sheetName}!A:Z`,
+                });
 
-            console.log(
-              `📝 Updated ${categoryData.sheetName} sheet: ${changes.length} changes (${changes.filter(c => c.type === 'new').length} new, ${changes.filter(c => c.type === 'updated').length} updated, ${changes.filter(c => c.type === 'removed').length} removed)`
-            );
+                // Write the new data
+                await sheets.spreadsheets.values.update({
+                  spreadsheetId: YOUR_SHEET_ID,
+                  range: `${categoryData.sheetName}!A1`,
+                  valueInputOption: "RAW",
+                  requestBody: {
+                    values: newValues,
+                  },
+                });
+
+                console.log(
+                  `📝 Updated ${categoryData.sheetName} sheet: ${changes.length} changes (${changes.filter(c => c.type === 'new').length} new, ${changes.filter(c => c.type === 'updated').length} updated, ${changes.filter(c => c.type === 'removed').length} removed)`
+                );
+                success = true;
+              } catch (error: any) {
+                retryCount++;
+                const errorMessage = error.message || 'Unknown error';
+                
+                if (errorMessage.includes('locked') || errorMessage.includes('conflict') || errorMessage.includes('429')) {
+                  console.log(`⚠️ Sheet ${categoryData.sheetName} is locked or rate limited, retrying... (${retryCount}/${maxRetries})`);
+                  
+                  if (retryCount < maxRetries) {
+                    // Wait before retrying (exponential backoff)
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+                  } else {
+                    throw new Error(`Sheet ${categoryData.sheetName} is locked after ${maxRetries} retries: ${errorMessage}`);
+                  }
+                } else {
+                  throw error;
+                }
+              }
+            }
           } else {
             console.log(`✅ ${categoryData.sheetName} sheet is already up to date`);
           }
@@ -198,6 +224,9 @@ export async function POST(request: NextRequest) {
 
         totalTemplates += templates.length;
         successCount++;
+
+        // Add a small delay between categories to avoid overwhelming the API
+        await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
         console.error(`❌ Error syncing ${categoryName}:`, error);
         syncResults.push({
@@ -209,6 +238,9 @@ export async function POST(request: NextRequest) {
             error instanceof Error ? error.message : "Unknown error occurred",
         });
         errorCount++;
+        
+        // Add delay even for failed categories
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
 
