@@ -95,10 +95,18 @@ export async function POST(request: NextRequest) {
             };
 
             const parts = parseCSVLine(line);
+            
+            // Preserve strikethrough formatting by converting to HTML
+            const preserveFormatting = (text: string) => {
+              if (!text) return text;
+              // Convert strikethrough text (~~text~~) to HTML
+              return text.replace(/~~(.*?)~~/g, '<del>$1</del>');
+            };
+            
             return {
-              name: parts[0] || "",
-              description: parts[1] || "",
-              type: parts[2] || "",
+              name: preserveFormatting(parts[0] || ""),
+              description: preserveFormatting(parts[1] || ""),
+              type: preserveFormatting(parts[2] || ""),
               originalRow: index + 1, // Keep track of original row position
               category: categoryName,
             };
