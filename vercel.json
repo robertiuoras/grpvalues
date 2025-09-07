@@ -4,5 +4,11 @@
     "env": {
       "NODE_VERSION": "20"
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/sync-templates",
+      "schedule": "0 */6 * * *"
+    }
+  ]
 }

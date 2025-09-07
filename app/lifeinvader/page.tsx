@@ -200,54 +200,54 @@ const getCategoryIcon = (category: string) => {
 // YOU WILL NEED TO REPLACE PLACEHOLDER URLS WITH YOUR ACTUAL PUBLISHED CSV LINKS.
 const SHEET_URLS: { [key: string]: string } = {
   "24 7 store":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=81154121&single=true&output=csv", // Original URL for 24/7
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=81154121&single=true&output=csv",
   "ammunition store":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=536670718&single=true&output=csv",
-  atm: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1896199672&single=true&output=csv",
-  bars: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=554665436&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=536670718&single=true&output=csv",
+  atm: "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1896199672&single=true&output=csv",
+  bars: "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=554665436&single=true&output=csv",
   "car sharing":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1677731615&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1677731615&single=true&output=csv",
   "chip tuning":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=2124493753&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=2124493753&single=true&output=csv",
   "car wash":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1560289993&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1560289993&single=true&output=csv",
   "clothing store":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1115970352&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1115970352&single=true&output=csv",
   "electrical station":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=890789305&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=890789305&single=true&output=csv",
   family:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=611727212&single=true&output=csv",
-  farm: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=693525264&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=611727212&single=true&output=csv",
+  farm: "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=693525264&single=true&output=csv",
   "gas station":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1752119158&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1752119158&single=true&output=csv",
   "hair salon":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=313635912&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=313635912&single=true&output=csv",
   "jewellery store":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1913432171&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1913432171&single=true&output=csv",
   "juice shop":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1340443336&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1340443336&single=true&output=csv",
   "law firm":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1563186625&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1563186625&single=true&output=csv",
   "misc/own business":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1861170946&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1861170946&single=true&output=csv",
   office:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=55176013&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=55176013&single=true&output=csv",
   "oil well":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1090149393&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1090149393&single=true&output=csv",
   organisation:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=76653452&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=76653452&single=true&output=csv",
   parking:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1397100388&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1397100388&single=true&output=csv",
   "pet shop":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=120656855&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=120656855&single=true&output=csv",
   "service station":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=488626062&single=true&output=csv", // Corrected 'sheets' to 'spreadsheets'
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=488626062&single=true&output=csv",
   "tattoo parlor":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1491755766&single=true&output=csv", // Corrected 'sheets' to 'spreadsheets'
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1491755766&single=true&output=csv",
   "taxi cab":
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=1643962212&single=true&output=csv", // Corrected 'sheets' to 'spreadsheets'
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=1643962212&single=true&output=csv",
   warehouse:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJWtUxRyaZNYRVsOgc3M9sfyI1VXt5yDHJcpUaoocDTLRMm1P3nhcY_F1q8M7O2tKgz30V09pEW5EJ/pub?gid=366962962&single=true&output=csv", // Corrected 'sheets' to 'spreadsheets'
+    "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=366962962&single=true&output=csv",
 };
 
 // All available categories from SHEET_URLS for LifeInvader templates
@@ -519,6 +519,16 @@ export default function App() {
   const [loading, setLoading] = useState(true); // Loading for general templates
   const [loadingMyAds, setLoadingMyAds] = useState(false); // NEW: Loading for user ads
   const papaScriptLoaded = useRef(false);
+
+  // Sync-related state variables
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<string>("");
+  const [syncProgress, setSyncProgress] = useState<{
+    current: number;
+    total: number;
+  }>({ current: 0, total: 0 });
 
   // States for user-saved ads functionality
   const [mySavedAds, setMySavedAds] = useState<UserAd[]>([]);
@@ -895,6 +905,64 @@ export default function App() {
     }
   };
 
+  // Sync templates function
+  const syncTemplates = async () => {
+    setIsSyncing(true);
+    setSyncError(null);
+    setSyncStatus("Starting comprehensive sync...");
+    setSyncProgress({ current: 0, total: Object.keys(SHEET_URLS).length });
+
+    try {
+      console.log("🔄 Syncing all template categories...");
+
+      const response = await fetch("/api/sync-templates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Sync failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ Sync result:", result);
+
+      setSyncStatus(
+        `Synced ${result.data.successCount} categories with ${result.data.totalTemplates} templates!`
+      );
+      setSyncProgress({
+        current: result.data.successCount,
+        total: Object.keys(SHEET_URLS).length,
+      });
+
+      // Update last sync time
+      setLastSyncTime(new Date().toLocaleString());
+
+      // Reload templates after sync
+      setSyncStatus("Reloading templates...");
+      // Note: initializeData is called in useEffect, so we'll trigger a re-render instead
+      window.location.reload();
+
+      setSyncStatus("Sync completed successfully!");
+
+      // Clear status after 5 seconds
+      setTimeout(() => {
+        setSyncStatus("");
+        setSyncProgress({ current: 0, total: 0 });
+      }, 5000);
+    } catch (error) {
+      console.error("❌ Sync error:", error);
+      setSyncError(
+        error instanceof Error ? error.message : "Unknown error occurred"
+      );
+      setSyncStatus("Sync failed!");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   useEffect(() => {
     const loadPapaParseScript = () => {
       if (papaScriptLoaded.current || (window as any).Papa) {
@@ -1266,6 +1334,76 @@ export default function App() {
         <h1 className="text-5xl md:text-6xl font-extrabold text-center mb-10 bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-800 to-red-900 to-red-900 drop-shadow-lg py-3 rounded-xl">
           {mainTitle}
         </h1>
+
+        {/* Sync Templates Section */}
+        <div className="flex flex-col gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={syncTemplates}
+              disabled={isSyncing}
+              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                isSyncing
+                  ? "bg-gray-400 cursor-not-allowed text-white"
+                  : "bg-blue-500 hover:bg-blue-600 text-white shadow-md hover:shadow-lg"
+              }`}
+            >
+              {isSyncing ? "🔄 Syncing..." : "🔄 Sync Templates"}
+            </button>
+
+            {lastSyncTime && (
+              <div className="text-sm text-gray-600">
+                <div className="font-medium">Last sync:</div>
+                <div>{lastSyncTime}</div>
+              </div>
+            )}
+          </div>
+
+          {isSyncing && syncProgress.total > 0 && (
+            <div className="w-full">
+              <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <span>
+                  Progress: {syncProgress.current}/{syncProgress.total}{" "}
+                  categories
+                </span>
+                <span>
+                  {Math.round(
+                    (syncProgress.current / syncProgress.total) * 100
+                  )}
+                  %
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${
+                      (syncProgress.current / syncProgress.total) * 100
+                    }%`,
+                  }}
+                ></div>
+              </div>
+            </div>
+          )}
+
+          {syncStatus && (
+            <div
+              className={`text-sm font-medium ${
+                syncStatus.includes("failed")
+                  ? "text-red-600"
+                  : "text-green-600"
+              }`}
+            >
+              {syncStatus}
+            </div>
+          )}
+
+          {syncError && (
+            <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+              <div className="font-medium">Error:</div>
+              <div>{syncError}</div>
+            </div>
+          )}
+        </div>
 
         {/* Top Navigation Buttons */}
         <div className="flex justify-center gap-4 mb-8">
@@ -1994,13 +2132,18 @@ export default function App() {
                               </label>
                               <select
                                 value={selectedCategory}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                onChange={(e) =>
+                                  setSelectedCategory(e.target.value)
+                                }
                                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                               >
-                                <option value="">Select correct category (optional)</option>
+                                <option value="">
+                                  Select correct category (optional)
+                                </option>
                                 {OFFICIAL_CATEGORIES.map((category) => (
                                   <option key={category} value={category}>
-                                    {CATEGORY_DISPLAY_NAMES[category] || category}
+                                    {CATEGORY_DISPLAY_NAMES[category] ||
+                                      category}
                                   </option>
                                 ))}
                               </select>

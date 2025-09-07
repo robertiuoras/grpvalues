@@ -78,73 +78,78 @@ async function getRelevantFeedback(
 
 // Brand replacement mapping (Real → Fake)
 const BRAND_REPLACEMENTS: { [key: string]: string } = {
-  "adidas": "abibas",
+  adidas: "abibas",
   "air dior": "air bior",
-  "burberry": "murberry",
-  "chanel": "khanel",
-  "champion": "khampion",
+  burberry: "murberry",
+  chanel: "khanel",
+  champion: "khampion",
   "calvin klein": "alvin lein",
-  "casio": "kasio",
-  "crocs": "rocs",
-  "fendi": "bendi",
-  "gap": "cap",
-  "gucci": "muci",
+  casio: "kasio",
+  crocs: "rocs",
+  fendi: "bendi",
+  gap: "cap",
+  gucci: "muci",
   "ground jordan": "ground mordan",
-  "jordan": "mordan",
+  jordan: "mordan",
   "louis vuitton": "lui vi",
-  "marshmello": "sashmello",
+  marshmello: "sashmello",
   "new balance": "new balance",
   "n.a.s.a.": "n.e.s.a.",
   "nike air force": "niki ground porce",
-  "nike": "niki",
-  "nik": "nik",
+  nike: "niki",
+  nik: "nik",
   "off-white": "up-green",
-  "off": "off",
+  off: "off",
   "palm angel": "arm pangel",
-  "pikachu": "mikachu",
-  "razer": "kazer",
-  "rolex": "kolex",
-  "volex": "kolex",
-  "supreme": "kupreme",
-  "fin": "vin",
-  "vans": "pans",
-  "balenciaga": "valenciaga",
-  "yeezy": "keezy",
-  "pezy": "keezy",
-  "playboy": "lm playboy",
-  "prada": "grada",
-  "polo": "molo",
-  "versace": "bersace",
+  pikachu: "mikachu",
+  razer: "kazer",
+  rolex: "kolex",
+  volex: "kolex",
+  supreme: "kupreme",
+  fin: "vin",
+  vans: "pans",
+  balenciaga: "valenciaga",
+  yeezy: "keezy",
+  pezy: "keezy",
+  playboy: "lm playboy",
+  prada: "grada",
+  polo: "molo",
+  versace: "bersace",
 };
 
 // Function to replace real brand names with fake ones
 function replaceBrandNames(text: string): string {
   let result = text.toLowerCase();
-  
+
   // Sort by length (longest first) to avoid partial replacements
-  const sortedBrands = Object.keys(BRAND_REPLACEMENTS).sort((a, b) => b.length - a.length);
-  
+  const sortedBrands = Object.keys(BRAND_REPLACEMENTS).sort(
+    (a, b) => b.length - a.length
+  );
+
   for (const realBrand of sortedBrands) {
     const fakeBrand = BRAND_REPLACEMENTS[realBrand];
     // Use word boundaries to avoid partial matches
-    const regex = new RegExp(`\\b${realBrand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+    const regex = new RegExp(
+      `\\b${realBrand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+      "gi"
+    );
     result = result.replace(regex, fakeBrand);
   }
-  
+
   return result;
 }
 
 // Function to find best match from a list
 function findBestMatch(input: string, options: string[]): string | null {
   const inputLower = input.toLowerCase().trim();
-  
+
   // First try exact match
   for (const option of options) {
     if (option.toLowerCase().trim() === inputLower) {
       return option;
     }
   }
-  
+
   // Then try partial match
   for (const option of options) {
     const optionLower = option.toLowerCase().trim();
@@ -152,28 +157,32 @@ function findBestMatch(input: string, options: string[]): string | null {
       return option;
     }
   }
-  
+
   // Then try word-by-word matching
   const inputWords = inputLower.split(/\s+/);
   for (const option of options) {
     const optionLower = option.toLowerCase().trim();
     const optionWords = optionLower.split(/\s+/);
-    
+
     let matches = 0;
     for (const inputWord of inputWords) {
       for (const optionWord of optionWords) {
-        if (inputWord === optionWord || inputWord.includes(optionWord) || optionWord.includes(inputWord)) {
+        if (
+          inputWord === optionWord ||
+          inputWord.includes(optionWord) ||
+          optionWord.includes(inputWord)
+        ) {
           matches++;
           break;
         }
       }
     }
-    
+
     if (matches >= Math.min(inputWords.length, 2)) {
       return option;
     }
   }
-  
+
   return null;
 }
 
@@ -199,11 +208,15 @@ async function fetchPolicyData(): Promise<{
     const sheetsData = await sheetsResponse.text();
 
     // Parse CSV data from sheets
-    const lines = sheetsData.split("\n").filter(line => line.trim());
-    const allItems = lines.map(line => line.trim());
-    
+    const lines = sheetsData.split("\n").filter((line) => line.trim());
+    const allItems = lines.map((line) => line.trim());
+
     const vehicleList = lines
-      .filter((line) => line.toLowerCase().includes("vehicle") || line.toLowerCase().includes("car"))
+      .filter(
+        (line) =>
+          line.toLowerCase().includes("vehicle") ||
+          line.toLowerCase().includes("car")
+      )
       .join("\n");
     const clothingList = lines
       .filter(
@@ -218,7 +231,11 @@ async function fetchPolicyData(): Promise<{
       )
       .join("\n");
     const itemsList = lines
-      .filter((line) => line.toLowerCase().includes("item") || line.toLowerCase().includes("misc"))
+      .filter(
+        (line) =>
+          line.toLowerCase().includes("item") ||
+          line.toLowerCase().includes("misc")
+      )
       .join("\n");
 
     return {
@@ -351,13 +368,16 @@ async function formatAdWithAI(
 
     // Replace real brand names with fake ones
     const processedContent = replaceBrandNames(adContent);
-    
+
     // Find matching items from Google Sheets
     const matchedItem = findBestMatch(processedContent, allItems);
-    const matchedItemInfo = matchedItem ? `\nMATCHED ITEM FROM SHEETS: "${matchedItem}"` : "";
+    const matchedItemInfo = matchedItem
+      ? `\nMATCHED ITEM FROM SHEETS: "${matchedItem}"`
+      : "";
 
     // Detect category and get relevant feedback
-    const detectedCategory = correctCategory || detectCategory(processedContent);
+    const detectedCategory =
+      correctCategory || detectCategory(processedContent);
     const relevantFeedback = await getRelevantFeedback(
       processedContent,
       detectedCategory
