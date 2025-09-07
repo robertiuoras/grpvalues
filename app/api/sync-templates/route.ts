@@ -68,10 +68,33 @@ export async function POST(request: NextRequest) {
         const originalData = await originalResponse.text();
         const lines = originalData.split("\n").filter((line) => line.trim());
 
-        // Parse templates for this category
+        // Parse templates for this category using proper CSV parsing
         const templates = lines
           .map((line, index) => {
-            const parts = line.split(",").map((part) => part.trim());
+            // Simple CSV parser that handles quoted fields
+            const parseCSVLine = (line: string) => {
+              const result = [];
+              let current = '';
+              let inQuotes = false;
+              
+              for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                  inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                  result.push(current.trim());
+                  current = '';
+                } else {
+                  current += char;
+                }
+              }
+              
+              result.push(current.trim());
+              return result;
+            };
+
+            const parts = parseCSVLine(line);
             return {
               name: parts[0] || "",
               description: parts[1] || "",
@@ -84,34 +107,85 @@ export async function POST(request: NextRequest) {
 
         console.log(`✅ ${categoryName}: ${templates.length} templates found`);
 
-        // Write to your copy sheet
+        // Write to your copy sheet with incremental updates
         if (templates.length > 0) {
-          // Convert templates to array format for Google Sheets
-          const values = templates.map((template) => [
+          // Get existing data from the target sheet
+          let existingData: string[][] = [];
+          try {
+            const existingResponse = await sheets.spreadsheets.values.get({
+              spreadsheetId: YOUR_SHEET_ID,
+              range: `${categoryData.sheetName}!A:C`,
+            });
+            existingData = existingResponse.data.values || [];
+          } catch (error) {
+            console.log(`📝 No existing data found for ${categoryData.sheetName}, will create new`);
+          }
+
+          // Convert new templates to array format for Google Sheets
+          const newValues = templates.map((template) => [
             template.name,
             template.description,
             template.type,
           ]);
 
-          // Clear the existing data in the target sheet
-          await sheets.spreadsheets.values.clear({
-            spreadsheetId: YOUR_SHEET_ID,
-            range: `${categoryData.sheetName}!A:Z`,
-          });
+          // Compare existing data with new data to find differences
+          const changes = [];
+          let hasChanges = false;
 
-          // Write the new data
-          await sheets.spreadsheets.values.update({
-            spreadsheetId: YOUR_SHEET_ID,
-            range: `${categoryData.sheetName}!A1`,
-            valueInputOption: "RAW",
-            requestBody: {
-              values: values,
-            },
-          });
+          // Check for new or updated templates
+          for (const newTemplate of newValues) {
+            const existingTemplate = existingData.find(
+              (existing) => existing[0] === newTemplate[0]
+            );
 
-          console.log(
-            `📝 Written ${templates.length} templates to ${categoryData.sheetName} sheet`
-          );
+            if (!existingTemplate) {
+              // New template
+              changes.push({ type: 'new', data: newTemplate });
+              hasChanges = true;
+            } else if (
+              existingTemplate[1] !== newTemplate[1] ||
+              existingTemplate[2] !== newTemplate[2]
+            ) {
+              // Updated template
+              changes.push({ type: 'updated', data: newTemplate });
+              hasChanges = true;
+            }
+          }
+
+          // Check for removed templates
+          for (const existingTemplate of existingData) {
+            const stillExists = newValues.find(
+              (newTemplate) => newTemplate[0] === existingTemplate[0]
+            );
+            if (!stillExists) {
+              changes.push({ type: 'removed', data: existingTemplate });
+              hasChanges = true;
+            }
+          }
+
+          if (hasChanges) {
+            // Clear the existing data in the target sheet
+            await sheets.spreadsheets.values.clear({
+              spreadsheetId: YOUR_SHEET_ID,
+              range: `${categoryData.sheetName}!A:Z`,
+            });
+
+            // Write the new data
+            await sheets.spreadsheets.values.update({
+              spreadsheetId: YOUR_SHEET_ID,
+              range: `${categoryData.sheetName}!A1`,
+              valueInputOption: "RAW",
+              requestBody: {
+                values: newValues,
+              },
+            });
+
+            console.log(
+              `📝 Updated ${categoryData.sheetName} sheet: ${changes.length} changes (${changes.filter(c => c.type === 'new').length} new, ${changes.filter(c => c.type === 'updated').length} updated, ${changes.filter(c => c.type === 'removed').length} removed)`
+            );
+          } else {
+            console.log(`✅ ${categoryData.sheetName} sheet is already up to date`);
+          }
         }
 
         syncResults.push({
