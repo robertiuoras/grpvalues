@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getGoogleClients } from "../../../lib/googleClient";
 
 // Original sheet base URL (the one you don't have edit access to)
 const ORIGINAL_SHEET_BASE =
   "https://docs.google.com/spreadsheets/d/1CYlZX_-CjNvao7Gaowsk9tlSPzWfuflwK5vxpxN7oBs/pub?gid=";
 
-// Your copy sheet base URL (the one you control)
-const YOUR_SHEET_BASE =
-  "https://docs.google.com/spreadsheets/d/18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4/pub?gid=";
+// Your copy sheet ID (the one you control)
+const YOUR_SHEET_ID = "18amnIJxs-O01CHZ--SNiveoP3wrKCrLgNpyPkkvAIy4";
 
 // Category mappings with their gid values
 const CATEGORY_GIDS = {
@@ -41,6 +41,9 @@ const CATEGORY_GIDS = {
 export async function POST(request: NextRequest) {
   try {
     console.log("🔄 Starting comprehensive template sync...");
+
+    // Get Google Sheets API client
+    const { sheets } = await getGoogleClients();
 
     const syncResults = [];
     let totalTemplates = 0;
@@ -80,6 +83,34 @@ export async function POST(request: NextRequest) {
           .filter((template) => template.name && template.description);
 
         console.log(`✅ ${categoryName}: ${templates.length} templates found`);
+
+        // Write to your copy sheet
+        if (templates.length > 0) {
+          // Convert templates to array format for Google Sheets
+          const values = templates.map(template => [
+            template.name,
+            template.description,
+            template.type
+          ]);
+
+          // Clear the existing data in the target sheet
+          await sheets.spreadsheets.values.clear({
+            spreadsheetId: YOUR_SHEET_ID,
+            range: `${categoryName}!A:Z`,
+          });
+
+          // Write the new data
+          await sheets.spreadsheets.values.update({
+            spreadsheetId: YOUR_SHEET_ID,
+            range: `${categoryName}!A1`,
+            valueInputOption: "RAW",
+            requestBody: {
+              values: values
+            },
+          });
+
+          console.log(`📝 Written ${templates.length} templates to ${categoryName} sheet`);
+        }
 
         syncResults.push({
           category: categoryName,
