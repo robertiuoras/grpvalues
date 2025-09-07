@@ -43,12 +43,19 @@ NEXT_PUBLIC_BASE_URL=https://your-app.vercel.app
 
 ## Cron Schedule
 
-The cron job runs every 6 hours (`0 */6 * * *`). You can change this in `vercel.json`:
+The cron job runs once daily at 6 AM UTC (`0 6 * * *`). 
 
-- `"0 */1 * * *"` - Every hour
-- `"0 */6 * * *"` - Every 6 hours (current)
-- `"0 0 * * *"` - Once daily at midnight
-- `"0 0 */2 * *"` - Every 2 days
+**⚠️ Vercel Hobby Plan Limitations:**
+- Maximum 2 cron jobs
+- Each cron job can only run ONCE PER DAY
+- No more frequent than daily
+
+You can change the schedule in `vercel.json` (but must be daily or less frequent):
+
+- `"0 6 * * *"` - Once daily at 6 AM UTC (current)
+- `"0 0 * * *"` - Once daily at midnight UTC
+- `"0 12 * * *"` - Once daily at noon UTC
+- `"0 0 */2 * *"` - Every 2 days at midnight
 
 ## Troubleshooting
 
