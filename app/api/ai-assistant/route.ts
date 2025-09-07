@@ -164,26 +164,42 @@ function normalizeInput(input: string): string {
   return normalized;
 }
 
+// Function to normalize house numbers and other formatting
+function normalizeFormatting(input: string): string {
+  let normalized = input;
+  
+  // Convert "No" to "№" for house numbers
+  normalized = normalized.replace(/\bNo(\d+)\b/gi, '№$1');
+  
+  return normalized;
+}
+
 // Function to normalize and convert price formats
 function normalizePrice(input: string): string {
   // Convert common price abbreviations
   let normalized = input;
-  
+
   // Convert "11m" to "$11 Million."
-  normalized = normalized.replace(/\b(\d+(?:\.\d+)?)\s*m\b/gi, '$$$1 Million.');
-  
+  normalized = normalized.replace(/\b(\d+(?:\.\d+)?)\s*m\b/gi, "$$$1 Million.");
+
   // Convert "25k" to "$25.000"
-  normalized = normalized.replace(/\b(\d+(?:\.\d+)?)\s*k\b/gi, '$$$1.000');
-  
+  normalized = normalized.replace(/\b(\d+(?:\.\d+)?)\s*k\b/gi, "$$$1.000");
+
   // Convert "1.5m" to "$1.5 Million."
-  normalized = normalized.replace(/\b(\d+(?:\.\d+)?)\s*million\b/gi, '$$$1 Million.');
-  
+  normalized = normalized.replace(
+    /\b(\d+(?:\.\d+)?)\s*million\b/gi,
+    "$$$1 Million."
+  );
+
   // Convert "$11 Million" to "$11 Million." (add period if missing)
-  normalized = normalized.replace(/\$(\d+(?:\.\d+)?)\s*Million(?!\.)/gi, '$$$1 Million.');
-  
+  normalized = normalized.replace(
+    /\$(\d+(?:\.\d+)?)\s*Million(?!\.)/gi,
+    "$$$1 Million."
+  );
+
   // Preserve specific details like "25 g.s." - don't modify these
   // This will be handled in the main processing
-  
+
   return normalized;
 }
 
@@ -510,7 +526,10 @@ async function formatAdWithAI(
 
     // Replace real brand names with fake ones
     let processedContent = replaceBrandNames(adContent);
-    
+
+    // Normalize formatting (house numbers, etc.)
+    processedContent = normalizeFormatting(processedContent);
+
     // Normalize price formats
     processedContent = normalizePrice(processedContent);
 
@@ -631,16 +650,17 @@ async function formatAdWithAI(
 CRITICAL RULES:
 1. NEVER duplicate "Selling", "Price:", or "Budget:" if already present
 2. Use exact names from the provided lists
-3. Follow the policy document rules exactly
+3. ALWAYS read and follow the policy document rules exactly for correct formatting
 4. If you cannot format the ad properly, return "ad cannot be created"
 5. Always assign one of these 8 categories: auto, work, service, real estate, other, discount, dating, business
 6. ALWAYS use fake brand names instead of real ones (see brand replacement list below)
 7. If a matched item is found from the sheets, use that exact name
 8. For color/luminous items: Format as "Selling [color] [luminous] [EXACT_ITEM_NAME]" (e.g., "Selling red luminous [Item Name]")
 9. If no "selling" or "buying" is mentioned but price/budget is present, assume it's "selling"
-10. Use proper articles: "Selling a house", "Selling an apartment", "Selling house No64"
+10. Use proper articles: "Selling a house", "Selling an apartment", "Selling house №64"
 11. Preserve specific details from original ad: "25 g.s." should remain as "25 g.s."
 12. Convert price abbreviations: "11m" → "$11 Million.", "25k" → "$25.000"
+13. Use "№" instead of "No" for house numbers: "house №64" not "house No64"
 
 BRAND REPLACEMENT RULES (REAL → FAKE):
 - Adidas → Abibas
@@ -697,7 +717,7 @@ FORMATTING EXAMPLES:
 10. Business: "selling restaurant" → "Selling Restaurant. Price: Negotiable."
 11. Real Estate: "selling house" → "Selling a house. Price: Negotiable."
 12. Real Estate: "selling apartment" → "Selling an apartment. Price: Negotiable."
-13. Real Estate: "selling house No64" → "Selling house No64. Price: Negotiable."
+13. Real Estate: "selling house №64" → "Selling house №64. Price: Negotiable."
 
 PRICE FORMATTING:
 - Use periods for thousands: $70.000 (not $70,000)
@@ -708,7 +728,7 @@ PRICE FORMATTING:
 ARTICLE USAGE:
 - Use "a" before consonant sounds: "Selling a house", "Selling a car"
 - Use "an" before vowel sounds: "Selling an apartment", "Selling an item"
-- For specific items with numbers: "Selling house No64", "Selling car No123"
+- For specific items with numbers: "Selling house №64", "Selling car №123"
 
 Output format: Just the formatted ad text, followed by "Category: [CATEGORY_NAME]" on a new line.
 
