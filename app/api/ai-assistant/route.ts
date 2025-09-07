@@ -47,7 +47,7 @@ async function getRelevantFeedback(
         originalInput: data.originalInput,
         aiResponse: data.aiResponse,
         userCorrection: data.userCorrection,
-            timestamp: data.timestamp.toDate(),
+        timestamp: data.timestamp.toDate(),
         category: data.category,
         adType: data.adType,
         formatPattern: data.formatPattern,
@@ -60,11 +60,11 @@ async function getRelevantFeedback(
       if (feedback.category === category) return true;
 
       // Match by similar content (simple keyword matching)
-        const inputWords = input.toLowerCase().split(/\s+/);
-        const feedbackWords = feedback.originalInput.toLowerCase().split(/\s+/);
+      const inputWords = input.toLowerCase().split(/\s+/);
+      const feedbackWords = feedback.originalInput.toLowerCase().split(/\s+/);
       const commonWords = inputWords.filter((word) =>
-          feedbackWords.includes(word)
-        );
+        feedbackWords.includes(word)
+      );
 
       return commonWords.length >= 2; // At least 2 common words
     });
@@ -142,46 +142,55 @@ function replaceBrandNames(text: string): string {
 // Function to normalize common typos and variations
 function normalizeInput(input: string): string {
   const typos: { [key: string]: string } = {
-    'buyig': 'buying',
-    'seling': 'selling',
-    'purchasing': 'buying',
-    'purchase': 'buying',
-    'sell': 'selling',
-    'buy': 'buying',
-    'lumi': 'luminous',
-    'luminus': 'luminous',
-    'luminos': 'luminous',
-    'lumin': 'luminous'
+    buyig: "buying",
+    seling: "selling",
+    purchasing: "buying",
+    purchase: "buying",
+    sell: "selling",
+    buy: "buying",
+    lumi: "luminous",
+    luminus: "luminous",
+    luminos: "luminous",
+    lumin: "luminous",
   };
-  
+
   let normalized = input.toLowerCase().trim();
-  
+
   // Replace common typos
   for (const [typo, correct] of Object.entries(typos)) {
-    normalized = normalized.replace(new RegExp(typo, 'gi'), correct);
+    normalized = normalized.replace(new RegExp(typo, "gi"), correct);
   }
-  
+
   return normalized;
 }
 
 // Function to handle color/luminous matching for items
-function findItemWithColorOrLuminous(input: string, options: string[]): string | null {
+function findItemWithColorOrLuminous(
+  input: string,
+  options: string[]
+): string | null {
   const inputLower = normalizeInput(input);
-  
+
   // Check if input contains color or luminous
-  const hasColor = /\b(red|blue|green|yellow|orange|purple|pink|black|white|gray|grey|brown|silver|gold|cyan|magenta|lime|maroon|navy|olive|teal|aqua|fuchsia|silver|gold)\b/i.test(input);
+  const hasColor =
+    /\b(red|blue|green|yellow|orange|purple|pink|black|white|gray|grey|brown|silver|gold|cyan|magenta|lime|maroon|navy|olive|teal|aqua|fuchsia|silver|gold)\b/i.test(
+      input
+    );
   const hasLuminous = /\b(luminous|lumi|luminus|luminos|lumin)\b/i.test(input);
-  
+
   if (!hasColor && !hasLuminous) {
     return null;
   }
-  
+
   // Extract the base item name (remove color/luminous words)
   let baseItem = inputLower
-    .replace(/\b(red|blue|green|yellow|orange|purple|pink|black|white|gray|grey|brown|silver|gold|cyan|magenta|lime|maroon|navy|olive|teal|aqua|fuchsia|silver|gold)\b/gi, '')
-    .replace(/\b(luminous|lumi|luminus|luminos|lumin)\b/gi, '')
+    .replace(
+      /\b(red|blue|green|yellow|orange|purple|pink|black|white|gray|grey|brown|silver|gold|cyan|magenta|lime|maroon|navy|olive|teal|aqua|fuchsia|silver|gold)\b/gi,
+      ""
+    )
+    .replace(/\b(luminous|lumi|luminus|luminos|lumin)\b/gi, "")
     .trim();
-  
+
   // Find matching item
   for (const option of options) {
     const optionLower = option.toLowerCase().trim();
@@ -189,7 +198,7 @@ function findItemWithColorOrLuminous(input: string, options: string[]): string |
       return option;
     }
   }
-  
+
   return null;
 }
 
@@ -478,13 +487,15 @@ async function formatAdWithAI(
 
     // Replace real brand names with fake ones
     const processedContent = replaceBrandNames(adContent);
-    
+
     // Detect if it's selling or buying based on price/budget if not explicitly mentioned
     const normalizedInput = normalizeInput(processedContent);
-    const hasSelling = normalizedInput.includes('selling');
-    const hasBuying = normalizedInput.includes('buying');
-    const hasPrice = /\b(price|budget|cost|worth|value)\b/i.test(processedContent);
-    
+    const hasSelling = normalizedInput.includes("selling");
+    const hasBuying = normalizedInput.includes("buying");
+    const hasPrice = /\b(price|budget|cost|worth|value)\b/i.test(
+      processedContent
+    );
+
     // If neither selling nor buying is mentioned but price is, assume selling
     if (!hasSelling && !hasBuying && hasPrice) {
       // This will be handled in the AI prompt
@@ -495,11 +506,28 @@ async function formatAdWithAI(
     const inputLower = normalizeInput(processedContent);
 
     // First try color/luminous matching for items
-    if (inputLower.includes("clothing") || inputLower.includes("shirt") || inputLower.includes("pants") || inputLower.includes("shoes") || inputLower.includes("hat")) {
-      matchedItem = findItemWithColorOrLuminous(processedContent, clothingListItems);
+    if (
+      inputLower.includes("clothing") ||
+      inputLower.includes("shirt") ||
+      inputLower.includes("pants") ||
+      inputLower.includes("shoes") ||
+      inputLower.includes("hat")
+    ) {
+      matchedItem = findItemWithColorOrLuminous(
+        processedContent,
+        clothingListItems
+      );
     }
-    if (!matchedItem && (inputLower.includes("item") || inputLower.includes("tool") || inputLower.includes("equipment"))) {
-      matchedItem = findItemWithColorOrLuminous(processedContent, itemsListItems);
+    if (
+      !matchedItem &&
+      (inputLower.includes("item") ||
+        inputLower.includes("tool") ||
+        inputLower.includes("equipment"))
+    ) {
+      matchedItem = findItemWithColorOrLuminous(
+        processedContent,
+        itemsListItems
+      );
     }
 
     // Try to match from specific categories first
@@ -582,8 +610,9 @@ CRITICAL RULES:
 5. Always assign one of these 8 categories: auto, work, service, real estate, other, discount, dating, business
 6. ALWAYS use fake brand names instead of real ones (see brand replacement list below)
 7. If a matched item is found from the sheets, use that exact name
-8. For color/luminous items: Format as "Selling [COLOR] [LUMINOUS] [EXACT_ITEM_NAME]" (e.g., "Selling Red Luminous [Item Name]")
+8. For color/luminous items: Format as "Selling [color] [luminous] [EXACT_ITEM_NAME]" (e.g., "Selling red luminous [Item Name]")
 9. If no "selling" or "buying" is mentioned but price/budget is present, assume it's "selling"
+10. Use proper articles: "Selling a house", "Selling an apartment", "Selling house No64"
 
 BRAND REPLACEMENT RULES (REAL → FAKE):
 - Adidas → Abibas
@@ -630,16 +659,23 @@ CATEGORIES:
 FORMATTING EXAMPLES:
 1. Vehicle: "Selling my nissan gtr r34" → "Selling "Annis Skyline GT-R (R34)" in full configuration with visual upgrades, insurance and drift kit. Price: Negotiable."
 2. Clothing: "Selling nike shoes" → "Selling Niki shoes. Price: Negotiable."
-3. Color/Luminous: "Selling red luminous hat" → "Selling Red Luminous [Exact Hat Name from List]. Price: Negotiable."
+3. Color/Luminous: "Selling red luminous hat" → "Selling red luminous [Exact Hat Name from List]. Price: Negotiable."
 4. Price-based: "nike shoes $50" → "Selling Niki shoes. Price: $50."
 5. Job: "hiring chef" → "Hiring Chef. Salary: Negotiable."
 6. Service: "offering car repair" → "Offering Car Repair. Price: Negotiable."
 7. Business: "selling restaurant" → "Selling Restaurant. Price: Negotiable."
-8. Real Estate: "selling house" → "Selling House. Price: Negotiable."
+8. Real Estate: "selling house" → "Selling a house. Price: Negotiable."
+9. Real Estate: "selling apartment" → "Selling an apartment. Price: Negotiable."
+10. Real Estate: "selling house No64" → "Selling house No64. Price: Negotiable."
 
 PRICE FORMATTING:
 - Use periods for thousands: $70.000 (not $70,000)
 - For millions: $1 Million. (with period)
+
+ARTICLE USAGE:
+- Use "a" before consonant sounds: "Selling a house", "Selling a car"
+- Use "an" before vowel sounds: "Selling an apartment", "Selling an item"
+- For specific items with numbers: "Selling house No64", "Selling car No123"
 
 Output format: Just the formatted ad text, followed by "Category: [CATEGORY_NAME]" on a new line.
 
@@ -683,16 +719,16 @@ ${learningContext}`;
         .replace("Category:", "")
         .trim()
         .toLowerCase();
-    const officialCategories = [
-      "auto",
-      "work",
-      "service",
-      "real estate",
-      "other",
-      "discount",
-      "dating",
-      "business",
-    ];
+      const officialCategories = [
+        "auto",
+        "work",
+        "service",
+        "real estate",
+        "other",
+        "discount",
+        "dating",
+        "business",
+      ];
       if (officialCategories.includes(extractedCategory)) {
         category = extractedCategory;
       }
