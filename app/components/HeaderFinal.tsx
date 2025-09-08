@@ -10,8 +10,6 @@ export function HeaderFinal() {
   const pathname = usePathname();
   const { isAdmin, logout } = useAuth();
 
-  console.log('HeaderFinal component rendered, isDropdownOpen:', isDropdownOpen, 'isAdmin:', isAdmin);
-
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -71,6 +69,9 @@ export function HeaderFinal() {
     return categories;
   };
 
+  console.log('HeaderFinal component rendered, isDropdownOpen:', isDropdownOpen, 'isAdmin:', isAdmin);
+  console.log('getCategoriesWithAdmin() result:', getCategoriesWithAdmin());
+
   // Helper function to render home link
   const renderHomeLink = (text: string, className: string) => (
     <Link href="/" className={className}>
@@ -94,7 +95,7 @@ export function HeaderFinal() {
           <div className="absolute left-1/2 transform -translate-x-1/2">
             <Link
               href="/"
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 hover:scale-105 transform shadow-lg"
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -112,7 +113,7 @@ export function HeaderFinal() {
                   console.log('Categories button clicked, current state:', isDropdownOpen);
                   setIsDropdownOpen(!isDropdownOpen);
                 }}
-                className="flex items-center space-x-2 px-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 hover:scale-105 transform shadow-lg"
+                className="flex items-center space-x-2 px-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
               >
                 <span>Categories</span>
                 <svg
@@ -132,21 +133,17 @@ export function HeaderFinal() {
                 </svg>
               </button>
 
-              {/* Dropdown Menu */}
+              {/* Dropdown Menu - Using fixed positioning for maximum visibility */}
               {isDropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 z-50 max-h-96 overflow-y-auto custom-scrollbar transform transition-all duration-200 ease-out" style={{ display: 'block', visibility: 'visible' }}>
+                <div className="fixed top-20 right-4 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 z-[9999] max-h-96 overflow-y-auto" style={{ display: 'block', visibility: 'visible' }}>
                   <div className="py-3">
-                    <div className="px-5 py-2 text-white bg-blue-600 text-sm font-bold mb-2">
-                      Categories: {getCategoriesWithAdmin().length}
-                    </div>
-                    
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
                         <Link
                           key={category.name}
                           href={category.path}
                           onClick={() => setIsDropdownOpen(false)}
-                          className={`group flex items-center px-5 py-3 text-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 hover:scale-[1.02] ${
+                          className={`group flex items-center px-5 py-3 text-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 ${
                             category.isAdmin
                               ? "text-yellow-400 font-semibold border-b border-gray-600/50 mb-2 pb-3 hover:text-yellow-300"
                               : "text-gray-200 hover:text-white"
@@ -181,7 +178,7 @@ export function HeaderFinal() {
             {isAdmin && (
               <button
                 onClick={logout}
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transition-all duration-200 hover:scale-105 transform shadow-lg"
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
