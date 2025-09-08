@@ -87,7 +87,10 @@ export function Header() {
             {/* Categories Dropdown - Bigger and nicer */}
             <div className="relative">
               <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                onClick={() => {
+                  console.log('Categories button clicked, current state:', isDropdownOpen);
+                  setIsDropdownOpen(!isDropdownOpen);
+                }}
                 className="flex items-center space-x-2 px-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 hover:scale-105 transform shadow-lg"
               >
                 <span>Categories</span>
@@ -114,7 +117,7 @@ export function Header() {
                   <div className="py-3">
                     {/* Debug: Test if dropdown is rendering */}
                     <div className="px-5 py-2 text-white bg-red-500 text-xs mb-2">
-                      DEBUG: Dropdown is visible! Categories: {getCategoriesWithAdmin().length}
+                      DEBUG: Dropdown is visible! Categories: {getCategoriesWithAdmin().length} - V2
                     </div>
                     
                     {getCategoriesWithAdmin().map((category, index) => {
