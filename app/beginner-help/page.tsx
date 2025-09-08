@@ -310,7 +310,7 @@ export default function BeginnerHelpPage() {
         </div>
 
         {/* Navigation Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 gap-y-2 mb-16 max-w-4xl mx-auto">
           {/* Row 1: Basic Tips, Saving Tips, Office */}
           <div
             onClick={() => handleButtonClick("basic-tips")}
@@ -367,10 +367,10 @@ export default function BeginnerHelpPage() {
             </div>
           </div>
 
-          {/* Row 2: Treasure, Starter Jobs */}
+          {/* Row 2: Treasure, Starter Jobs - Centered and close together */}
           <div
             onClick={() => handleButtonClick("treasure")}
-            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2 lg:col-start-1 lg:col-end-2"
+            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2 lg:col-start-2 lg:col-end-3"
           >
             <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="text-center">
