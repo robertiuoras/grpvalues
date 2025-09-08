@@ -10,6 +10,9 @@ export function HeaderNew() {
   const pathname = usePathname();
   const { isAdmin, logout } = useAuth();
 
+  // Debug: Log when component renders
+  console.log('HeaderNew component rendered, isDropdownOpen:', isDropdownOpen, 'isAdmin:', isAdmin);
+
   const categories = [
     { name: "Items", path: "/values/items", isAdmin: false },
     { name: "Cars", path: "/values/cars", isAdmin: false },
@@ -64,7 +67,7 @@ export function HeaderNew() {
           {/* Left side - Logo/Home link */}
           <div className="flex items-center">
             {renderHomeLink(
-              "GRP Database",
+              "GRP Database (NEW)",
               "text-2xl font-bold text-blue-400 hover:text-blue-300 transition-colors duration-300"
             )}
           </div>
