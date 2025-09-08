@@ -27,11 +27,23 @@ export default function HomePage() {
   const router = useRouter();
   const { isAdmin } = useAuth();
   const [isClient, setIsClient] = useState(false);
+  const [showUpdatePopup, setShowUpdatePopup] = useState(true);
 
   // Ensure this only runs on client side
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Auto-close popup after 10 seconds
+  useEffect(() => {
+    if (isClient) {
+      const timer = setTimeout(() => {
+        setShowUpdatePopup(false);
+      }, 10000); // 10 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [isClient]);
 
   const categories: CategoryCard[] = [
     {
@@ -114,6 +126,35 @@ export default function HomePage() {
           </a>
         </div>
       </div>
+
+      {/* Update Popup - Top Right */}
+      {isClient && showUpdatePopup && (
+        <div className="fixed top-24 right-4 z-50 max-w-sm">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-xl shadow-2xl border border-blue-400/50 backdrop-blur-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <h3 className="font-bold text-sm">New Update!</h3>
+                </div>
+                <p className="text-xs text-blue-100 leading-relaxed">
+                  🎉 <strong>Public Access Added!</strong> GRP Database is now fully public - no access codes required! 
+                  Browse all categories, use the AI Assistant, and access all features freely.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowUpdatePopup(false)}
+                className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200"
+                aria-label="Close popup"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col items-center w-full max-w-7xl mx-auto px-4 py-8 relative">
         <h1 className="text-5xl font-extrabold text-blue-400 mb-6 drop-shadow-lg text-center">
