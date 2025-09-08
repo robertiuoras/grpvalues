@@ -6,268 +6,130 @@ import Cookies from "js-cookie";
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(() => {
-    // On client-side, check if access codes are required
-    if (typeof window !== "undefined") {
-      const accessCodeRequired = Cookies.get("accessCodeRequired");
-      const codesNotRequired = accessCodeRequired === "false";
-
-      // If access codes are not required, check for existing admin cookies
-      if (codesNotRequired) {
-        const authStatus = Cookies.get("isAuthenticated");
-        const roleCookie = Cookies.get("userRole");
-        return !(authStatus === "true" && roleCookie === "admin");
-      }
-
-      return true; // Loading if access codes are required
-    }
-    return true; // Default to loading on server-side
-  });
+  const [isLoading, setIsLoading] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null); // New state for userId
+  const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
-
-  // Check initial loading state based on access code requirement
-  useEffect(() => {
-    const accessCodeRequired = Cookies.get("accessCodeRequired");
-    const codesNotRequired = accessCodeRequired === "false";
-
-    if (codesNotRequired) {
-      console.log(
-        "useAuth: Access codes not required, setting loading to false immediately"
-      );
-      setIsLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     console.log("useAuth: useEffect triggered.");
     const checkAuthentication = () => {
-      // Check if access codes are required FIRST
-      const accessCodeRequired = Cookies.get("accessCodeRequired");
-      const codesNotRequired = accessCodeRequired === "false";
-
-      // If access codes are not required, check for existing admin cookies
-      if (codesNotRequired) {
-        console.log(
-          "useAuth: Access codes not required, checking for existing admin cookies."
-        );
-
-        // Check for existing admin cookies
-        const authStatus = Cookies.get("isAuthenticated");
-        const roleCookie = Cookies.get("userRole");
-        const userIdCookie = Cookies.get("userId");
-
-        if (authStatus === "true" && roleCookie === "admin") {
-          console.log(
-            "useAuth: Found admin cookies, setting authenticated state"
-          );
-          setIsAuthenticated(true);
-          setUserRole("admin");
-          setUserId(userIdCookie || null);
-        } else {
-          console.log(
-            "useAuth: No admin cookies found, setting unauthenticated state"
-          );
-          setIsAuthenticated(false);
-          setUserRole(null);
-          setUserId(null);
-        }
-
-        setIsLoading(false);
-        return;
-      }
-
+      // Check for admin authentication only
       const authStatus = Cookies.get("isAuthenticated");
-      const authTimestamp = Cookies.get("authTimestamp");
       const roleCookie = Cookies.get("userRole");
-      const idCookie = Cookies.get("userId"); // Read userId from cookie
+      const idCookie = Cookies.get("userId");
 
       console.log(
         "useAuth: Cookie values - isAuthenticated:",
         authStatus,
-        "authTimestamp:",
-        authTimestamp,
         "userRole:",
         roleCookie,
-        "userId:", // Log userId cookie value
+        "userId:",
         idCookie
       );
 
       let userIsAuthenticated = false;
       let role = null;
-      let currentUserId = null; // Variable to hold the userId
+      let currentUserId = null;
 
-      // Check for admin authentication first (regardless of timestamp)
+      // Check for admin authentication
       if (authStatus === "true" && roleCookie === "admin") {
-        console.log(
-          "useAuth: Found admin authentication, setting authenticated state"
-        );
         userIsAuthenticated = true;
         role = "admin";
         currentUserId = idCookie || null;
-        setIsAuthenticated(true);
-        setUserRole("admin");
-        setUserId(currentUserId);
-        setIsLoading(false);
-        return;
+        console.log("useAuth: Admin authentication found");
       }
 
-      if (authStatus === "true" && authTimestamp && idCookie) {
-        // Check for userId cookie too
-        const now = new Date().getTime();
-        const authTime = parseInt(authTimestamp);
-        const hoursSinceAuth = (now - authTime) / (1000 * 60 * 60);
-
-        console.log("useAuth: Hours since last auth:", hoursSinceAuth);
-
-        if (hoursSinceAuth < 1) {
-          // Current session expiry is 1 hour
-          userIsAuthenticated = true;
-          role = roleCookie || null;
-          currentUserId = idCookie; // Set userId if session is active
-          console.log("useAuth: Session is active.");
-        } else {
-          console.log(
-            "useAuth: Client-side session expired after 1 hour. Clearing cookies and cleaning up Firestore."
-          );
-
-          // Clean up Firestore before clearing cookies
-          if (idCookie) {
-            fetch("/api/cleanup-session", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ accessCodeId: idCookie }),
-            }).catch((error) => {
-              console.error(
-                "useAuth: Failed to cleanup session in Firestore:",
-                error
-              );
-            });
-          }
-
-          Cookies.remove("isAuthenticated");
-          Cookies.remove("authTimestamp");
-          Cookies.remove("userRole");
-          Cookies.remove("userId"); // Clear userId cookie on expiry
-        }
-      } else {
-        console.log(
-          "useAuth: No valid authentication cookies found (authStatus, authTimestamp, or userId missing/invalid)."
-        );
-      }
-
-      // Update state
       setIsAuthenticated(userIsAuthenticated);
       setUserRole(role);
-      setUserId(currentUserId); // Update userId state
+      setUserId(currentUserId);
       setIsLoading(false);
+    };
 
-      console.log(
-        "useAuth: State updated - isAuthenticated:",
-        userIsAuthenticated,
-        "userRole:",
-        role,
-        "userId:", // Log updated userId state
-        currentUserId,
-        "isLoading:",
-        false
-      );
+    checkAuthentication();
+  }, []);
 
-      // Only redirect if access codes are required
-      if (!codesNotRequired) {
-        // Redirect if not authenticated AND not already on the login page
-        // Added a small setTimeout to mitigate race conditions on Vercel deployment
-        if (!userIsAuthenticated && pathname !== "/login") {
-          console.log(
-            "useAuth: Not authenticated and not on login page. Scheduling redirect to /login."
-          );
-          setTimeout(() => {
-            router.replace("/login");
-          }, 50); // Small delay
-        }
-        // If authenticated and on the login page, redirect to home
-        else if (userIsAuthenticated && pathname === "/login") {
-          console.log(
-            "useAuth: Authenticated on login page. Scheduling redirect to /."
-          );
-          setTimeout(() => {
-            router.replace("/");
-          }, 50); // Small delay
+  const login = async (accessCode: string) => {
+    console.log("useAuth: Login attempt with code:", accessCode);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/verify-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessCode: accessCode.trim() }),
+        cache: "no-store",
+      });
+
+      const data = await response.json();
+      console.log("useAuth: Login response:", data);
+
+      if (response.ok && data.success) {
+        // Only set cookies for admin users
+        if (data.userRole === "admin") {
+          Cookies.set("isAuthenticated", "true", { expires: 1 });
+          Cookies.set("authTimestamp", new Date().getTime().toString(), {
+            expires: 1,
+          });
+          Cookies.set("userRole", data.userRole, { expires: 1 });
+          if (data.userId) {
+            Cookies.set("userId", data.userId, { expires: 1 });
+          }
+          
+          setIsAuthenticated(true);
+          setUserRole(data.userRole);
+          setUserId(data.userId || null);
+          
+          console.log("useAuth: Admin login successful");
+          return { success: true };
         } else {
-          console.log(
-            "useAuth: No redirect needed based on current state and path."
-          );
+          console.log("useAuth: Non-admin login rejected");
+          return { success: false, message: "Only admin access is allowed" };
         }
       } else {
-        console.log(
-          "useAuth: Access codes not required, skipping redirect logic."
-        );
+        console.log("useAuth: Login failed:", data.message);
+        return { success: false, message: data.message || "Login failed" };
       }
-    };
+    } catch (error) {
+      console.error("useAuth: Login error:", error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : "Unknown error occurred" 
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    // Run the check immediately and then every few seconds to catch expiry
-    checkAuthentication();
-    const intervalId = setInterval(checkAuthentication, 30 * 1000); // Check every 30 seconds
+  const logout = () => {
+    console.log("useAuth: Logout called");
+    
+    // Clear all cookies
+    Cookies.remove("isAuthenticated");
+    Cookies.remove("authTimestamp");
+    Cookies.remove("userRole");
+    Cookies.remove("userId");
+    
+    // Reset state
+    setIsAuthenticated(false);
+    setUserRole(null);
+    setUserId(null);
+    
+    // Redirect to home page
+    router.push("/");
+  };
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [router, pathname]); // Re-added 'pathname' to dependencies
+  // Check if user is admin
+  const isAdmin = userRole === "admin";
 
-  // Add heartbeat system to prevent codes from getting stuck
-  useEffect(() => {
-    if (!isAuthenticated || !userId) return;
-
-    // Send heartbeat every 2 minutes to keep the session active
-    const heartbeatInterval = setInterval(async () => {
-      try {
-        // Update lastUsed timestamp to prevent the code from being marked as stuck
-        const response = await fetch("/api/heartbeat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accessCodeId: userId }),
-        });
-
-        if (!response.ok) {
-          console.warn("useAuth: Heartbeat failed, session may be stale");
-        }
-      } catch (error) {
-        console.error("useAuth: Heartbeat error:", error);
-      }
-    }, 2 * 60 * 1000); // Every 2 minutes
-
-    // Handle browser close/tab close to clean up immediately
-    const handleBeforeUnload = () => {
-      if (userId) {
-        // Send a synchronous request to clean up immediately
-        navigator.sendBeacon(
-          "/api/cleanup-session",
-          JSON.stringify({ accessCodeId: userId })
-        );
-      }
-    };
-
-    // Handle page visibility change (tab switching, minimizing)
-    const handleVisibilityChange = () => {
-      if (document.hidden && userId) {
-        // Tab is hidden, send cleanup request
-        fetch("/api/cleanup-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accessCodeId: userId }),
-        }).catch(console.error);
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      clearInterval(heartbeatInterval);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [isAuthenticated, userId]);
-
-  return { isAuthenticated, isLoading, userRole, userId, setIsAuthenticated }; // Return userId
+  return {
+    isAuthenticated,
+    isLoading,
+    userRole,
+    userId,
+    isAdmin,
+    login,
+    logout,
+  };
 }

@@ -3,58 +3,35 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  // Get authentication status directly from the 'isAuthenticated' cookie.
-  // The 'useAuth' hook in the client-side manages the expiry and clears this cookie.
-  const isAuthenticated =
-    request.cookies.get("isAuthenticated")?.value === "true";
   const pathname = request.nextUrl.pathname;
-
-  // Check if access codes are required (stored in a cookie for middleware access)
-  const accessCodeCookie = request.cookies.get("accessCodeRequired");
-  const accessCodeRequired = accessCodeCookie?.value !== "false";
   
-  // Debug logging
-  console.log("🔍 Middleware Debug:", {
-    pathname,
-    accessCodeRequired,
-    cookieValue: accessCodeCookie?.value,
-    cookieExists: !!accessCodeCookie,
-    isAuthenticated
-  });
-
-  // If access codes are not required, allow all requests to proceed
-  if (!accessCodeRequired) {
-    console.log("✅ Access codes not required, allowing request");
-    return NextResponse.next();
+  // Admin routes that require admin authentication
+  const adminRoutes = ['/admin'];
+  
+  // Check if this is an admin route
+  const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
+  
+  if (isAdminRoute) {
+    // Check for admin authentication
+    const isAdminAuthenticated = request.cookies.get("isAuthenticated")?.value === "true";
+    const userRole = request.cookies.get("userRole")?.value;
+    
+    // Only allow access if user is authenticated as admin
+    if (!isAdminAuthenticated || userRole !== "admin") {
+      // Redirect to login page for admin authentication
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
   }
-
-  // 1. If the user is NOT authenticated AND is trying to access any page EXCEPT the login page,
-  //    redirect them to the login page. This ensures all protected routes (including '/') redirect instantly.
-  if (!isAuthenticated && pathname !== "/login") {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // 2. If the user IS authenticated AND is trying to access the login page,
-  //    redirect them to the home page (or a main dashboard if you have one).
-  if (isAuthenticated && pathname === "/login") {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  // 3. For all other cases (authenticated users on non-login pages, or unauthenticated users on the login page),
-  //    allow the request to proceed.
+  
+  // For all other routes, allow access without authentication
+  // The site is now fully public except for admin areas
   return NextResponse.next();
 }
 
-// Define which paths the middleware should run on.
-// This will run on all paths except Next.js internal files, static assets, and API routes.
+// Define which paths the middleware should run on
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/ (internal Next.js files like static assets, image optimization)
-     * - api/ (your API routes - these should handle their own auth/RBAC checks internally)
-     * - Any other public assets or files that do not require authentication.
-     */
-    "/((?!_next|api).*)", // This broadly matches all pages (including root) but excludes internal Next.js and API routes
+    // Match all paths except Next.js internal files, static assets, and API routes
+    '/((?!_next/static|_next/image|favicon.ico|api).*)',
   ],
 };

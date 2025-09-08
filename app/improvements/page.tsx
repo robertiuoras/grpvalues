@@ -281,7 +281,7 @@ export default function ImprovementsPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-            Track and manage improvement suggestions for GRP Values
+            Track and manage improvement suggestions for GRP Database
           </p>
         </div>
 

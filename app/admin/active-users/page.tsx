@@ -2,44 +2,35 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../../hooks/useAuth"; // Adjust path as needed
+import { useAuth } from "../../../hooks/useAuth";
 import {
   Users,
   AlertCircle,
-  Ban,
   Wifi,
   WifiOff,
   Clock,
   CheckCircle,
   XCircle,
-  Edit,
-  Save,
-  X,
+  RefreshCw,
+  Database,
 } from "lucide-react";
 
 interface ActiveUser {
   accessCodeId: string;
   playerId: string | null;
-  is_in_use: boolean; // Indicates if currently logged in
-  lastUsed: string | null; // Last activity timestamp
-  isRecentlyActive: boolean; // True if lastUsed within defined window
-  isActiveCode: boolean; // True if the code itself is marked as active in Firestore
+  is_in_use: boolean;
+  lastUsed: string | null;
+  isRecentlyActive: boolean;
+  isActiveCode: boolean;
 }
 
 export default function ActiveUsersPage() {
-  const { isAuthenticated, isLoading, userRole } = useAuth();
-  const [users, setUsers] = useState<ActiveUser[]>([]); // Renamed from activeUsers to users
+  const { isAuthenticated, isLoading, userRole, isAdmin } = useAuth();
+  const [users, setUsers] = useState<ActiveUser[]>([]);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [cleanupLoading, setCleanupLoading] = useState(false);
   const [cleanupMessage, setCleanupMessage] = useState<string | null>(null);
-  const [accessCodeRequired, setAccessCodeRequired] = useState<boolean>(true);
-  const [toggleLoading, setToggleLoading] = useState(false);
-  const [toggleMessage, setToggleMessage] = useState<string | null>(null);
-  const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
-  const [newPlayerId, setNewPlayerId] = useState<string>("");
-  const [updateLoading, setUpdateLoading] = useState(false);
-  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
 
   // Sync-related state variables
   const [isSyncing, setIsSyncing] = useState(false);
@@ -51,60 +42,32 @@ export default function ActiveUsersPage() {
     total: number;
   }>({ current: 0, total: 0 });
 
-  // Helper function to get cookie value
-  const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(";").shift();
-    return null;
-  };
-
-  // Check if access codes are required (client-side only) - moved outside useEffect for render scope
-  const accessCodeRequiredCookie =
-    typeof window !== "undefined" ? getCookie("accessCodeRequired") : null;
-  const codesNotRequired = accessCodeRequiredCookie === "false";
-
-  // Check for admin authentication even when access codes are disabled
-  const hasAdminAuth = isAuthenticated && userRole === "admin";
-  const hasAdminCookies =
-    typeof window !== "undefined"
-      ? getCookie("userRole") === "admin" &&
-        getCookie("isAuthenticated") === "true"
-      : false;
-
-  // Admin access logic: Allow access if user has admin auth OR admin cookies
-  // This ensures admin access works regardless of access code requirement status
-  const isAdminUser = hasAdminAuth || hasAdminCookies;
-
-  // Debug logging for admin authentication
-  console.log("Admin Panel Debug:", {
-    isAuthenticated,
-    userRole,
-    hasAdminAuth,
-    hasAdminCookies,
-    isAdminUser,
-    codesNotRequired,
-    accessCodeRequiredCookie,
-  });
+  // Check if user is admin
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-400 mb-4">Access Denied</h1>
+          <p className="text-gray-300">You need admin privileges to access this page.</p>
+        </div>
+      </div>
+    );
+  }
 
   // Helper function to format time properly
   const formatTime = (timeString: string | null) => {
     if (!timeString || timeString === "Never") return "Never";
 
     try {
-      // Check if it's a timestamp (number as string)
       let date: Date;
       if (/^\d+$/.test(timeString)) {
-        // It's a timestamp, create date from it
         date = new Date(parseInt(timeString));
       } else {
-        // It's an ISO string or other format
         date = new Date(timeString);
       }
 
       if (isNaN(date.getTime())) return timeString;
 
-      // Format with explicit 12-hour format and local timezone
       return date.toLocaleString("en-US", {
         year: "numeric",
         month: "short",
@@ -119,752 +82,285 @@ export default function ActiveUsersPage() {
     }
   };
 
-  useEffect(() => {
-    // Allow access if user is admin (either authenticated admin or has admin cookies when access codes disabled)
-    if (isAdminUser && !isLoading) {
-      const fetchUsersData = async () => {
-        // Renamed from fetchActiveUsers to fetchUsersData
-        setFetchLoading(true);
-        setFetchError(null);
-        try {
-          const response = await fetch("/api/get-active-users");
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(
-              `HTTP ${response.status}: ${errorText || response.statusText}`
-            );
-          }
-          const data = await response.json();
+  // Fetch active users
+  const fetchActiveUsers = async () => {
+    setFetchLoading(true);
+    setFetchError(null);
 
-          console.log("API Response Data:", data);
-
-          if (data.success) {
-            console.log("Users data received:", data.users);
-            setUsers(data.users); // Update 'users' state
-          } else {
-            setFetchError(data.message || "Failed to fetch users data.");
-            console.error("API reported failure:", data.message);
-          }
-        } catch (error: any) {
-          console.error("Error fetching users data from client:", error);
-          setFetchError(
-            `Could not load users data: ${error.message || "Unknown error"}`
-          );
-        } finally {
-          setFetchLoading(false);
-        }
-      };
-
-      const fetchAccessCodeRequirement = async () => {
-        try {
-          const response = await fetch("/api/admin/access-code-requirement");
-          if (response.ok) {
-            const data = await response.json();
-            setAccessCodeRequired(data.required);
-          }
-        } catch (error) {
-          console.error("Error fetching access code requirement:", error);
-        }
-      };
-
-      // Also check the cookie value to ensure consistency
-      const checkCookieValue = () => {
-        const cookieValue = getCookie("accessCodeRequired");
-        if (cookieValue !== null) {
-          setAccessCodeRequired(cookieValue === "true");
-        }
-      };
-
-      fetchUsersData(); // Initial fetch
-      fetchAccessCodeRequirement(); // Fetch access code requirement status
-      checkCookieValue(); // Check cookie value for consistency
-
-      // Set up a refresh interval (e.g., every 30 seconds)
-      const intervalId = setInterval(fetchUsersData, 30 * 1000);
-
-      // Clean up interval on component unmount
-      return () => clearInterval(intervalId);
+    try {
+      const response = await fetch("/api/get-active-users");
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setUsers(data.users || []);
+    } catch (error) {
+      console.error("Error fetching active users:", error);
+      setFetchError(
+        error instanceof Error ? error.message : "Unknown error occurred"
+      );
+    } finally {
+      setFetchLoading(false);
     }
-  }, [isAuthenticated, isLoading, userRole]);
+  };
 
-  const handleCleanupStuckCodes = async () => {
+  // Cleanup stuck codes
+  const handleCleanup = async () => {
     setCleanupLoading(true);
     setCleanupMessage(null);
 
     try {
       const response = await fetch("/api/admin/cleanup-stuck-codes", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setCleanupMessage(`✅ ${data.message}`);
-        // Refresh the users data to show updated status
-        window.location.reload();
-      } else {
-        setCleanupMessage(
-          `❌ Error: ${data.message || "Failed to cleanup codes"}`
-        );
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-    } catch (error: any) {
-      console.error("Error cleaning up stuck codes:", error);
+
+      const data = await response.json();
+      setCleanupMessage(data.message || "Cleanup completed successfully");
+      
+      // Refresh the user list
+      await fetchActiveUsers();
+    } catch (error) {
+      console.error("Error during cleanup:", error);
       setCleanupMessage(
-        `❌ Network error: ${error.message || "Unknown error"}`
+        error instanceof Error ? error.message : "Unknown error occurred"
       );
     } finally {
       setCleanupLoading(false);
     }
   };
 
-  const handleToggleAccessCodeRequirement = async () => {
-    setToggleLoading(true);
-    setToggleMessage(null);
-    try {
-      const response = await fetch("/api/admin/access-code-requirement", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          required: !accessCodeRequired,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Toggle failed");
-      }
-
-      const result = await response.json();
-      setAccessCodeRequired(!accessCodeRequired);
-      setToggleMessage(result.message);
-
-      // The API now sets the cookie directly, no need to set it here
-    } catch (error: any) {
-      console.error("Toggle error:", error);
-      setToggleMessage(`❌ Error: ${error.message}`);
-    } finally {
-      setToggleLoading(false);
-    }
-  };
-
-  const handleEditPlayerId = (
-    accessCodeId: string,
-    currentPlayerId: string | null
-  ) => {
-    setEditingPlayerId(accessCodeId);
-    setNewPlayerId(currentPlayerId || "");
-    setUpdateMessage(null);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingPlayerId(null);
-    setNewPlayerId("");
-    setUpdateMessage(null);
-  };
-
-  const handleUpdatePlayerId = async (accessCodeId: string) => {
-    if (!newPlayerId.trim()) {
-      setUpdateMessage("❌ Player ID cannot be empty");
-      return;
-    }
-
-    setUpdateLoading(true);
-    setUpdateMessage(null);
-    try {
-      const response = await fetch("/api/admin/update-player-id", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          accessCodeId,
-          newPlayerId: newPlayerId.trim(),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setUpdateMessage(`✅ ${data.message}`);
-        setEditingPlayerId(null);
-        setNewPlayerId("");
-        // Refresh the users data
-        const fetchUsersData = async () => {
-          try {
-            const response = await fetch("/api/get-active-users");
-            if (response.ok) {
-              const data = await response.json();
-              if (data.success) {
-                setUsers(data.users);
-              }
-            }
-          } catch (error) {
-            console.error("Error refreshing users data:", error);
-          }
-        };
-        fetchUsersData();
-      } else {
-        setUpdateMessage(`❌ ${data.message || "Failed to update player ID."}`);
-      }
-    } catch (error: any) {
-      setUpdateMessage(
-        `❌ Error: ${error.message || "Failed to update player ID."}`
-      );
-    } finally {
-      setUpdateLoading(false);
-    }
-  };
-
-  // Sync templates function
-  const syncTemplates = async () => {
+  // Sync templates
+  const handleSyncTemplates = async () => {
     setIsSyncing(true);
     setSyncError(null);
-    setSyncStatus("Starting comprehensive sync...");
-    setSyncProgress({ current: 0, total: 25 }); // 25 categories
+    setSyncStatus("Starting sync...");
+    setSyncProgress({ current: 0, total: 0 });
 
     try {
-      console.log("🔄 Syncing all template categories...");
-
       const response = await fetch("/api/sync-templates", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
 
       if (!response.ok) {
-        throw new Error(`Sync failed: ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const result = await response.json();
-      console.log("✅ Sync result:", result);
-
-      setSyncStatus(
-        `Synced ${result.data.successCount} categories with ${result.data.totalTemplates} templates!`
-      );
-      setSyncProgress({
-        current: result.data.successCount,
-        total: 25,
-      });
-
-      // Update last sync time
-      setLastSyncTime(new Date().toLocaleString());
-
-      setSyncStatus("Sync completed successfully!");
-
-      // Clear status after 5 seconds
-      setTimeout(() => {
-        setSyncStatus("");
-        setSyncProgress({ current: 0, total: 0 });
-      }, 5000);
+      const data = await response.json();
+      setSyncStatus(data.message || "Sync completed successfully");
+      setLastSyncTime(new Date().toISOString());
     } catch (error) {
-      console.error("❌ Sync error:", error);
+      console.error("Error during sync:", error);
       setSyncError(
         error instanceof Error ? error.message : "Unknown error occurred"
       );
-      setSyncStatus("Sync failed!");
     } finally {
       setIsSyncing(false);
     }
   };
 
-  // Only show loading if we don't have admin access and are still loading
-  if (isLoading && !isAdminUser) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mb-4"></div>
-        <p className="text-gray-300">Loading authentication...</p>
-      </div>
-    );
-  }
+  // Fetch last sync time
+  const fetchLastSyncTime = async () => {
+    try {
+      const response = await fetch("/api/last-sync");
+      if (response.ok) {
+        const data = await response.json();
+        setLastSyncTime(data.lastSyncTime);
+      }
+    } catch (error) {
+      console.error("Error fetching last sync time:", error);
+    }
+  };
 
-  // Frontend RBAC: Always require admin authentication, regardless of access code requirement
-  if (!isAdminUser) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full max-w-7xl mx-auto px-4 text-white">
-        <Ban size={80} className="text-red-500 mb-6 animate-pulse" />
-        <h1 className="text-4xl font-extrabold text-red-400 mb-4">
-          Access Denied
-        </h1>
-        <p className="text-lg text-gray-300 text-center">
-          You do not have the necessary permissions to view this page.
-        </p>
-        {codesNotRequired && (
-          <p className="text-sm text-gray-400 text-center mt-4">
-            Admin authentication required even when access codes are disabled.
-          </p>
-        )}
-      </div>
-    );
-  }
+  useEffect(() => {
+    fetchActiveUsers();
+    fetchLastSyncTime();
+  }, []);
 
   return (
-    <div className="flex flex-col items-center p-8 bg-gray-900 min-h-screen text-white">
-      <div className="flex items-center gap-4 mb-10">
-        <Users size={60} className="text-blue-400" />
-        <h1 className="text-5xl font-extrabold text-blue-400 drop-shadow-lg">
-          Access Code Status
-        </h1>
-      </div>
-
-      <p className="text-lg text-gray-300 mb-8 text-center max-w-2xl">
-        This dashboard shows the status of all active access codes, including
-        current usage and recent activity.
-      </p>
-
-      {/* Cleanup Button and Information */}
-      <div className="mb-6 flex flex-col items-center gap-4">
-        <div className="text-center max-w-2xl">
-          <h3 className="text-lg font-semibold text-yellow-300 mb-2">
-            🧹 Stuck Codes Cleanup
-          </h3>
-          <p className="text-sm text-gray-400 mb-4">
-            This button cleans up access codes that remain marked as "in use"
-            even when users are no longer active. This is a safety net for edge
-            cases and ensures the database stays clean.
+    <div className="min-h-screen bg-gray-900 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-4">
+            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
+              Admin Panel
+            </span>
+          </h1>
+          <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
+            Manage GRP Database administration and monitor system status
           </p>
-          <div className="text-xs text-gray-500 space-y-1">
-            <p>
-              <strong>Prevention:</strong> Heartbeat system, automatic cleanup,
-              browser event handling
-            </p>
-            <p>
-              <strong>When needed:</strong> Browser crashes, network failures,
-              session timeouts, or when you want to force-clean the database
-            </p>
-            <p>
-              <strong>Note:</strong> The display above automatically shows users
-              as "logged out" after 1 hour, but this cleanup ensures the
-              database reflects the actual status
-            </p>
-          </div>
         </div>
 
-        <button
-          onClick={handleCleanupStuckCodes}
-          disabled={cleanupLoading}
-          className="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center gap-2"
-        >
-          {cleanupLoading ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Cleaning Up...
-            </>
-          ) : (
-            <>
-              <AlertCircle size={16} />
-              Clean Up Stuck Codes
-            </>
-          )}
-        </button>
-        {cleanupMessage && (
-          <div
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              cleanupMessage.startsWith("✅")
-                ? "bg-green-900/40 border border-green-700 text-green-300"
-                : "bg-red-900/40 border border-red-700 text-red-300"
-            }`}
-          >
-            {cleanupMessage}
-            {cleanupMessage.startsWith("✅") && (
-              <div className="mt-2 text-xs text-green-200">
-                💡 The system now has active prevention measures to reduce stuck
-                codes in the future.
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Access Code Requirement Toggle */}
-      <div className="mb-6 flex flex-col items-center gap-4">
-        <div className="text-center max-w-2xl">
-          <h3 className="text-lg font-semibold text-purple-300 mb-2">
-            🔐 Access Code Requirement
-          </h3>
-          <p className="text-sm text-gray-400 mb-4">
-            Control whether users need to enter access codes to use the system.
-            When disabled, anyone can access the application without
-            authentication.
-          </p>
-          <div className="text-xs text-gray-500 space-y-1">
-            <p>
-              <strong>Current Status:</strong> Access codes are currently{" "}
-              <span
-                className={
-                  accessCodeRequired ? "text-green-400" : "text-red-400"
-                }
+        {/* Sync Templates Section */}
+        <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700">
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <Database className="text-blue-400" />
+            Template Sync
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <button
+                onClick={handleSyncTemplates}
+                disabled={isSyncing}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
               >
-                {accessCodeRequired ? "REQUIRED" : "NOT REQUIRED"}
-              </span>
-            </p>
-            <p>
-              <strong>Security Note:</strong> Disabling access codes removes all
-              authentication barriers
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={handleToggleAccessCodeRequirement}
-          disabled={toggleLoading}
-          className={`px-6 py-3 font-semibold rounded-lg transition-colors duration-200 flex items-center gap-2 ${
-            accessCodeRequired
-              ? "bg-red-600 hover:bg-red-700 disabled:bg-gray-600"
-              : "bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
-          } text-white`}
-        >
-          {toggleLoading ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Updating...
-            </>
-          ) : (
-            <>
-              {accessCodeRequired ? (
-                <>
-                  <Ban size={16} />
-                  Disable Access Code Requirement
-                </>
-              ) : (
-                <>
-                  <CheckCircle size={16} />
-                  Enable Access Code Requirement
-                </>
-              )}
-            </>
-          )}
-        </button>
-        {toggleMessage && (
-          <div
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              toggleMessage.startsWith("✅")
-                ? "bg-green-900/40 border border-green-700 text-green-300"
-                : "bg-red-900/40 border border-red-700 text-red-300"
-            }`}
-          >
-            {toggleMessage}
-          </div>
-        )}
-        {updateMessage && (
-          <div
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              updateMessage.startsWith("✅")
-                ? "bg-green-900/40 border border-green-700 text-green-300"
-                : "bg-red-900/40 border border-red-700 text-red-300"
-            }`}
-          >
-            {updateMessage}
-          </div>
-        )}
-      </div>
-
-      {/* Player ID Management */}
-      <div className="mb-6 flex flex-col items-center gap-4">
-        <div className="text-center max-w-2xl">
-          <h3 className="text-lg font-semibold text-blue-300 mb-2">
-            👤 Player ID Management
-          </h3>
-          <p className="text-sm text-gray-400 mb-4">
-            Edit player IDs directly from this panel. Click the edit icon next
-            to any player ID to modify it. Changes are saved immediately to
-            Firebase.
-          </p>
-        </div>
-      </div>
-
-      {/* Template Sync Section */}
-      <div className="mb-6 flex flex-col items-center gap-4">
-        <div className="text-center max-w-2xl">
-          <h3 className="text-lg font-semibold text-green-300 mb-2">
-            🔄 Template Sync
-          </h3>
-          <p className="text-sm text-gray-400 mb-4">
-            Sync LifeInvader templates from the original Google Sheet to ensure
-            your website has the latest data. This fetches all categories and
-            updates the template system.
-          </p>
-          <div className="text-xs text-gray-500 space-y-1">
-            <p>
-              <strong>Manual Sync:</strong> Click the button below to sync immediately
-            </p>
-            <p>
-              <strong>Automatic Sync:</strong> Runs daily at 6 AM UTC via cron job
-            </p>
-            <p>
-              <strong>Note:</strong> This syncs from the original sheet to your copy
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center gap-4 w-full max-w-md">
-          <button
-            onClick={syncTemplates}
-            disabled={isSyncing}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-              isSyncing
-                ? "bg-gray-600 cursor-not-allowed text-white"
-                : "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
-            }`}
-          >
-            {isSyncing ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Syncing...
-              </>
-            ) : (
-              <>
-                🔄 Sync Templates
-              </>
-            )}
-          </button>
-
-          {lastSyncTime && (
-            <div className="text-sm text-gray-400 text-center">
-              <div className="font-medium">Last sync:</div>
-              <div>{lastSyncTime}</div>
+                {isSyncing ? (
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-5 h-5" />
+                )}
+                {isSyncing ? "Syncing..." : "Sync Templates"}
+              </button>
             </div>
-          )}
-
-          {isSyncing && syncProgress.total > 0 && (
-            <div className="w-full">
-              <div className="flex justify-between text-sm text-gray-400 mb-1">
-                <span>
-                  Progress: {syncProgress.current}/{syncProgress.total} categories
-                </span>
-                <span>
-                  {Math.round((syncProgress.current / syncProgress.total) * 100)}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-2">
-                <div
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                  style={{
-                    width: `${
-                      (syncProgress.current / syncProgress.total) * 100
-                    }%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-          )}
-
-          {syncStatus && (
-            <div
-              className={`text-sm font-medium px-4 py-2 rounded-lg ${
-                syncStatus.includes("failed")
-                  ? "bg-red-900/40 border border-red-700 text-red-300"
-                  : "bg-green-900/40 border border-green-700 text-green-300"
-              }`}
-            >
-              {syncStatus}
-            </div>
-          )}
-
-          {syncError && (
-            <div className="text-sm text-red-300 bg-red-900/40 border border-red-700 p-3 rounded-lg w-full">
-              <div className="font-medium">Error:</div>
-              <div>{syncError}</div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {fetchLoading ? (
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-400 mb-3"></div>
-          <p className="text-gray-400">Fetching access code data...</p>
-        </div>
-      ) : fetchError ? (
-        <div className="bg-red-900/40 border border-red-700 text-red-300 px-6 py-4 rounded-lg text-base flex items-center justify-center animate-fade-in max-w-lg text-center">
-          <AlertCircle size={24} className="mr-3" />
-          <span>Error: {fetchError}</span>
-        </div>
-      ) : users.length === 0 ? (
-        <div className="text-center text-gray-400 text-xl py-10">
-          No active access codes found.
-        </div>
-      ) : (
-        <div className="w-full max-w-6xl bg-gray-800 rounded-xl shadow-2xl border border-gray-700 p-6 overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-700">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider rounded-tl-lg"
-                >
-                  Access Code ID
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                >
-                  Player ID
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                >
-                  Login Status
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                >
-                  Last Used
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                >
-                  Recently Active
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider rounded-tr-lg"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {users.map((user) => (
-                <tr
-                  key={user.accessCodeId}
-                  className="hover:bg-gray-700 transition-colors duration-200"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-blue-300">
-                    {user.accessCodeId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
-                    {editingPlayerId === user.accessCodeId ? (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={newPlayerId}
-                          onChange={(e) => setNewPlayerId(e.target.value)}
-                          className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Enter new player ID"
-                        />
-                        <button
-                          onClick={() =>
-                            handleUpdatePlayerId(user.accessCodeId)
-                          }
-                          disabled={updateLoading}
-                          className="p-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 rounded transition-colors duration-200"
-                        >
-                          {updateLoading ? (
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                          ) : (
-                            <Save size={12} className="text-white" />
-                          )}
-                        </button>
-                        <button
-                          onClick={handleCancelEdit}
-                          className="p-1 bg-red-600 hover:bg-red-700 rounded transition-colors duration-200"
-                        >
-                          <X size={12} className="text-white" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span>{user.playerId || "N/A"}</span>
-                        <button
-                          onClick={() =>
-                            handleEditPlayerId(user.accessCodeId, user.playerId)
-                          }
-                          className="p-1 bg-blue-600 hover:bg-blue-700 rounded transition-colors duration-200"
-                        >
-                          <Edit size={12} className="text-white" />
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {user.isActiveCode ? (
-                      user.is_in_use ? (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-900 text-green-300">
-                          <Wifi size={14} className="mr-1" /> Currently Logged
-                          In
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-900 text-purple-300">
-                          <WifiOff size={14} className="mr-1" /> Available
-                        </span>
-                      )
-                    ) : (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-900 text-red-300">
-                        <Ban size={14} className="mr-1" /> Inactive Code
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                    {formatTime(user.lastUsed)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {user.isRecentlyActive ? (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-900 text-yellow-300">
-                        <Clock size={14} className="mr-1" /> Recent
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-600 text-gray-300">
-                        <Clock size={14} className="mr-1" /> Old
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {/* Additional actions can be added here in the future */}
-                    <span className="text-xs text-gray-500">-</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {/* Status Legend */}
-          <div className="mt-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
-            <div className="mb-4 p-3 bg-blue-900/20 border border-blue-700 rounded-lg">
-              <p className="text-xs text-blue-300">
-                <strong>💡 Auto-Logout:</strong> Users are automatically
-                considered "logged out" if they haven't been active for over 1
-                hour, even if their session wasn't properly closed. This
-                prevents stuck codes from showing incorrect status.
+            
+            <div className="text-gray-300">
+              <p className="text-sm">
+                <strong>Last Sync:</strong> {lastSyncTime ? formatTime(lastSyncTime) : "Never"}
               </p>
-            </div>
-            <h3 className="text-sm font-semibold text-gray-300 mb-3">
-              Status Legend:
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-gray-400">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-900 text-green-300">
-                  <Wifi size={12} className="mr-1" /> Currently Logged In
-                </span>
-                <span>
-                  User has the page open and has been active within the last
-                  hour
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-900 text-purple-300">
-                  <WifiOff size={12} className="mr-1" /> Available
-                </span>
-                <span>
-                  Access code is valid but user is inactive or logged out
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-900 text-red-300">
-                  <Ban size={12} className="mr-1" /> Inactive Code
-                </span>
-                <span>Access code has been deactivated or is invalid</span>
-              </div>
+              {syncStatus && (
+                <p className="text-sm text-green-400 mt-1">{syncStatus}</p>
+              )}
+              {syncError && (
+                <p className="text-sm text-red-400 mt-1">{syncError}</p>
+              )}
             </div>
           </div>
         </div>
-      )}
+
+        {/* Active Users Section */}
+        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Users className="text-green-400" />
+              System Status
+            </h2>
+            <div className="flex gap-2">
+              <button
+                onClick={fetchActiveUsers}
+                disabled={fetchLoading}
+                className="bg-gray-600 hover:bg-gray-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${fetchLoading ? "animate-spin" : ""}`} />
+                Refresh
+              </button>
+              <button
+                onClick={handleCleanup}
+                disabled={cleanupLoading}
+                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2"
+              >
+                <XCircle className="w-4 h-4" />
+                {cleanupLoading ? "Cleaning..." : "Cleanup"}
+              </button>
+            </div>
+          </div>
+
+          {fetchLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+              <p className="text-gray-300">Loading system status...</p>
+            </div>
+          ) : fetchError ? (
+            <div className="text-center py-8">
+              <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+              <p className="text-red-400 mb-2">Error loading system status</p>
+              <p className="text-gray-300 text-sm">{fetchError}</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-gray-700 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-green-400">
+                    {users.filter(user => user.is_in_use).length}
+                  </div>
+                  <div className="text-sm text-gray-300">Active Sessions</div>
+                </div>
+                <div className="bg-gray-700 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-400">
+                    {users.filter(user => user.isRecentlyActive).length}
+                  </div>
+                  <div className="text-sm text-gray-300">Recently Active</div>
+                </div>
+                <div className="bg-gray-700 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-purple-400">
+                    {users.length}
+                  </div>
+                  <div className="text-sm text-gray-300">Total Codes</div>
+                </div>
+              </div>
+
+              {cleanupMessage && (
+                <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4 mb-4">
+                  <p className="text-green-400 text-sm">{cleanupMessage}</p>
+                </div>
+              )}
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-gray-300 uppercase bg-gray-700">
+                    <tr>
+                      <th className="px-6 py-3">Code ID</th>
+                      <th className="px-6 py-3">Player ID</th>
+                      <th className="px-6 py-3">Status</th>
+                      <th className="px-6 py-3">Last Used</th>
+                      <th className="px-6 py-3">Active</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.accessCodeId} className="bg-gray-800 border-b border-gray-700">
+                        <td className="px-6 py-4 font-mono text-xs">
+                          {user.accessCodeId}
+                        </td>
+                        <td className="px-6 py-4">
+                          {user.playerId || "N/A"}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            {user.is_in_use ? (
+                              <>
+                                <Wifi className="w-4 h-4 text-green-400" />
+                                <span className="text-green-400">Online</span>
+                              </>
+                            ) : (
+                              <>
+                                <WifiOff className="w-4 h-4 text-gray-400" />
+                                <span className="text-gray-400">Offline</span>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-gray-300">
+                          {formatTime(user.lastUsed)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            {user.isActiveCode ? (
+                              <>
+                                <CheckCircle className="w-4 h-4 text-green-400" />
+                                <span className="text-green-400">Active</span>
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="w-4 h-4 text-red-400" />
+                                <span className="text-red-400">Inactive</span>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

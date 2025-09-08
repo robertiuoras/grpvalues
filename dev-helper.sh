@@ -1,131 +1,71 @@
 #!/bin/bash
 
-# Development Helper Script for GRP Values
+# Development Helper Script for GRP Database
 # This script helps prevent CSS breaking issues by managing build cache
 
-echo "🧹 Development Helper for GRP Values"
+echo "🧹 Development Helper for GRP Database"
 echo "=========================================="
 
 # Function to clean cache
 clean_cache() {
     echo "🗑️  Cleaning build cache..."
-    rm -rf .next
+    rm -rf .next 2>/dev/null || true
+    rm -rf node_modules/.cache 2>/dev/null || true
     echo "✅ Cache cleaned successfully"
 }
 
-# Function to deep clean cache (more thorough)
-deep_clean_cache() {
-    echo "🧹 Deep cleaning build cache..."
-    echo "🗑️  Removing .next directory..."
-    rm -rf .next
-    echo "🗑️  Removing TypeScript build info..."
-    rm -f tsconfig.tsbuildinfo
-    echo "🗑️  Removing node_modules/.cache if exists..."
-    rm -rf node_modules/.cache 2>/dev/null || true
-    echo "✅ Deep cache clean completed successfully"
-}
-
-# Function to nuclear clean (complete reset)
-nuclear_clean() {
-    echo "☢️  NUCLEAR cache cleaning - complete reset..."
-    echo "⚠️  This will remove ALL build artifacts and dependencies"
-    echo "🗑️  Removing .next directory..."
-    rm -rf .next
-    echo "🗑️  Removing TypeScript build info..."
-    rm -f tsconfig.tsbuildinfo
-    echo "🗑️  Removing node_modules..."
-    rm -rf node_modules
-    echo "🗑️  Removing package-lock.json..."
-    rm -f package-lock.json
-    echo "📦 Reinstalling dependencies..."
-    npm install
-    echo "✅ Nuclear clean completed - fresh start!"
-}
-
-# Function to start dev server
-start_dev() {
-    echo "🚀 Starting development server..."
-    npm run dev
-}
-
-# Function to clean and start
-clean_and_start() {
-    clean_cache
-    echo ""
-    echo "🔄 Starting fresh development server..."
-    start_dev
-}
-
-# Function to start with auto-cache clearing
-auto_dev() {
-    clean_cache
-    echo ""
-    echo "🤖 Starting development server with AUTO cache clearing..."
-    echo "📝 Cache will be automatically cleared after each update"
-    echo "🔄 Starting server..."
-    
-    # Start dev server and monitor for changes
+# Function to restart development server
+restart_dev() {
+    echo "🔄 Restarting development server..."
+    pkill -f "next dev" 2>/dev/null || true
+    sleep 2
     npm run dev &
-    DEV_PID=$!
-    
-    echo "✅ Development server started with PID: $DEV_PID"
-    echo "🔄 Auto-cache clearing is active - CSS will never break!"
-    echo "💡 Press Ctrl+C to stop the server"
-    
-    # Wait for the dev server
-    wait $DEV_PID
+    echo "✅ Development server restarted"
 }
 
-# Function to show help
-show_help() {
-    echo ""
-    echo "Usage: ./dev-helper.sh [option]"
-    echo ""
-    echo "Options:"
-    echo "  clean     - Clean build cache only"
-    echo "  deep      - Deep clean cache (more thorough)"
-    echo "  nuclear   - Nuclear clean (complete reset - use for severe issues)"
-    echo "  start     - Start dev server only"
-    echo "  fresh     - Clean cache and start dev server (recommended)"
-    echo "  auto      - Start dev server with AUTO cache clearing (BEST OPTION)"
-    echo "  help      - Show this help message"
-    echo ""
-    echo "Examples:"
-    echo "  ./dev-helper.sh auto     # Auto cache clearing - CSS never breaks! (BEST)"
-    echo "  ./dev-helper.sh fresh    # Clean cache and start fresh"
-    echo "  ./dev-helper.sh deep     # Deep clean for persistent issues"
-    echo "  ./dev-helper.sh nuclear  # Nuclear option for severe cache corruption"
-    echo "  ./dev-helper.sh clean    # Just clean cache"
-    echo "  ./dev-helper.sh start    # Just start server"
-    echo ""
+# Function to check if server is running
+check_server() {
+    if pgrep -f "next dev" > /dev/null; then
+        echo "✅ Development server is running"
+        return 0
+    else
+        echo "❌ Development server is not running"
+        return 1
+    fi
 }
 
-# Main script logic
-case "$1" in
-    "clean")
+# Main menu
+echo "Choose an option:"
+echo "1) Clean cache only"
+echo "2) Restart development server"
+echo "3) Clean cache and restart"
+echo "4) Check server status"
+echo "5) Exit"
+
+read -p "Enter your choice (1-5): " choice
+
+case $choice in
+    1)
         clean_cache
         ;;
-    "deep")
-        deep_clean_cache
+    2)
+        restart_dev
         ;;
-    "nuclear")
-        nuclear_clean
+    3)
+        clean_cache
+        restart_dev
         ;;
-    "start")
-        start_dev
+    4)
+        check_server
         ;;
-    "auto")
-        auto_dev
-        ;;
-    "fresh"|"")
-        clean_and_start
-        ;;
-    "help"|"-h"|"--help")
-        show_help
+    5)
+        echo "👋 Goodbye!"
+        exit 0
         ;;
     *)
-        echo "❌ Unknown option: $1"
-        show_help
+        echo "❌ Invalid choice. Please run the script again."
         exit 1
         ;;
 esac
+
+echo "🎉 GRP Database development helper completed!"

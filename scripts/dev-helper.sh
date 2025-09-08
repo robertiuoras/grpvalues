@@ -1,72 +1,57 @@
 #!/bin/bash
 
-# Development Helper Script for GRP Values
+# Development Helper Script for GRP Database
 # Automatically detects and fixes Webpack module errors
 
-echo "🔧 GRP Values Development Helper"
+echo "🔧 GRP Database Development Helper"
 echo "====================================="
 
 # Function to check if Next.js is running
 check_nextjs() {
     if pgrep -f "next dev" > /dev/null; then
-        echo "⚠️  Next.js development server is already running"
-        echo "   Stopping existing server..."
-        pkill -f "next dev"
-        sleep 2
+        echo "✅ Next.js development server is running"
+        return 0
+    else
+        echo "❌ Next.js development server is not running"
+        return 1
     fi
 }
 
-# Function to clean all caches
-clean_caches() {
-    echo "🧹 Cleaning all caches..."
-    rm -rf .next
-    rm -rf node_modules/.cache
-    npm cache clean --force
-    echo "✅ Caches cleaned"
-}
-
-# Function to check for Webpack errors
-check_webpack_errors() {
-    echo "🔍 Checking for Webpack errors..."
-    
-    # Check if .next directory exists and has issues
-    if [ -d ".next" ]; then
-        if [ ! -f ".next/routes-manifest.json" ] || [ ! -f ".next/server/app-paths-manifest.json" ]; then
-            echo "⚠️  Detected corrupted .next directory"
-            return 1
-        fi
+# Function to start Next.js if not running
+start_nextjs() {
+    echo "🚀 Starting Next.js development server..."
+    npm run dev &
+    sleep 3
+    if check_nextjs; then
+        echo "✅ Next.js started successfully"
+    else
+        echo "❌ Failed to start Next.js"
+        exit 1
     fi
-    
-    return 0
 }
 
-# Function to start development server
-start_dev() {
-    echo "🚀 Starting development server..."
-    echo "   Using: npm run dev:stable"
-    echo "   This will automatically clean caches and start fresh"
-    echo ""
-    echo "💡 If you still get Webpack errors, try:"
-    echo "   npm run clean:all"
-    echo ""
+# Function to clean and restart
+clean_restart() {
+    echo "🧹 Cleaning and restarting..."
     
-    npm run dev:stable
+    # Kill existing Next.js processes
+    pkill -f "next dev" 2>/dev/null || true
+    
+    # Clean cache
+    rm -rf .next 2>/dev/null || true
+    rm -rf node_modules/.cache 2>/dev/null || true
+    
+    # Restart
+    start_nextjs
 }
 
 # Main execution
-main() {
-    check_nextjs
-    clean_caches
-    
-    if check_webpack_errors; then
-        echo "✅ No Webpack errors detected"
-    else
-        echo "⚠️  Webpack errors detected, cleaning and restarting..."
-        clean_caches
-    fi
-    
-    start_dev
-}
+if check_nextjs; then
+    echo "✅ Development server is already running"
+else
+    echo "🔄 Starting development server..."
+    start_nextjs
+fi
 
-# Run main function
-main
+echo "🎉 GRP Database development environment is ready!"
+echo "📝 Visit http://localhost:3000 to view the application"

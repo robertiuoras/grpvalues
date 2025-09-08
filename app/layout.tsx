@@ -8,8 +8,8 @@ import ClientLayoutWrapper from "./ClientLayoutWrapper"; // FIX: Import the rena
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GRP Values",
-  description: "Market values for GRP Values items, vehicles, and more.",
+  title: "GRP Database",
+  description: "Market values for GRP Database items, vehicles, and more.",
 };
 
 export default function RootLayout({

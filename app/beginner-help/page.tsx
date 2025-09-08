@@ -233,7 +233,7 @@ export default function BeginnerHelpPage() {
                 <h3 className="font-bold">🔹 Car Insurance is Essential</h3>
                 <p>✅ Protects your car from being stolen or destroyed.</p>
                 <p>If stolen, you'll pay a hefty recovery fine.</p>
-                <p>🛡️ Insurance is highly recommended on GRP Values.</p>
+                <p>🛡️ Insurance is highly recommended on GRP Database.</p>
               </div>
               <div className="border-l-4 border-indigo-400 pl-4">
                 <h3 className="font-bold">🔹 Pocket Change Caution</h3>
@@ -307,7 +307,7 @@ export default function BeginnerHelpPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Master GRP Values with our comprehensive guide. Learn the best
+            Master GRP Database with our comprehensive guide. Learn the best
             strategies to maximize your earnings and dominate the server.
           </p>
         </div>
