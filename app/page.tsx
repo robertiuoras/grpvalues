@@ -9,10 +9,12 @@ import {
   Glasses,
   Shirt, // Re-added Shirt icon for Luminous Clothing
   HelpCircle, // Add HelpCircle icon for Beginner Help
+  Shield, // Add Shield icon for Admin Login
 } from "lucide-react";
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../hooks/useAuth";
 
 interface CategoryCard {
   name: string;
@@ -23,6 +25,7 @@ interface CategoryCard {
 
 export default function HomePage() {
   const router = useRouter();
+  const { isAdmin } = useAuth();
 
   const categories: CategoryCard[] = [
     {
@@ -175,7 +178,7 @@ export default function HomePage() {
         </div>
 
         {/* Grid for category cards - responsive for 1, 2, or 3 columns */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full mb-12">
           {categories.map((category) => (
             <Link
               key={category.name}
@@ -200,6 +203,30 @@ export default function HomePage() {
             </Link>
           ))}
         </div>
+
+        {/* Admin Login Section - Only show if not admin */}
+        {!isAdmin && (
+          <div className="w-full max-w-2xl">
+            <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl p-6 border border-gray-600">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Shield className="w-6 h-6 text-yellow-400" />
+                  <h3 className="text-xl font-bold text-white">Admin Access</h3>
+                </div>
+                <p className="text-gray-300 text-sm mb-4">
+                  Are you an administrator? Access the admin panel to manage the database and system settings.
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-lg transition-colors duration-200 hover:scale-105 transform"
+                >
+                  <Shield className="w-5 h-5" />
+                  Admin Login
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
