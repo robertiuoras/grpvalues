@@ -311,6 +311,7 @@ export default function BeginnerHelpPage() {
 
         {/* Navigation Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16 max-w-4xl mx-auto">
+          {/* Row 1: Basic Tips, Saving Tips, Office */}
           <div
             onClick={() => handleButtonClick("basic-tips")}
             className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2"
@@ -325,6 +326,25 @@ export default function BeginnerHelpPage() {
                 </h3>
                 <p className="text-green-100 text-xs">
                   Essential strategies to get started
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div
+            onClick={() => handleButtonClick("saving-tips")}
+            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2"
+          >
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-xl">💰</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-1">
+                  Saving Tips
+                </h3>
+                <p className="text-indigo-100 text-xs">
+                  Protect your money and avoid scams
                 </p>
               </div>
             </div>
@@ -347,9 +367,27 @@ export default function BeginnerHelpPage() {
             </div>
           </div>
 
+          {/* Row 2: Treasure, Starter Jobs */}
+          <div
+            onClick={() => handleButtonClick("treasure")}
+            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2 lg:col-start-1 lg:col-end-2"
+          >
+            <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-xl">📦</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-1">Treasure</h3>
+                <p className="text-amber-100 text-xs">
+                  Find hidden treasures and earn rewards
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div
             onClick={() => handleButtonClick("starter-jobs")}
-            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2"
+            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2 lg:col-start-3 lg:col-end-4"
           >
             <div className="bg-gradient-to-br from-red-500 to-pink-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="text-center">
@@ -361,42 +399,6 @@ export default function BeginnerHelpPage() {
                 </h3>
                 <p className="text-red-100 text-xs">
                   Best jobs for new players
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div
-            onClick={() => handleButtonClick("saving-tips")}
-            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2 lg:col-start-1 lg:col-end-2"
-          >
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-xl">💰</span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-1">
-                  Saving Tips
-                </h3>
-                <p className="text-indigo-100 text-xs">
-                  Protect your money and avoid scams
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div
-            onClick={() => handleButtonClick("treasure")}
-            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2 lg:col-start-3 lg:col-end-4"
-          >
-            <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-xl">📦</span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-1">Treasure</h3>
-                <p className="text-amber-100 text-xs">
-                  Find hidden treasures and earn rewards
                 </p>
               </div>
             </div>
