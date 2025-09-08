@@ -501,18 +501,8 @@ export default function CategoryPage({
     );
   }
 
-  // Check if access codes are required
-  const accessCodeRequired = Cookies.get("accessCodeRequired");
-  const codesNotRequired = accessCodeRequired === "false";
-  
-  // If access codes are required and user is not authenticated, show loading
-  if (!codesNotRequired && !isAuthenticated) {
-    // If not authenticated, the useAuth hook will handle the redirect to /login.
-    // So, if we reach here and isAuthenticated is false, it means a redirect is
-    // in progress or has just completed, so we can render nothing or a simple
-    // "redirecting" message.
-    return null; // Or a brief "Redirecting to login..." message if desired
-  }
+  // Since access codes are no longer required, we can proceed with rendering
+  // The page is now fully public
 
   // Header icon - This is a helper function, not a hook. Its position is flexible.
   const getHeaderIcon = (slug: string) => {

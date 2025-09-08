@@ -155,3 +155,19 @@ html::-webkit-scrollbar-thumb:hover {
 html {
   scroll-behavior: smooth;
 }
+
+/* Prevent horizontal scrolling in header and main content */
+header {
+  overflow-x: hidden;
+}
+
+/* Ensure main content doesn't cause horizontal overflow */
+main, .main-content {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Prevent any element from causing horizontal scroll */
+* {
+  box-sizing: border-box;
+}
