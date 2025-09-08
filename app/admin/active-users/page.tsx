@@ -63,30 +63,6 @@ export default function ActiveUsersPage() {
     total: number;
   }>({ current: 0, total: 0 });
 
-  // Show loading while checking authentication
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <p className="text-gray-300">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Check if user is admin
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-400 mb-4">Access Denied</h1>
-          <p className="text-gray-300">You need admin privileges to access this page.</p>
-        </div>
-      </div>
-    );
-  }
-
   // Helper function to format time properly
   const formatTime = (timeString: string | null) => {
     if (!timeString || timeString === "Never") return "Never";
@@ -234,6 +210,30 @@ export default function ActiveUsersPage() {
 
     return () => clearInterval(interval);
   }, [fetchActiveUsers, fetchVisitorStats, fetchLastSyncTime]);
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p className="text-gray-300">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user is admin
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-400 mb-4">Access Denied</h1>
+          <p className="text-gray-300">You need admin privileges to access this page.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 py-8">
