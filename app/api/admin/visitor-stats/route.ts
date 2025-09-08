@@ -22,12 +22,39 @@ export async function GET(request: NextRequest) {
       page: request.nextUrl.pathname,
     });
 
-    // Get visitor statistics
-    const visitorLogs = await db.collection("visitor_logs")
-      .orderBy("timestamp", "desc")
-      .limit(1000)
-      .get();
+    // Get time filter from query params
+    const { searchParams } = new URL(request.url);
+    const timeFilter = searchParams.get('filter') || 'all'; // 'all', 'daily', 'weekly'
 
+    // Calculate time boundaries
+    let startTime: Date;
+    const now = new Date();
+    
+    switch (timeFilter) {
+      case 'daily':
+        startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case 'weekly':
+        const dayOfWeek = now.getDay();
+        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Monday start
+        startTime = new Date(now);
+        startTime.setDate(now.getDate() - daysToSubtract);
+        startTime.setHours(0, 0, 0, 0);
+        break;
+      default:
+        startTime = new Date(0); // All time
+    }
+
+    // Get visitor statistics with time filter
+    let query = db.collection("visitor_logs")
+      .orderBy("timestamp", "desc")
+      .limit(1000);
+
+    if (timeFilter !== 'all') {
+      query = query.where("timestamp", ">=", startTime.toISOString());
+    }
+
+    const visitorLogs = await query.get();
     const logs = visitorLogs.docs.map(doc => doc.data());
     
     // Calculate statistics
@@ -51,6 +78,8 @@ export async function GET(request: NextRequest) {
       uniqueIPs,
       onlineUsers,
       recentActivity,
+      timeFilter,
+      period: timeFilter === 'daily' ? 'Today' : timeFilter === 'weekly' ? 'This Week' : 'All Time',
     });
 
   } catch (error) {

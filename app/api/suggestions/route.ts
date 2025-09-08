@@ -68,11 +68,20 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // This endpoint could be used by admins to fetch suggestions
-    // For now, we'll just return a simple response
+    // Get all suggestions ordered by creation date (newest first)
+    const suggestionsSnapshot = await db.collection("suggestions")
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const suggestions = suggestionsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt,
+    }));
+
     return NextResponse.json({
-      message: "Suggestions API endpoint is working",
-      note: "Use POST to submit suggestions"
+      suggestions,
+      count: suggestions.length
     });
   } catch (error) {
     console.error("Error in suggestions GET:", error);

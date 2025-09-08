@@ -37,6 +37,17 @@ interface VisitorStats {
     userAgent: string;
     page: string;
   }>;
+  timeFilter: string;
+  period: string;
+}
+
+interface Suggestion {
+  id: string;
+  suggestion: string;
+  timestamp: string;
+  clientIP: string;
+  status: string;
+  createdAt: string;
 }
 
 export default function ActiveUsersPage() {
@@ -47,7 +58,11 @@ export default function ActiveUsersPage() {
     uniqueIPs: 0,
     onlineUsers: 0,
     recentActivity: [],
+    timeFilter: 'all',
+    period: 'All Time',
   });
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [timeFilter, setTimeFilter] = useState<'all' | 'daily' | 'weekly'>('all');
   const [fetchLoading, setFetchLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [cleanupLoading, setCleanupLoading] = useState(false);
@@ -116,13 +131,26 @@ export default function ActiveUsersPage() {
   // Fetch visitor statistics
   const fetchVisitorStats = React.useCallback(async () => {
     try {
-      const response = await fetch("/api/admin/visitor-stats");
+      const response = await fetch(`/api/admin/visitor-stats?filter=${timeFilter}`);
       if (response.ok) {
         const data = await response.json();
         setVisitorStats(data);
       }
     } catch (error) {
       console.error("Error fetching visitor stats:", error);
+    }
+  }, [timeFilter]);
+
+  // Fetch suggestions
+  const fetchSuggestions = React.useCallback(async () => {
+    try {
+      const response = await fetch("/api/suggestions");
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data.suggestions || []);
+      }
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
     }
   }, []);
 
@@ -201,6 +229,7 @@ export default function ActiveUsersPage() {
     fetchActiveUsers();
     fetchVisitorStats();
     fetchLastSyncTime();
+    fetchSuggestions();
     
     // Refresh data every 30 seconds
     const interval = setInterval(() => {
@@ -209,7 +238,7 @@ export default function ActiveUsersPage() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [fetchActiveUsers, fetchVisitorStats, fetchLastSyncTime]);
+  }, [fetchActiveUsers, fetchVisitorStats, fetchLastSyncTime, fetchSuggestions]);
 
   // Show loading while checking authentication
   if (isLoading) {
@@ -247,6 +276,49 @@ export default function ActiveUsersPage() {
           </h1>
           <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
             Manage GRP Database administration and monitor system status
+          </p>
+        </div>
+
+        {/* Time Filter Controls */}
+        <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700">
+          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <Clock className="text-blue-400" />
+            Time Filter
+          </h2>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setTimeFilter('all')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                timeFilter === 'all'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              All Time
+            </button>
+            <button
+              onClick={() => setTimeFilter('daily')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                timeFilter === 'daily'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Today
+            </button>
+            <button
+              onClick={() => setTimeFilter('weekly')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                timeFilter === 'weekly'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              This Week
+            </button>
+          </div>
+          <p className="text-gray-400 text-sm mt-2">
+            Currently showing: <span className="text-blue-400 font-medium">{visitorStats.period}</span>
           </p>
         </div>
 
@@ -356,6 +428,45 @@ export default function ActiveUsersPage() {
                 <p className="text-sm text-red-400 mt-1">{syncError}</p>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Suggestions Section */}
+        <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700">
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <AlertCircle className="text-yellow-400" />
+            User Suggestions ({suggestions.length})
+          </h2>
+          
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {suggestions.length > 0 ? (
+              suggestions.map((suggestion) => (
+                <div key={suggestion.id} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        suggestion.status === 'pending' 
+                          ? 'bg-yellow-600 text-yellow-100' 
+                          : suggestion.status === 'approved'
+                          ? 'bg-green-600 text-green-100'
+                          : 'bg-red-600 text-red-100'
+                      }`}>
+                        {suggestion.status}
+                      </span>
+                      <span className="text-gray-400 text-sm">{suggestion.clientIP}</span>
+                    </div>
+                    <span className="text-gray-400 text-sm">
+                      {formatTime(suggestion.createdAt)}
+                    </span>
+                  </div>
+                  <p className="text-gray-200 text-sm leading-relaxed">
+                    {suggestion.suggestion}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-400 text-center py-8">No suggestions submitted yet</p>
+            )}
           </div>
         </div>
 
