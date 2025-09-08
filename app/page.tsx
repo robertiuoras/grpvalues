@@ -127,9 +127,9 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Update Popup - Top Right */}
+      {/* Update Popup - Top Left, under How to Join button */}
       {isClient && showUpdatePopup && (
-        <div className="fixed top-24 right-4 z-50 max-w-sm">
+        <div className="fixed top-32 left-4 z-50 max-w-sm">
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-xl shadow-2xl border border-blue-400/50 backdrop-blur-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
