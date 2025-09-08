@@ -135,18 +135,8 @@ export function HeaderNew() {
 
               {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div className="fixed top-20 right-4 w-80 bg-red-600 border-4 border-yellow-400 rounded-xl shadow-2xl z-[9999] max-h-96 overflow-y-auto" style={{ display: 'block', visibility: 'visible' }}>
+                <div className="absolute right-0 top-full mt-2 w-80 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-600/50 z-50 max-h-96 overflow-y-auto custom-scrollbar animate-in slide-in-from-top-2 duration-200">
                   <div className="py-3">
-                    {/* Debug: Test if dropdown is rendering */}
-                    <div className="px-5 py-2 text-white bg-yellow-500 text-lg font-bold mb-2">
-                      🚨 DROPDOWN IS WORKING! Categories: {getCategoriesWithAdmin().length} - V3
-                    </div>
-                    <div className="px-5 py-2 text-white bg-green-500 text-sm mb-2">
-                      If you can see this, the dropdown is rendering correctly!
-                    </div>
-                    <div className="px-5 py-2 text-white bg-blue-500 text-sm mb-2">
-                      State: isDropdownOpen = {isDropdownOpen.toString()}
-                    </div>
                     
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
