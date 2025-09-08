@@ -135,7 +135,7 @@ export function HeaderFinal() {
 
               {/* Dropdown Menu - Using fixed positioning for maximum visibility */}
               {isDropdownOpen && (
-                <div className="fixed top-20 right-4 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 z-[9999] max-h-96 overflow-y-auto" style={{ display: 'block', visibility: 'visible' }}>
+                <div className="fixed top-20 right-4 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 z-[99999] max-h-96 overflow-y-auto" style={{ display: 'block', visibility: 'visible' }}>
                   <div className="py-3">
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
