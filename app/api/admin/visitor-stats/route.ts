@@ -14,13 +14,15 @@ export async function GET(request: NextRequest) {
     // Get current timestamp
     const timestamp = new Date().toISOString();
 
-    // Record this visit
-    await db.collection("visitor_logs").add({
-      ip: clientIP,
-      userAgent,
-      timestamp,
-      page: request.nextUrl.pathname,
-    });
+    // Record this visit (only for non-API calls to avoid cluttering)
+    if (!request.nextUrl.pathname.startsWith('/api/')) {
+      await db.collection("visitor_logs").add({
+        ip: clientIP,
+        userAgent,
+        timestamp,
+        page: request.nextUrl.pathname,
+      });
+    }
 
     // Get time filter from query params
     const { searchParams } = new URL(request.url);
@@ -64,6 +66,13 @@ export async function GET(request: NextRequest) {
     // Count online users (active in last 5 minutes)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const onlineUsers = logs.filter(log => log.timestamp > fiveMinutesAgo).length;
+    
+    // Calculate active sessions (unique IPs active in last 5 minutes)
+    const activeSessions = new Set(
+      logs
+        .filter(log => log.timestamp > fiveMinutesAgo)
+        .map(log => log.ip)
+    ).size;
 
     // Get recent activity (last 20 entries)
     const recentActivity = logs.slice(0, 20).map(log => ({
@@ -77,6 +86,7 @@ export async function GET(request: NextRequest) {
       totalVisitors,
       uniqueIPs,
       onlineUsers,
+      activeSessions,
       recentActivity,
       timeFilter,
       period: timeFilter === 'daily' ? 'Today' : timeFilter === 'weekly' ? 'This Week' : 'All Time',

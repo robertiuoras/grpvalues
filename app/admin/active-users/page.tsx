@@ -31,6 +31,7 @@ interface VisitorStats {
   totalVisitors: number;
   uniqueIPs: number;
   onlineUsers: number;
+  activeSessions: number;
   recentActivity: Array<{
     ip: string;
     timestamp: string;
@@ -57,6 +58,7 @@ export default function ActiveUsersPage() {
     totalVisitors: 0,
     uniqueIPs: 0,
     onlineUsers: 0,
+    activeSessions: 0,
     recentActivity: [],
     timeFilter: 'all',
     period: 'All Time',
@@ -358,7 +360,7 @@ export default function ActiveUsersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-orange-200 text-sm font-medium">Active Sessions</p>
-                <p className="text-3xl font-bold">{users.filter(user => user.is_in_use).length}</p>
+                <p className="text-3xl font-bold">{visitorStats.activeSessions}</p>
               </div>
               <Users className="w-8 h-8 text-orange-200" />
             </div>

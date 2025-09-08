@@ -23,6 +23,42 @@ export async function middleware(request: NextRequest) {
     }
   }
   
+  // Track visitor activity for all page visits (not API calls)
+  if (!pathname.startsWith('/api/') && !pathname.startsWith('/_next/') && !pathname.includes('.')) {
+    try {
+      // Get client IP
+      const clientIP = request.headers.get("x-forwarded-for") || 
+                       request.headers.get("x-real-ip") || 
+                       "unknown";
+
+      // Get user agent
+      const userAgent = request.headers.get("user-agent") || "unknown";
+
+      // Get current timestamp
+      const timestamp = new Date().toISOString();
+
+      // Record this visit asynchronously (don't wait for it)
+      fetch(`${request.nextUrl.origin}/api/track-visit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ip: clientIP,
+          userAgent,
+          timestamp,
+          page: pathname,
+        }),
+      }).catch(error => {
+        // Silently fail if tracking fails
+        console.error('Failed to track visit:', error);
+      });
+    } catch (error) {
+      // Silently fail if tracking fails
+      console.error('Error in visitor tracking:', error);
+    }
+  }
+  
   // For all other routes, allow access without authentication
   // The site is now fully public except for admin areas
   return NextResponse.next();
