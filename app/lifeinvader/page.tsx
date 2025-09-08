@@ -872,101 +872,6 @@ export default function App() {
     setShowAddEditModal(true);
   };
 
-  // Save a template as a saved ad
-  const saveTemplateAsAd = async (template: Template) => {
-    setAdFormLoading(true);
-    setAdFormError("");
-
-    const payload = {
-      name: template.name,
-      description: template.description,
-      type: template.type,
-      category: template.category,
-      displayCategory: template.displayCategory,
-      normalizedName: template.normalizedName,
-      normalizedDescription: template.normalizedDescription,
-      normalizedType: template.normalizedType,
-    };
-
-    try {
-      const response = await fetch('/api/saved-ads', {
-        method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        const responseData = await response.json();
-        
-        // Update localStorage as well
-        const updatedAds = [...mySavedAds, responseData];
-        saveToLocalStorage(updatedAds);
-        
-        // Show success message
-        setModalMessage("Template saved successfully!");
-        setIsModalConfirm(false);
-        setModalOnCancel(() => () => setShowConfirmationModal(false));
-        setModalTitle("Success");
-        setShowConfirmationModal(true);
-        
-        // Refresh the list if showing saved ads
-        if (showMyAds) {
-          await fetchMySavedAds();
-        }
-      } else {
-        // If API fails, try localStorage fallback
-        const newAd: UserAd = {
-          id: `local_${Date.now()}`,
-          ...payload,
-          clientId: 'local',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        
-        const updatedAds = [...mySavedAds, newAd];
-        setMySavedAds(updatedAds);
-        saveToLocalStorage(updatedAds);
-        setUseLocalStorage(true);
-        
-        // Show success message
-        setModalMessage("Template saved locally!");
-        setIsModalConfirm(false);
-        setModalOnCancel(() => () => setShowConfirmationModal(false));
-        setModalTitle("Success");
-        setShowConfirmationModal(true);
-      }
-    } catch (error: any) {
-      console.error("Error saving template:", error);
-      
-      // Try localStorage fallback
-      try {
-        const newAd: UserAd = {
-          id: `local_${Date.now()}`,
-          ...payload,
-          clientId: 'local',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        
-        const updatedAds = [...mySavedAds, newAd];
-        setMySavedAds(updatedAds);
-        saveToLocalStorage(updatedAds);
-        setUseLocalStorage(true);
-        
-        // Show success message
-        setModalMessage("Template saved locally!");
-        setIsModalConfirm(false);
-        setModalOnCancel(() => () => setShowConfirmationModal(false));
-        setModalTitle("Success");
-        setShowConfirmationModal(true);
-      } catch (localError) {
-        setAdFormError("Error saving template. Please try again.");
-        console.error("Error saving to localStorage:", localError);
-      }
-    } finally {
-      setAdFormLoading(false);
-    }
-  };
 
   const resetAdForm = () => {
     setCurrentAdToEdit(null);
@@ -1584,41 +1489,30 @@ export default function App() {
               </div>
             )}
           </div>
-          {isAuthenticated && (
-            <button
-              onClick={() => {
-                setShowMyAds((prev) => {
-                  const newState = !prev;
-                  setSearchQuery(""); // Clear search when toggling My Ads
-                  setDebouncedSearchQuery(""); // Clear debounced search immediately
-                  // Set default category when switching back to "Show All Ads"
-                  setActiveCategory(
-                    newState
-                      ? ""
-                      : formatCategoryDisplayName(OFFICIAL_CATEGORIES[0])
-                  );
-                  setMainTitle(
-                    newState ? "My Saved Ads" : "LifeInvader Templates"
-                  ); // Update main title
-                  // Trigger fetchMySavedAds if now showing My Ads
-                  if (newState) {
-                    fetchMySavedAds();
-                  }
-                  return newState;
-                });
-              }}
-              className={`absolute right-4 top-1/2 -translate-y-1/2 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-200
-                ${
-                  showMyAds
-                    ? "bg-red-700 text-white shadow-xl"
-                    : isDarkMode
-                    ? "bg-gray-600 text-gray-200 hover:bg-gray-500"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-            >
-              {showMyAds ? "Show All Ads" : `My Saved Ads${useLocalStorage ? " (Local)" : ""}`}
-            </button>
-          )}
+          {/* Saved Ads Button - Always visible */}
+          <button
+            onClick={() => {
+              if (!showMyAds) {
+                // Switch to saved ads
+                setShowMyAds(true);
+                setSearchQuery(""); // Clear search when switching to saved ads
+                setDebouncedSearchQuery(""); // Clear debounced search immediately
+                setActiveCategory(""); // Clear active category
+                setMainTitle("My Saved Ads"); // Update main title
+                fetchMySavedAds(); // Fetch saved ads
+              }
+            }}
+            className={`absolute right-4 top-1/2 -translate-y-1/2 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-200
+              ${
+                showMyAds
+                  ? "bg-red-700 text-white shadow-xl"
+                  : isDarkMode
+                  ? "bg-blue-600 text-white hover:bg-blue-500"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
+              }`}
+          >
+            {showMyAds ? "Show All Templates" : "Saved Ads"}
+          </button>
         </div>
 
         {!showMyAds && ( // Only show category buttons if not showing "My Saved Ads"
@@ -1814,24 +1708,14 @@ export default function App() {
                             </button>
                           </div>
                         ) : (
-                          // Show copy and save buttons for general templates
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all ease-out duration-300">
-                            <button
-                              onClick={() => handleCopy(getAdDisplayContent(t))} // Copy description only
-                              className="p-1.5 rounded-full bg-gray-100 hover:bg-red-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
-                              title="Copy template description to clipboard"
-                            >
-                              <ClipboardIcon className="w-4 h-4 text-red-600" />
-                            </button>
-                            <button
-                              onClick={() => saveTemplateAsAd(t as Template)}
-                              disabled={adFormLoading}
-                              className="p-1.5 rounded-full bg-gray-100 hover:bg-green-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                              title="Save template to My Saved Ads"
-                            >
-                              <PlusCircleIcon className="w-4 h-4 text-green-600" />
-                            </button>
-                          </div>
+                          // Show copy button for general templates
+                          <button
+                            onClick={() => handleCopy(getAdDisplayContent(t))} // Copy description only
+                            className="p-1.5 rounded-full bg-gray-100 hover:bg-red-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all ease-out duration-300"
+                            title="Copy template description to clipboard"
+                          >
+                            <ClipboardIcon className="w-4 h-4 text-red-600" />
+                          </button>
                         )}
                       </div>
                     </div>
