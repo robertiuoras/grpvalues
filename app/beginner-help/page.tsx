@@ -310,20 +310,20 @@ export default function BeginnerHelpPage() {
         </div>
 
         {/* Navigation Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16 max-w-4xl mx-auto">
           <div
             onClick={() => handleButtonClick("basic-tips")}
             className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2"
           >
-            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl transition-all duration-300">
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="text-center">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-2xl">💡</span>
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-xl">💡</span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">
+                <h3 className="text-lg font-bold text-white mb-1">
                   Basic Tips
                 </h3>
-                <p className="text-green-100 text-sm">
+                <p className="text-green-100 text-xs">
                   Essential strategies to get started
                 </p>
               </div>
@@ -334,13 +334,13 @@ export default function BeginnerHelpPage() {
             onClick={() => handleButtonClick("office")}
             className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2"
           >
-            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl transition-all duration-300">
+            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="text-center">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-2xl">🏢</span>
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-xl">🏢</span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Office</h3>
-                <p className="text-blue-100 text-sm">
+                <h3 className="text-lg font-bold text-white mb-1">Office</h3>
+                <p className="text-blue-100 text-xs">
                   Maximize your daily office earnings
                 </p>
               </div>
@@ -351,15 +351,15 @@ export default function BeginnerHelpPage() {
             onClick={() => handleButtonClick("starter-jobs")}
             className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2"
           >
-            <div className="bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl transition-all duration-300">
+            <div className="bg-gradient-to-br from-red-500 to-pink-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="text-center">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-2xl">💼</span>
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-xl">💼</span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">
+                <h3 className="text-lg font-bold text-white mb-1">
                   Starter Jobs
                 </h3>
-                <p className="text-red-100 text-sm">
+                <p className="text-red-100 text-xs">
                   Best jobs for new players
                 </p>
               </div>
@@ -370,15 +370,15 @@ export default function BeginnerHelpPage() {
             onClick={() => handleButtonClick("saving-tips")}
             className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2"
           >
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl transition-all duration-300">
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="text-center">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-2xl">💰</span>
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-xl">💰</span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">
+                <h3 className="text-lg font-bold text-white mb-1">
                   Saving Tips
                 </h3>
-                <p className="text-indigo-100 text-sm">
+                <p className="text-indigo-100 text-xs">
                   Protect your money and avoid scams
                 </p>
               </div>
@@ -389,43 +389,19 @@ export default function BeginnerHelpPage() {
             onClick={() => handleButtonClick("treasure")}
             className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2"
           >
-            <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl transition-all duration-300">
+            <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="text-center">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-2xl">📦</span>
+                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-xl">📦</span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Treasure</h3>
-                <p className="text-amber-100 text-sm">
+                <h3 className="text-lg font-bold text-white mb-1">Treasure</h3>
+                <p className="text-amber-100 text-xs">
                   Find hidden treasures and earn rewards
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Special Card for Treasure Helper */}
-          <div className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
-            <div
-              onClick={() => (window.location.href = "/treasure-helper")}
-              className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl transition-all duration-300 border-2 border-purple-400 border-opacity-30"
-            >
-              <div className="text-center">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-2xl">🗺️</span>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-2">
-                  Treasure Helper
-                </h3>
-                <p className="text-purple-100 text-sm">
-                  Advanced treasure hunting tools
-                </p>
-                <div className="mt-4">
-                  <span className="inline-block bg-white bg-opacity-20 text-white text-xs px-3 py-1 rounded-full">
-                    New Tool
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Content Display */}
