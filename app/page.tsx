@@ -210,25 +210,52 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Admin Login Section - Only show if not admin and on client side */}
-        {isClient && !isAdmin && (
+        {/* Admin Login Section - Always show on client side */}
+        {isClient && (
           <div className="w-full max-w-2xl">
-            <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl p-6 border border-gray-600">
+            <div className={`rounded-xl p-6 border ${
+              isAdmin 
+                ? "bg-gradient-to-r from-green-800 to-green-700 border-green-600" 
+                : "bg-gradient-to-r from-gray-800 to-gray-700 border-gray-600"
+            }`}>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <Shield className="w-6 h-6 text-yellow-400" />
-                  <h3 className="text-xl font-bold text-white">Admin Access</h3>
+                  <Shield className={`w-6 h-6 ${isAdmin ? "text-green-400" : "text-yellow-400"}`} />
+                  <h3 className="text-xl font-bold text-white">
+                    {isAdmin ? "Admin Access" : "Admin Access"}
+                  </h3>
                 </div>
                 <p className="text-gray-300 text-sm mb-4">
-                  Are you an administrator? Access the admin panel to manage the database and system settings.
+                  {isAdmin 
+                    ? "You are currently logged in as an administrator. Access the admin panel to manage the database and system settings."
+                    : "Are you an administrator? Access the admin panel to manage the database and system settings."
+                  }
                 </p>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-lg transition-colors duration-200 hover:scale-105 transform"
-                >
-                  <Shield className="w-5 h-5" />
-                  Admin Login
-                </Link>
+                <div className="flex gap-3 justify-center">
+                  <Link
+                    href="/login"
+                    className={`inline-flex items-center gap-2 px-6 py-3 font-medium rounded-lg transition-colors duration-200 hover:scale-105 transform ${
+                      isAdmin 
+                        ? "bg-green-600 hover:bg-green-700 text-white" 
+                        : "bg-yellow-600 hover:bg-yellow-700 text-white"
+                    }`}
+                  >
+                    <Shield className="w-5 h-5" />
+                    {isAdmin ? "Admin Panel" : "Admin Login"}
+                  </Link>
+                  {isAdmin && (
+                    <button
+                      onClick={() => window.location.href = '/admin/active-users'}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 hover:scale-105 transform"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Admin Panel
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
