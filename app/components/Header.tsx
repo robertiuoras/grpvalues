@@ -11,21 +11,19 @@ export function Header() {
   const { isAdmin, logout } = useAuth();
 
   const categories = [
+    { name: "Items", path: "/values/items", isAdmin: false },
     { name: "Cars", path: "/values/cars", isAdmin: false },
     { name: "Boats", path: "/values/boats", isAdmin: false },
     { name: "Planes", path: "/values/planes", isAdmin: false },
     { name: "Helicopters", path: "/values/helicopters", isAdmin: false },
     { name: "Motorcycles", path: "/values/motorcycles", isAdmin: false },
-    { name: "Clothing List", path: "/values/clothinglist", isAdmin: false },
+    { name: "Clothing List", path: "/values/clothinglist?gender=men&heading=accessory", isAdmin: false },
     { name: "Masks", path: "/values/masks", isAdmin: false },
     {
       name: "Luminous Clothing",
-      path: "/values/luminousclothing",
+      path: "/values/luminousclothing?type=shirts",
       isAdmin: false,
     },
-    { name: "Battlepass", path: "/battlepass", isAdmin: false },
-    { name: "Bunker Help", path: "/bunker-help", isAdmin: false },
-    { name: "Pet Timer", path: "/pet-timer", isAdmin: false },
     { name: "Illegal Items", path: "/values/illegalitems", isAdmin: false },
     {
       name: "Cropped Collection Shirts",
@@ -33,7 +31,9 @@ export function Header() {
       isAdmin: false,
     },
     { name: "Denim Jackets", path: "/values/denimjacket", isAdmin: false },
-    { name: "Items", path: "/values/items", isAdmin: false },
+    { name: "Battlepass", path: "/battlepass", isAdmin: false },
+    { name: "Bunker Help", path: "/bunker-help", isAdmin: false },
+    { name: "Pet Timer", path: "/pet-timer", isAdmin: false },
     { name: "LifeInvader", path: "/lifeinvader", isAdmin: false },
     { name: "Suggestions", path: "/suggestions", isAdmin: false },
   ];
