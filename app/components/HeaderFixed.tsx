@@ -10,9 +10,6 @@ export function HeaderFixed() {
   const pathname = usePathname();
   const { isAdmin, logout } = useAuth();
 
-  console.log('HeaderFixed component rendered, isDropdownOpen:', isDropdownOpen, 'isAdmin:', isAdmin);
-  console.log('getCategoriesWithAdmin() result:', getCategoriesWithAdmin());
-
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -71,6 +68,9 @@ export function HeaderFixed() {
     }
     return categories;
   };
+
+  console.log('HeaderFixed component rendered, isDropdownOpen:', isDropdownOpen, 'isAdmin:', isAdmin);
+  console.log('getCategoriesWithAdmin() result:', getCategoriesWithAdmin());
 
   // Helper function to render home link
   const renderHomeLink = (text: string, className: string) => (
