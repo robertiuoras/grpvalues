@@ -135,7 +135,7 @@ export function HeaderFinal() {
 
               {/* Dropdown Menu - Using fixed positioning for maximum visibility */}
               {isDropdownOpen && (
-                <div className="fixed top-20 right-4 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 z-[999999] max-h-96 overflow-y-auto" style={{ display: 'block', visibility: 'visible' }}>
+                <div className="fixed top-20 right-4 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto" style={{ display: 'block', visibility: 'visible', zIndex: 9999999 }}>
                   <div className="py-3">
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
@@ -143,10 +143,10 @@ export function HeaderFinal() {
                           key={category.name}
                           href={category.path}
                           onClick={() => setIsDropdownOpen(false)}
-                          className={`group flex items-center px-5 py-3 text-sm transition-colors duration-200 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 ${
+                          className={`flex items-center px-5 py-3 text-sm ${
                             category.isAdmin
-                              ? "text-yellow-400 font-semibold border-b border-gray-600/50 mb-2 pb-3 hover:text-yellow-300"
-                              : "text-gray-200 hover:text-white"
+                              ? "text-yellow-400 font-semibold border-b border-gray-600/50 mb-2 pb-3"
+                              : "text-gray-200"
                           } ${index === 0 && category.isAdmin ? 'mt-0' : ''}`}
                         >
                           <span className="flex-1 font-medium tracking-wide">
@@ -154,7 +154,7 @@ export function HeaderFinal() {
                             {category.name}
                           </span>
                           <svg
-                            className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-blue-400"
+                            className="w-4 h-4 text-blue-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
