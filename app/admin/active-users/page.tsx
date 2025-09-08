@@ -13,6 +13,9 @@ import {
   XCircle,
   RefreshCw,
   Database,
+  Globe,
+  Activity,
+  TrendingUp,
 } from "lucide-react";
 
 interface ActiveUser {
@@ -24,9 +27,27 @@ interface ActiveUser {
   isActiveCode: boolean;
 }
 
+interface VisitorStats {
+  totalVisitors: number;
+  uniqueIPs: number;
+  onlineUsers: number;
+  recentActivity: Array<{
+    ip: string;
+    timestamp: string;
+    userAgent: string;
+    page: string;
+  }>;
+}
+
 export default function ActiveUsersPage() {
   const { isAuthenticated, isLoading, userRole, isAdmin } = useAuth();
   const [users, setUsers] = useState<ActiveUser[]>([]);
+  const [visitorStats, setVisitorStats] = useState<VisitorStats>({
+    totalVisitors: 0,
+    uniqueIPs: 0,
+    onlineUsers: 0,
+    recentActivity: [],
+  });
   const [fetchLoading, setFetchLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [cleanupLoading, setCleanupLoading] = useState(false);
@@ -104,6 +125,19 @@ export default function ActiveUsersPage() {
     }
   };
 
+  // Fetch visitor statistics
+  const fetchVisitorStats = async () => {
+    try {
+      const response = await fetch("/api/admin/visitor-stats");
+      if (response.ok) {
+        const data = await response.json();
+        setVisitorStats(data);
+      }
+    } catch (error) {
+      console.error("Error fetching visitor stats:", error);
+    }
+  };
+
   // Cleanup stuck codes
   const handleCleanup = async () => {
     setCleanupLoading(true);
@@ -177,7 +211,16 @@ export default function ActiveUsersPage() {
 
   useEffect(() => {
     fetchActiveUsers();
+    fetchVisitorStats();
     fetchLastSyncTime();
+    
+    // Refresh data every 30 seconds
+    const interval = setInterval(() => {
+      fetchActiveUsers();
+      fetchVisitorStats();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -193,6 +236,78 @@ export default function ActiveUsersPage() {
           <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
             Manage GRP Database administration and monitor system status
           </p>
+        </div>
+
+        {/* Visitor Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-200 text-sm font-medium">Total Visitors</p>
+                <p className="text-3xl font-bold">{visitorStats.totalVisitors}</p>
+              </div>
+              <Globe className="w-8 h-8 text-blue-200" />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-200 text-sm font-medium">Unique IPs</p>
+                <p className="text-3xl font-bold">{visitorStats.uniqueIPs}</p>
+              </div>
+              <Activity className="w-8 h-8 text-green-200" />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-200 text-sm font-medium">Online Users</p>
+                <p className="text-3xl font-bold">{visitorStats.onlineUsers}</p>
+              </div>
+              <TrendingUp className="w-8 h-8 text-purple-200" />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-orange-600 to-orange-700 rounded-xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-200 text-sm font-medium">Active Sessions</p>
+                <p className="text-3xl font-bold">{users.filter(user => user.is_in_use).length}</p>
+              </div>
+              <Users className="w-8 h-8 text-orange-200" />
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700">
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <Activity className="text-green-400" />
+            Recent Activity
+          </h2>
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {visitorStats.recentActivity.length > 0 ? (
+              visitorStats.recentActivity.map((activity, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <div>
+                      <p className="text-white text-sm font-medium">{activity.ip}</p>
+                      <p className="text-gray-400 text-xs">{activity.page}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-300 text-xs">{formatTime(activity.timestamp)}</p>
+                    <p className="text-gray-500 text-xs truncate max-w-32">{activity.userAgent}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-400 text-center py-4">No recent activity</p>
+            )}
+          </div>
         </div>
 
         {/* Sync Templates Section */}

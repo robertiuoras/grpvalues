@@ -11,7 +11,7 @@ import {
   HelpCircle, // Add HelpCircle icon for Beginner Help
   Shield, // Add Shield icon for Admin Login
 } from "lucide-react";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../hooks/useAuth";
@@ -26,6 +26,12 @@ interface CategoryCard {
 export default function HomePage() {
   const router = useRouter();
   const { isAdmin } = useAuth();
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure this only runs on client side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const categories: CategoryCard[] = [
     {
@@ -204,8 +210,8 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Admin Login Section - Only show if not admin */}
-        {!isAdmin && (
+        {/* Admin Login Section - Only show if not admin and on client side */}
+        {isClient && !isAdmin && (
           <div className="w-full max-w-2xl">
             <div className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl p-6 border border-gray-600">
               <div className="text-center">
