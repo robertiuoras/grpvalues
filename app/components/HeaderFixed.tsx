@@ -112,7 +112,7 @@ export function HeaderFixed() {
                   console.log('Categories button clicked, current state:', isDropdownOpen);
                   setIsDropdownOpen(!isDropdownOpen);
                 }}
-                className="flex items-center space-x-2 px-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 hover:scale-105 transform shadow-lg"
+                className="flex items-center space-x-2 px-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
               >
                 <span>Categories</span>
                 <svg
@@ -142,7 +142,7 @@ export function HeaderFixed() {
                           key={category.name}
                           href={category.path}
                           onClick={() => setIsDropdownOpen(false)}
-                          className={`group flex items-center px-5 py-3 text-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 hover:scale-[1.02] ${
+                          className={`group flex items-center px-5 py-3 text-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 ${
                             category.isAdmin
                               ? "text-yellow-400 font-semibold border-b border-gray-600/50 mb-2 pb-3 hover:text-yellow-300"
                               : "text-gray-200 hover:text-white"

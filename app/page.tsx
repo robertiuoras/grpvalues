@@ -137,10 +137,9 @@ export default function HomePage() {
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                   <h3 className="font-bold text-sm">New Update!</h3>
                 </div>
-                <p className="text-xs text-blue-100 leading-relaxed">
-                  🎉 <strong>Public Access Added!</strong> GRP Database is now fully public - no access codes required! 
-                  Browse all categories, use the AI Assistant, and access all features freely.
-                </p>
+                     <p className="text-xs text-blue-100 leading-relaxed">
+                       🎉 <strong>Public Access Added!</strong> GRP Database is now fully public - no access codes required!
+                     </p>
               </div>
               <button
                 onClick={() => setShowUpdatePopup(false)}
