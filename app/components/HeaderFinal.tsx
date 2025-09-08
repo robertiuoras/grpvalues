@@ -135,7 +135,7 @@ export function HeaderFinal() {
 
               {/* Dropdown Menu - Using fixed positioning for maximum visibility */}
               {isDropdownOpen && (
-                <div className="fixed top-20 right-4 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 z-[99999] max-h-96 overflow-y-auto" style={{ display: 'block', visibility: 'visible' }}>
+                <div className="fixed top-20 right-4 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 z-[999999] max-h-96 overflow-y-auto" style={{ display: 'block', visibility: 'visible' }}>
                   <div className="py-3">
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
@@ -143,7 +143,7 @@ export function HeaderFinal() {
                           key={category.name}
                           href={category.path}
                           onClick={() => setIsDropdownOpen(false)}
-                          className={`group flex items-center px-5 py-3 text-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 ${
+                          className={`group flex items-center px-5 py-3 text-sm transition-colors duration-200 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 ${
                             category.isAdmin
                               ? "text-yellow-400 font-semibold border-b border-gray-600/50 mb-2 pb-3 hover:text-yellow-300"
                               : "text-gray-200 hover:text-white"
