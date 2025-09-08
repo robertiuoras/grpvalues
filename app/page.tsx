@@ -110,8 +110,11 @@ export default function HomePage() {
         <h1 className="text-5xl font-extrabold text-blue-400 mb-6 drop-shadow-lg text-center">
           Welcome to GRP Database
         </h1>
-        <p className="text-xl text-gray-300 mb-8 text-center max-w-3xl">
-          Select a category below to explore the current market values.
+        <p className="text-xl text-gray-300 mb-2 text-center max-w-3xl">
+          This is an unofficial database to aid players who play GTA RP.
+        </p>
+        <p className="text-sm text-gray-400 mb-8 text-center max-w-3xl">
+          <strong>GRP Database is NOT</strong> official or affiliated with the developers of the game.
         </p>
 
         {/* Community Information Section */}
