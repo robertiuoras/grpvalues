@@ -134,8 +134,11 @@ export function HeaderFinal() {
 
               {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-600/50 z-50 max-h-96 overflow-y-auto custom-scrollbar transform transition-all duration-200 ease-out">
+                <div className="absolute right-0 top-full mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 z-50 max-h-96 overflow-y-auto custom-scrollbar transform transition-all duration-200 ease-out" style={{ display: 'block', visibility: 'visible' }}>
                   <div className="py-3">
+                    <div className="px-5 py-2 text-white bg-blue-600 text-sm font-bold mb-2">
+                      Categories: {getCategoriesWithAdmin().length}
+                    </div>
                     
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
