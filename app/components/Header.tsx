@@ -131,8 +131,9 @@ export function Header() {
 
               {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-600/50 z-50 max-h-96 overflow-y-auto custom-scrollbar">
+                <div className="absolute right-0 mt-2 w-80 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-600/50 z-[9999] max-h-96 overflow-y-auto custom-scrollbar" style={{ display: 'block', visibility: 'visible' }}>
                   <div className="py-3">
+                    <div className="px-5 py-2 text-white bg-red-500">DEBUG: Dropdown is visible!</div>
                     {getCategoriesWithAdmin().map((category, index) => (
                       <Link
                         key={category.name}
