@@ -524,8 +524,12 @@ export default function ImprovementsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <button
-                        onClick={() => toggleCompletion(improvement.id)}
-                        className="text-2xl hover:scale-110 transition-transform duration-200"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleCompletion(improvement.id);
+                        }}
+                        className="text-2xl hover:scale-110 transition-transform duration-200 p-1 rounded-full hover:bg-gray-700"
                         title={
                           improvement.isCompleted
                             ? "Mark as pending"

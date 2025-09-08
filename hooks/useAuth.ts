@@ -117,8 +117,8 @@ export function useAuth() {
     setUserRole(null);
     setUserId(null);
     
-    // Redirect to home page
-    router.push("/");
+    // Force page reload to ensure state is properly updated
+    window.location.href = "/";
   };
 
   // Check if user is admin

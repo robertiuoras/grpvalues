@@ -116,7 +116,7 @@ export default function ActiveUsersPage() {
   };
 
   // Fetch active users
-  const fetchActiveUsers = async () => {
+  const fetchActiveUsers = React.useCallback(async () => {
     setFetchLoading(true);
     setFetchError(null);
 
@@ -135,10 +135,10 @@ export default function ActiveUsersPage() {
     } finally {
       setFetchLoading(false);
     }
-  };
+  }, []);
 
   // Fetch visitor statistics
-  const fetchVisitorStats = async () => {
+  const fetchVisitorStats = React.useCallback(async () => {
     try {
       const response = await fetch("/api/admin/visitor-stats");
       if (response.ok) {
@@ -148,10 +148,10 @@ export default function ActiveUsersPage() {
     } catch (error) {
       console.error("Error fetching visitor stats:", error);
     }
-  };
+  }, []);
 
   // Cleanup stuck codes
-  const handleCleanup = async () => {
+  const handleCleanup = React.useCallback(async () => {
     setCleanupLoading(true);
     setCleanupMessage(null);
 
@@ -177,10 +177,10 @@ export default function ActiveUsersPage() {
     } finally {
       setCleanupLoading(false);
     }
-  };
+  }, [fetchActiveUsers]);
 
   // Sync templates
-  const handleSyncTemplates = async () => {
+  const handleSyncTemplates = React.useCallback(async () => {
     setIsSyncing(true);
     setSyncError(null);
     setSyncStatus("Starting sync...");
@@ -206,10 +206,10 @@ export default function ActiveUsersPage() {
     } finally {
       setIsSyncing(false);
     }
-  };
+  }, []);
 
   // Fetch last sync time
-  const fetchLastSyncTime = async () => {
+  const fetchLastSyncTime = React.useCallback(async () => {
     try {
       const response = await fetch("/api/last-sync");
       if (response.ok) {
@@ -219,7 +219,7 @@ export default function ActiveUsersPage() {
     } catch (error) {
       console.error("Error fetching last sync time:", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchActiveUsers();
@@ -233,7 +233,7 @@ export default function ActiveUsersPage() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchActiveUsers, fetchVisitorStats, fetchLastSyncTime]);
 
   return (
     <div className="min-h-screen bg-gray-900 py-8">
