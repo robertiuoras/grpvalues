@@ -5,7 +5,7 @@
 import React from "react";
 import { Inter } from "next/font/google"; // Import Inter again if you need its class here directly
 import "./globals.css"; // Ensure your global styles are imported
-import { Header } from "./components/Header"; // FIX: Changed to a named import for Header
+import { HeaderNew as Header } from "./components/HeaderNew"; // FIX: Changed to a named import for Header
 import { SpeedInsights } from "@vercel/speed-insights/next"; // Import SpeedInsights
 import { Analytics } from "@vercel/analytics/react"; // Import Analytics
 import { useEffect } from "react";
