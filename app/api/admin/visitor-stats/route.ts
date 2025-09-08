@@ -6,7 +6,6 @@ export async function GET(request: NextRequest) {
     // Get client IP
     const clientIP = request.headers.get("x-forwarded-for") || 
                      request.headers.get("x-real-ip") || 
-                     request.ip || 
                      "unknown";
 
     // Get user agent
