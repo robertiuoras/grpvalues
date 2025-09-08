@@ -10,6 +10,7 @@ import {
   Shirt, // Re-added Shirt icon for Luminous Clothing
   HelpCircle, // Add HelpCircle icon for Beginner Help
   Shield, // Add Shield icon for Admin Login
+  MessageSquare, // Add MessageSquare icon for Suggestions
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -93,6 +94,12 @@ export default function HomePage() {
       path: "/values/luminousclothing",
       description: "Check values for luminous shirts and pants.",
       icon: <Shirt size={40} className="text-yellow-400" />,
+    },
+    {
+      name: "Suggestions",
+      path: "/suggestions",
+      description: "Share your ideas and suggestions to improve GRP Database.",
+      icon: <MessageSquare size={40} className="text-green-400" />,
     },
   ];
 

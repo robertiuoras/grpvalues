@@ -18,10 +18,7 @@ export default function BeginnerHelpPage() {
     );
   }
 
-  // If not authenticated, redirect to login
-  if (!isAuthenticated) {
-    return null;
-  }
+  // Page is now public - no authentication required
 
   const handleButtonClick = (section: string) => {
     setActiveSection(section);
