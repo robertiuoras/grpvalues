@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
@@ -12,6 +12,25 @@ export function HeaderNew() {
 
   // Debug: Log when component renders
   console.log('HeaderNew component rendered, isDropdownOpen:', isDropdownOpen, 'isAdmin:', isAdmin);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   const categories = [
     { name: "Items", path: "/values/items", isAdmin: false },
@@ -67,7 +86,7 @@ export function HeaderNew() {
           {/* Left side - Logo/Home link */}
           <div className="flex items-center">
             {renderHomeLink(
-              "GRP Database (NEW)",
+              "GRP Database",
               "text-2xl font-bold text-blue-400 hover:text-blue-300 transition-colors duration-300"
             )}
           </div>
@@ -88,7 +107,7 @@ export function HeaderNew() {
           {/* Right side - Navigation and Admin Auth */}
           <div className="flex items-center space-x-4">
             {/* Categories Dropdown - Bigger and nicer */}
-            <div className="relative">
+              <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => {
                   console.log('Categories button clicked, current state:', isDropdownOpen);
@@ -116,7 +135,7 @@ export function HeaderNew() {
 
               {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-red-600 border-4 border-yellow-400 rounded-xl shadow-2xl z-[9999] max-h-96 overflow-y-auto" style={{ display: 'block', visibility: 'visible', position: 'absolute' }}>
+                <div className="absolute right-0 top-full mt-2 w-80 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-600/50 z-50 max-h-96 overflow-y-auto custom-scrollbar">
                   <div className="py-3">
                     {/* Debug: Test if dropdown is rendering */}
                     <div className="px-5 py-2 text-white bg-yellow-500 text-lg font-bold mb-2">
