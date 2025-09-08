@@ -368,7 +368,7 @@ export default function BeginnerHelpPage() {
 
           <div
             onClick={() => handleButtonClick("saving-tips")}
-            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2"
+            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2 lg:col-start-1 lg:col-end-2"
           >
             <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="text-center">
@@ -387,7 +387,7 @@ export default function BeginnerHelpPage() {
 
           <div
             onClick={() => handleButtonClick("treasure")}
-            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2"
+            className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2 lg:col-start-3 lg:col-end-4"
           >
             <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-4 h-full shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="text-center">
