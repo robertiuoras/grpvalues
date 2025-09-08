@@ -477,9 +477,8 @@ const ConfirmationModal: React.FC<
 
 // Helper function to get the text content for an ad card for display and copying
 const getAdDisplayContent = (ad: Template | UserAd): string => {
-  const name = ad.name ?? "";
   const description = ad.description ?? "";
-  return `${name}\n${description}`; // Simple text with name and description
+  return description; // Only return description text
 };
 
 /**
@@ -871,6 +870,102 @@ export default function App() {
     setNewAdDescription(ad.description);
     setNewAdType(ad.type); // Set the type when editing
     setShowAddEditModal(true);
+  };
+
+  // Save a template as a saved ad
+  const saveTemplateAsAd = async (template: Template) => {
+    setAdFormLoading(true);
+    setAdFormError("");
+
+    const payload = {
+      name: template.name,
+      description: template.description,
+      type: template.type,
+      category: template.category,
+      displayCategory: template.displayCategory,
+      normalizedName: template.normalizedName,
+      normalizedDescription: template.normalizedDescription,
+      normalizedType: template.normalizedType,
+    };
+
+    try {
+      const response = await fetch('/api/saved-ads', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const responseData = await response.json();
+        
+        // Update localStorage as well
+        const updatedAds = [...mySavedAds, responseData];
+        saveToLocalStorage(updatedAds);
+        
+        // Show success message
+        setModalMessage("Template saved successfully!");
+        setIsModalConfirm(false);
+        setModalOnCancel(() => () => setShowConfirmationModal(false));
+        setModalTitle("Success");
+        setShowConfirmationModal(true);
+        
+        // Refresh the list if showing saved ads
+        if (showMyAds) {
+          await fetchMySavedAds();
+        }
+      } else {
+        // If API fails, try localStorage fallback
+        const newAd: UserAd = {
+          id: `local_${Date.now()}`,
+          ...payload,
+          clientId: 'local',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        
+        const updatedAds = [...mySavedAds, newAd];
+        setMySavedAds(updatedAds);
+        saveToLocalStorage(updatedAds);
+        setUseLocalStorage(true);
+        
+        // Show success message
+        setModalMessage("Template saved locally!");
+        setIsModalConfirm(false);
+        setModalOnCancel(() => () => setShowConfirmationModal(false));
+        setModalTitle("Success");
+        setShowConfirmationModal(true);
+      }
+    } catch (error: any) {
+      console.error("Error saving template:", error);
+      
+      // Try localStorage fallback
+      try {
+        const newAd: UserAd = {
+          id: `local_${Date.now()}`,
+          ...payload,
+          clientId: 'local',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        
+        const updatedAds = [...mySavedAds, newAd];
+        setMySavedAds(updatedAds);
+        saveToLocalStorage(updatedAds);
+        setUseLocalStorage(true);
+        
+        // Show success message
+        setModalMessage("Template saved locally!");
+        setIsModalConfirm(false);
+        setModalOnCancel(() => () => setShowConfirmationModal(false));
+        setModalTitle("Success");
+        setShowConfirmationModal(true);
+      } catch (localError) {
+        setAdFormError("Error saving template. Please try again.");
+        console.error("Error saving to localStorage:", localError);
+      }
+    } finally {
+      setAdFormLoading(false);
+    }
   };
 
   const resetAdForm = () => {
@@ -1719,14 +1814,24 @@ export default function App() {
                             </button>
                           </div>
                         ) : (
-                          // Show copy button for general templates
-                          <button
-                            onClick={() => handleCopy(getAdDisplayContent(t))} // Copy simplified content (name + description)
-                            className="p-1.5 rounded-full bg-gray-100 hover:bg-red-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all ease-out duration-300"
-                            title="Copy template description to clipboard"
-                          >
-                            <ClipboardIcon className="w-4 h-4 text-red-600" />
-                          </button>
+                          // Show copy and save buttons for general templates
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all ease-out duration-300">
+                            <button
+                              onClick={() => handleCopy(getAdDisplayContent(t))} // Copy description only
+                              className="p-1.5 rounded-full bg-gray-100 hover:bg-red-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                              title="Copy template description to clipboard"
+                            >
+                              <ClipboardIcon className="w-4 h-4 text-red-600" />
+                            </button>
+                            <button
+                              onClick={() => saveTemplateAsAd(t as Template)}
+                              disabled={adFormLoading}
+                              className="p-1.5 rounded-full bg-gray-100 hover:bg-green-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Save template to My Saved Ads"
+                            >
+                              <PlusCircleIcon className="w-4 h-4 text-green-600" />
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
