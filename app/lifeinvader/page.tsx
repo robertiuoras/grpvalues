@@ -38,7 +38,8 @@ interface UserAd {
   normalizedName: string;
   normalizedDescription: string;
   normalizedType: string;
-  userId: string; // The ID of the user who saved it
+  clientId?: string; // The client identifier (IP-based)
+  userId?: string; // Legacy field for backward compatibility
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
 }
@@ -562,6 +563,26 @@ export default function App() {
   const [newAdCategory, setNewAdCategory] = useState(""); // Kept for data structure, but not in form
   const [adFormError, setAdFormError] = useState("");
   const [adFormLoading, setAdFormLoading] = useState(false);
+  const [useLocalStorage, setUseLocalStorage] = useState(false); // Track if using localStorage fallback
+
+  // localStorage helper functions
+  const saveToLocalStorage = useCallback((ads: UserAd[]) => {
+    try {
+      localStorage.setItem('grp-saved-ads', JSON.stringify(ads));
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+    }
+  }, []);
+
+  const loadFromLocalStorage = useCallback((): UserAd[] => {
+    try {
+      const saved = localStorage.getItem('grp-saved-ads');
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
+      return [];
+    }
+  }, []);
 
   // States for custom modal
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -620,55 +641,55 @@ export default function App() {
 
   // Fetch user's saved ads
   const fetchMySavedAds = useCallback(async () => {
-    console.log(
-      "fetchMySavedAds called. isAuthenticated:",
-      isAuthenticated,
-      "userId:",
-      userId
-    ); // LOG
-    if (!isAuthenticated || !userId) {
-      console.log(
-        "fetchMySavedAds: Not authenticated or userId is missing. Skipping fetch."
-      ); // LOG
-      setMySavedAds([]);
-      return;
-    }
+    console.log("fetchMySavedAds called"); // LOG
     setLoadingMyAds(true); // Use loadingMyAds for user ads
+    
     try {
-      // Guard against userId being potentially undefined, though the above check should cover it
-      if (typeof userId !== "string" || userId === "") {
-        console.error(
-          "fetchMySavedAds: userId is not a valid string. Aborting API call."
-        ); // LOG
-        setMySavedAds([]);
-        setLoadingMyAds(false); // Reset loading state
-        return;
-      }
-      const response = await fetch(`/api/user-ads?userId=${userId}`);
+      // Try to fetch from the new saved-ads API first
+      const response = await fetch('/api/saved-ads');
       console.log("fetchMySavedAds: API response status:", response.status); // LOG
-      if (!response.ok) {
-        const errorText = await response.text(); // Capture error text from response
-        console.error("fetchMySavedAds: API response error text:", errorText); // LOG
-        throw new Error(
-          `HTTP ${response.status}: Failed to fetch saved ads. Details: ${errorText}`
-        );
+      
+      if (response.ok) {
+        const data: UserAd[] = await response.json();
+        console.log("fetchMySavedAds: Received data from API:", data); // LOG
+        setMySavedAds(data);
+        setUseLocalStorage(false);
+        
+        // Also save to localStorage as backup
+        saveToLocalStorage(data);
+      } else {
+        // If API fails, try localStorage fallback
+        console.log("fetchMySavedAds: API failed, trying localStorage fallback");
+        const localData = loadFromLocalStorage();
+        console.log("fetchMySavedAds: Loaded from localStorage:", localData);
+        setMySavedAds(localData);
+        setUseLocalStorage(true);
       }
-      const data: UserAd[] = await response.json();
-      console.log("fetchMySavedAds: Received data:", data); // LOG
-      setMySavedAds(data);
     } catch (error: any) {
-      console.error("Error fetching user ads:", error); // LOG
-      setMySavedAds([]);
-      // Use custom alert modal
-      setModalMessage(error.message || "Failed to load your ads.");
-      setIsModalConfirm(false);
-      setModalOnCancel(() => () => setShowConfirmationModal(false));
-      setModalTitle("Error");
-      setShowConfirmationModal(true);
+      console.error("Error fetching saved ads from API:", error); // LOG
+      
+      // Try localStorage fallback
+      try {
+        const localData = loadFromLocalStorage();
+        console.log("fetchMySavedAds: Using localStorage fallback:", localData);
+        setMySavedAds(localData);
+        setUseLocalStorage(true);
+      } catch (localError) {
+        console.error("Error loading from localStorage:", localError);
+        setMySavedAds([]);
+        setUseLocalStorage(false);
+        
+        // Show error modal only if both API and localStorage fail
+        setModalMessage("Failed to load your saved ads. Please try again.");
+        setIsModalConfirm(false);
+        setModalOnCancel(() => () => setShowConfirmationModal(false));
+        setModalTitle("Error");
+        setShowConfirmationModal(true);
+      }
     } finally {
-      setLoadingMyAds(false); // Finished loading for user ads
+      setLoadingMyAds(false); // Reset loading state
     }
-  }, [isAuthenticated, userId]);
+  }, [saveToLocalStorage, loadFromLocalStorage]);
 
   // Handle adding/editing a user ad
   const handleSaveAd = async () => {
@@ -676,21 +697,10 @@ export default function App() {
     setAdFormError("");
 
     console.log("handleSaveAd: Attempting to save/edit ad."); // LOG
-    console.log(
-      "handleSaveAd: userId:",
-      userId,
-      "currentAdToEdit:",
-      currentAdToEdit
-    ); // LOG
 
     if (!newAdName || !newAdDescription) {
       // Simplified required fields
       setAdFormError("Ad Name and Description are required.");
-      setAdFormLoading(false);
-      return;
-    }
-    if (!userId) {
-      setAdFormError("User not authenticated.");
       setAdFormLoading(false);
       return;
     }
@@ -709,12 +719,11 @@ export default function App() {
       normalizedName: normalizeSearchText(newAdName),
       normalizedDescription: normalizeSearchText(newAdDescription),
       normalizedType: normalizeSearchText(defaultType),
-      userId: userId,
     };
 
     try {
       const method = currentAdToEdit ? "PUT" : "POST";
-      let url = `/api/user-ads?userId=${userId}`;
+      let url = '/api/saved-ads';
       if (currentAdToEdit) {
         // Ensure currentAdToEdit.id is a string and not undefined/null
         if (
@@ -723,7 +732,7 @@ export default function App() {
         ) {
           throw new Error("Ad ID for editing is invalid.");
         }
-        url = `/api/user-ads?userId=${userId}&adId=${currentAdToEdit.id}`;
+        url = `/api/saved-ads?adId=${currentAdToEdit.id}`;
       }
 
       console.log(
@@ -734,6 +743,7 @@ export default function App() {
         "with method:",
         method
       ); // LOG
+      
       const response = await fetch(url, {
         method: method,
         headers: { "Content-Type": "application/json" },
@@ -741,40 +751,76 @@ export default function App() {
       });
       console.log("handleSaveAd: API response status:", response.status); // LOG
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("handleSaveAd: API response error data:", errorData); // LOG
-        throw new Error(errorData.message || "Failed to save ad.");
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log("handleSaveAd: Raw API response data on success:", responseData); // LOG
+        
+        // Update localStorage as well
+        const updatedAds = currentAdToEdit 
+          ? mySavedAds.map(ad => ad.id === currentAdToEdit.id ? responseData : ad)
+          : [...mySavedAds, responseData];
+        saveToLocalStorage(updatedAds);
+        
+        await fetchMySavedAds(); // Refresh the list of ads
+        setShowAddEditModal(false);
+        resetAdForm();
+      } else {
+        // If API fails, try localStorage fallback
+        console.log("handleSaveAd: API failed, using localStorage fallback");
+        
+        const newAd: UserAd = {
+          id: currentAdToEdit?.id || `local_${Date.now()}`,
+          ...payload,
+          clientId: 'local',
+          createdAt: currentAdToEdit?.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        
+        const updatedAds = currentAdToEdit 
+          ? mySavedAds.map(ad => ad.id === currentAdToEdit.id ? newAd : ad)
+          : [...mySavedAds, newAd];
+        
+        setMySavedAds(updatedAds);
+        saveToLocalStorage(updatedAds);
+        setUseLocalStorage(true);
+        
+        setShowAddEditModal(false);
+        resetAdForm();
       }
-
-      // Check the exact data received from the API after saving
-      const responseData = await response.json();
-      console.log(
-        "handleSaveAd: Raw API response data on success:",
-        responseData
-      ); // LOG
-
-      await fetchMySavedAds(); // Refresh the list of ads
-      setShowAddEditModal(false);
-      resetAdForm();
     } catch (error: any) {
-      setAdFormError(error.message || "Error saving ad.");
       console.error("Error saving ad:", error); // LOG
+      
+      // Try localStorage fallback
+      try {
+        const newAd: UserAd = {
+          id: currentAdToEdit?.id || `local_${Date.now()}`,
+          ...payload,
+          clientId: 'local',
+          createdAt: currentAdToEdit?.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        
+        const updatedAds = currentAdToEdit 
+          ? mySavedAds.map(ad => ad.id === currentAdToEdit.id ? newAd : ad)
+          : [...mySavedAds, newAd];
+        
+        setMySavedAds(updatedAds);
+        saveToLocalStorage(updatedAds);
+        setUseLocalStorage(true);
+        
+        setShowAddEditModal(false);
+        resetAdForm();
+      } catch (localError) {
+        setAdFormError("Error saving ad. Please try again.");
+        console.error("Error saving to localStorage:", localError);
+      }
     } finally {
       setAdFormLoading(false);
     }
   };
 
   const handleDeleteAd = async (adId: string) => {
-    if (!userId) {
-      // Use custom alert modal
-      setModalMessage("User not authenticated to delete ads.");
-      setIsModalConfirm(false);
-      setModalOnCancel(() => () => setShowConfirmationModal(false));
-      setModalTitle("Authentication Error");
-      setShowConfirmationModal(true);
-      return;
-    }
+    // Removed userId check since we're using IP-based storage now
     if (typeof adId !== "string" || adId === "") {
       // Use custom alert modal
       setModalMessage("Cannot delete ad: Invalid Ad ID provided.");
@@ -793,12 +839,9 @@ export default function App() {
       setShowConfirmationModal(false);
       try {
         setLoadingMyAds(true); // Indicate loading when deleting and refetching
-        const response = await fetch(
-          `/api/user-ads?userId=${userId}&adId=${adId}`,
-          {
-            method: "DELETE",
-          }
-        );
+        const response = await fetch(`/api/saved-ads?adId=${adId}`, {
+          method: "DELETE",
+        });
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -1104,47 +1147,20 @@ export default function App() {
     initializeData();
   }, []); // Run once on mount to load all data
 
-  // Effect to fetch user ads when authenticated and userId is available
+  // Effect to fetch user ads when showMyAds is true
   useEffect(() => {
-    // LOG: State before fetching user ads
-    console.log("useEffect for fetchMySavedAds. Auth State:", {
-      isAuthenticated,
-      userId,
+    console.log("useEffect for fetchMySavedAds. State:", {
       showMyAds,
-      authLoading,
-      currentLoading: loading, // Added current loading state
+      currentLoading: loading,
     });
 
-    // Ensure userId is a non-empty string before attempting to fetch
-    if (
-      !authLoading &&
-      isAuthenticated &&
-      typeof userId === "string" &&
-      userId !== "" &&
-      showMyAds
-    ) {
-      // Only fetch if showMyAds is true
-      console.log(
-        "Triggering fetchMySavedAds due to authenticated user and valid userId and showMyAds is true."
-      );
+    if (!loading && showMyAds) {
+      console.log("Triggering fetchMySavedAds due to showMyAds being true.");
       fetchMySavedAds();
-    } else if (
-      !authLoading &&
-      (!isAuthenticated || typeof userId !== "string" || userId === "")
-    ) {
-      console.log(
-        "Not authenticated or invalid userId, or auth still loading. Resetting mySavedAds."
-      );
-      setMySavedAds([]); // Clear ads if not authenticated or userId is invalid
+    } else if (!showMyAds) {
+      console.log("showMyAds is false, not fetching saved ads.");
     }
-  }, [
-    isAuthenticated,
-    userId,
-    fetchMySavedAds,
-    showMyAds,
-    authLoading,
-    loading,
-  ]); // Added authLoading, loading to dependencies
+  }, [fetchMySavedAds, showMyAds, loading]);
 
   // Effect to update `templates` when `activeCategory` changes (when search is empty)
   useEffect(() => {
@@ -1505,7 +1521,7 @@ export default function App() {
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
             >
-              {showMyAds ? "Show All Ads" : "My Saved Ads"}
+              {showMyAds ? "Show All Ads" : `My Saved Ads${useLocalStorage ? " (Local)" : ""}`}
             </button>
           )}
         </div>
