@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
@@ -10,13 +10,6 @@ export function Header() {
   const pathname = usePathname();
   const { isAdmin, logout } = useAuth();
 
-  // Debug logging
-  useEffect(() => {
-    console.log('Header render - isDropdownOpen:', isDropdownOpen, 'isAdmin:', isAdmin);
-    if (isDropdownOpen) {
-      console.log('Categories count:', getCategoriesWithAdmin().length);
-    }
-  }, [isDropdownOpen, isAdmin]);
 
   const categories = [
     { name: "Items", path: "/values/items", isAdmin: false },
@@ -105,10 +98,7 @@ export function Header() {
             {/* Categories Dropdown - Bigger and nicer */}
             <div className="relative">
               <button
-                onClick={() => {
-                  console.log('Dropdown clicked, current state:', isDropdownOpen);
-                  setIsDropdownOpen(!isDropdownOpen);
-                }}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center space-x-2 px-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 hover:scale-105 transform shadow-lg"
               >
                 <span>Categories</span>
@@ -131,9 +121,8 @@ export function Header() {
 
               {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-600/50 z-[9999] max-h-96 overflow-y-auto custom-scrollbar" style={{ display: 'block', visibility: 'visible' }}>
+                <div className="absolute right-0 mt-2 w-80 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-600/50 z-50 max-h-96 overflow-y-auto custom-scrollbar">
                   <div className="py-3">
-                    <div className="px-5 py-2 text-white bg-red-500">DEBUG: Dropdown is visible!</div>
                     {getCategoriesWithAdmin().map((category, index) => (
                       <Link
                         key={category.name}
