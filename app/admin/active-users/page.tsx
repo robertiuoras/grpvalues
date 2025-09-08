@@ -373,7 +373,7 @@ export default function ActiveUsersPage() {
             <Activity className="text-green-400" />
             Recent Activity
           </h2>
-          <div className="space-y-3 max-h-64 overflow-y-auto">
+          <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
             {visitorStats.recentActivity.length > 0 ? (
               visitorStats.recentActivity.map((activity, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
@@ -440,7 +440,7 @@ export default function ActiveUsersPage() {
             User Suggestions ({suggestions.length})
           </h2>
           
-          <div className="space-y-4 max-h-96 overflow-y-auto">
+          <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
             {suggestions.length > 0 ? (
               suggestions.map((suggestion) => (
                 <div key={suggestion.id} className="bg-gray-700 rounded-lg p-4 border border-gray-600">

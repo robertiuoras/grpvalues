@@ -120,21 +120,36 @@ export function Header() {
 
               {/* Dropdown Menu */}
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-gray-800 rounded-xl shadow-xl border border-gray-700 z-50 max-h-96 overflow-y-auto">
-                  <div className="py-2">
-                    {getCategoriesWithAdmin().map((category) => (
+                <div className="absolute right-0 mt-2 w-80 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-600/50 z-50 max-h-96 overflow-y-auto custom-scrollbar">
+                  <div className="py-3">
+                    {getCategoriesWithAdmin().map((category, index) => (
                       <Link
                         key={category.name}
                         href={category.path}
                         onClick={() => setIsDropdownOpen(false)}
-                        className={`block px-4 py-3 text-sm transition-colors duration-200 hover:bg-gray-700 ${
+                        className={`group flex items-center px-5 py-3 text-sm transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 hover:scale-[1.02] ${
                           category.isAdmin
-                            ? "text-yellow-400 font-semibold border-b border-gray-600 mb-1"
-                            : "text-gray-300 hover:text-white"
-                        }`}
+                            ? "text-yellow-400 font-semibold border-b border-gray-600/50 mb-2 pb-3 hover:text-yellow-300"
+                            : "text-gray-200 hover:text-white"
+                        } ${index === 0 && category.isAdmin ? 'mt-0' : ''}`}
                       >
-                        {category.isAdmin && "🔧 "}
-                        {category.name}
+                        <span className="flex-1 font-medium tracking-wide">
+                          {category.isAdmin && "🔧 "}
+                          {category.name}
+                        </span>
+                        <svg
+                          className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-blue-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
                       </Link>
                     ))}
                   </div>

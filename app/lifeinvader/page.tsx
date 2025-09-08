@@ -1945,7 +1945,7 @@ export default function App() {
 
       {/* Ad Helper Screen */}
       {showAIAssistant && (
-        <div className="fixed inset-0 bg-gray-900 z-50 overflow-y-auto">
+        <div className="fixed inset-0 bg-gray-900 z-50 overflow-y-auto custom-scrollbar">
           <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-950 to-blue-900">
             {/* Header */}
             <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
