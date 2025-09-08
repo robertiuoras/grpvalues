@@ -185,6 +185,12 @@ export default function ImprovementsPage() {
         },
         body: JSON.stringify({
           id,
+          title: improvement.title,
+          description: improvement.description,
+          priority: improvement.priority,
+          category: improvement.category,
+          assignedTo: improvement.assignedTo,
+          dueDate: improvement.dueDate,
           isCompleted: newCompletionStatus,
         }),
       });
@@ -204,7 +210,8 @@ export default function ImprovementsPage() {
           )
         );
       } else {
-        console.error("Failed to update completion status");
+        const errorData = await response.json();
+        console.error("Failed to update completion status:", errorData.error);
       }
     } catch (error) {
       console.error("Error updating completion status:", error);
