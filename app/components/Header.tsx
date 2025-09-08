@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
@@ -9,6 +9,14 @@ export function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const pathname = usePathname();
   const { isAdmin, logout } = useAuth();
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Header render - isDropdownOpen:', isDropdownOpen, 'isAdmin:', isAdmin);
+    if (isDropdownOpen) {
+      console.log('Categories count:', getCategoriesWithAdmin().length);
+    }
+  }, [isDropdownOpen, isAdmin]);
 
   const categories = [
     { name: "Items", path: "/values/items", isAdmin: false },
@@ -97,7 +105,10 @@ export function Header() {
             {/* Categories Dropdown - Bigger and nicer */}
             <div className="relative">
               <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                onClick={() => {
+                  console.log('Dropdown clicked, current state:', isDropdownOpen);
+                  setIsDropdownOpen(!isDropdownOpen);
+                }}
                 className="flex items-center space-x-2 px-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 hover:scale-105 transform shadow-lg"
               >
                 <span>Categories</span>
