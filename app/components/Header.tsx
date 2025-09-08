@@ -10,7 +10,6 @@ export function Header() {
   const pathname = usePathname();
   const { isAdmin, logout } = useAuth();
 
-
   const categories = [
     { name: "Items", path: "/values/items", isAdmin: false },
     { name: "Cars", path: "/values/cars", isAdmin: false },
@@ -51,22 +50,12 @@ export function Header() {
     return categories;
   };
 
-  const renderHomeLink = (content: React.ReactNode, className: string) => {
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (pathname === "/") {
-        e.preventDefault();
-      }
-      setIsDropdownOpen(false);
-    };
-
-    return (
-      <Link href="/" className={className} onClick={handleClick}>
-        {content}
-      </Link>
-    );
-  };
-
-
+  // Helper function to render home link
+  const renderHomeLink = (text: string, className: string) => (
+    <Link href="/" className={className}>
+      {text}
+    </Link>
+  );
 
   return (
     <header className="bg-gray-900 shadow-lg border-b border-gray-700 sticky top-0 z-50">
@@ -127,6 +116,7 @@ export function Header() {
                     <div className="px-5 py-2 text-white bg-red-500 text-xs mb-2">
                       DEBUG: Dropdown is visible! Categories: {getCategoriesWithAdmin().length}
                     </div>
+                    
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
                         <Link
@@ -173,7 +163,6 @@ export function Header() {
                 Log Out
               </button>
             )}
-
           </div>
         </div>
       </div>
