@@ -11,15 +11,21 @@ export default function LoginPage() {
     isVerifying: false,
     error: "",
   });
-  const { login, isAdmin } = useAuth();
+  const [isClient, setIsClient] = useState(false);
+  const { login, isAdmin, isLoading } = useAuth();
   const router = useRouter();
+
+  // Ensure this only runs on client side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Redirect if already authenticated as admin
   useEffect(() => {
-    if (isAdmin) {
+    if (isClient && isAdmin && !isLoading) {
       router.push("/admin/active-users");
     }
-  }, [isAdmin, router]);
+  }, [isClient, isAdmin, isLoading, router]);
 
   const handleAccessCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +53,18 @@ export default function LoginPage() {
       });
     }
   };
+
+  // Show loading while checking authentication
+  if (!isClient || isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p className="text-gray-300">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
