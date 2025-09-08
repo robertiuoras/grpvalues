@@ -2,15 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
-import Cookies from "js-cookie";
 
 export function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
-  const { isAdmin } = useAuth();
+  const { isAdmin, logout } = useAuth();
 
   const categories = [
     { name: "Cars", path: "/values/cars", isAdmin: false },
@@ -67,19 +65,6 @@ export function Header() {
     );
   };
 
-  const handleLogout = async (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    console.log("Client: Admin logout clicked, clearing cookies and redirecting.");
-
-    // Clear all authentication cookies
-    Cookies.remove("isAuthenticated");
-    Cookies.remove("authTimestamp");
-    Cookies.remove("userRole");
-    Cookies.remove("userId");
-
-    // Redirect to home page
-    router.push("/");
-  };
 
 
   return (
@@ -159,13 +144,12 @@ export function Header() {
 
             {/* Admin Logout - Only show for authenticated admins */}
             {isAdmin && (
-              <Link
-                href="#"
-                onClick={handleLogout}
+              <button
+                onClick={logout}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-gray-700 transition-colors duration-200"
               >
                 Log Out
-              </Link>
+              </button>
             )}
 
           </div>
