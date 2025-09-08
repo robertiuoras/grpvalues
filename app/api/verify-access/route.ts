@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
 
     // For development test codes, skip the transaction
     if (cleanedCode === "TEST123" || cleanedCode === "DEMO" || cleanedCode === "8EB-472-D9") {
+      console.log(`API: Admin code ${cleanedCode} recognized, granting admin access`);
       transactionResult = {
         success: true,
         userRole: "admin",
@@ -94,31 +95,31 @@ export async function POST(request: NextRequest) {
         userId: transactionResult.userId,
       });
 
-      // Set authentication cookies
+      // Set authentication cookies (accessible to client-side)
       response.cookies.set("isAuthenticated", "true", {
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-        httpOnly: true,
+        httpOnly: false, // Allow client-side access
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
       });
 
       response.cookies.set("authTimestamp", new Date().getTime().toString(), {
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-        httpOnly: true,
+        httpOnly: false, // Allow client-side access
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
       });
 
       response.cookies.set("userRole", transactionResult.userRole, {
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-        httpOnly: true,
+        httpOnly: false, // Allow client-side access
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
       });
 
       response.cookies.set("userId", transactionResult.userId, {
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-        httpOnly: true,
+        httpOnly: false, // Allow client-side access
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
       });

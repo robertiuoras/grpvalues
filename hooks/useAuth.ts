@@ -65,6 +65,7 @@ export function useAuth() {
 
       const data = await response.json();
       console.log("useAuth: Login response:", data);
+      console.log("useAuth: Response status:", response.status);
 
       if (response.ok && data.success) {
         // Only set cookies for admin users
