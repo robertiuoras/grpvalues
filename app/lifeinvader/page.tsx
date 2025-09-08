@@ -1539,16 +1539,16 @@ export default function App() {
           </div>
         )}
 
-        {isAuthenticated && showMyAds && (
+        {showMyAds && (
           <div className="flex justify-center mb-8">
             <button
               onClick={() => {
                 resetAdForm();
                 setShowAddEditModal(true);
               }}
-              className="px-5 py-2.5 rounded-full font-medium text-sm bg-red-600 text-white hover:bg-red-700 transition-colors duration-300 flex items-center gap-2 shadow-md"
+              className="px-6 py-3 rounded-full font-semibold text-sm bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              <PlusCircleIcon className="w-4 h-4" /> Add New Ad
+              <PlusCircleIcon className="w-5 h-5" /> Add New Ad
             </button>
           </div>
         )}
@@ -1585,15 +1585,40 @@ export default function App() {
               Loading templates, please wait...
             </p>
           ) : filteredTemplates.length === 0 ? (
-            <p
-              className={`text-center py-20 text-xl font-medium ${
-                isDarkMode ? "text-gray-400" : "text-gray-500"
-              }`}
-            >
-              {showMyAds
-                ? "You haven't saved any ads yet."
-                : "No templates found matching your criteria."}
-            </p>
+            <div className="text-center py-20">
+              {showMyAds ? (
+                <div className="max-w-md mx-auto">
+                  <div className="mb-6">
+                    <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+                      <PlusCircleIcon className="w-12 h-12 text-blue-600" />
+                    </div>
+                    <h3 className={`text-2xl font-bold mb-2 ${isDarkMode ? "text-gray-200" : "text-gray-800"}`}>
+                      No Saved Ads Yet
+                    </h3>
+                    <p className={`text-lg ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      Create your first ad to get started!
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      resetAdForm();
+                      setShowAddEditModal(true);
+                    }}
+                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-full hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center gap-2 mx-auto shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    <PlusCircleIcon className="w-5 h-5" /> Create Your First Ad
+                  </button>
+                </div>
+              ) : (
+                <p
+                  className={`text-xl font-medium ${
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
+                  No templates found matching your criteria.
+                </p>
+              )}
+            </div>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5">
@@ -1609,16 +1634,26 @@ export default function App() {
                   return (
                     <div
                       key={itemId} // Use robust itemId for key
-                      className={`relative p-4 border rounded-lg shadow-md hover:shadow-lg hover:border-red-400 transition-all duration-300 transform hover:-translate-y-1 flex flex-col group min-h-[200px] ${
-                        isDarkMode
-                          ? "bg-gradient-to-br from-gray-600 to-gray-700 text-gray-100 border-gray-500"
-                          : "bg-gradient-to-br from-white to-gray-50 text-gray-800 border-gray-200"
+                      className={`relative p-4 border rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col group min-h-[200px] ${
+                        showMyAds
+                          ? isDarkMode
+                            ? "bg-gradient-to-br from-blue-900/30 to-purple-900/30 text-gray-100 border-blue-500/50 hover:border-blue-400"
+                            : "bg-gradient-to-br from-blue-50 to-purple-50 text-gray-800 border-blue-200 hover:border-blue-300"
+                          : isDarkMode
+                          ? "bg-gradient-to-br from-gray-600 to-gray-700 text-gray-100 border-gray-500 hover:border-red-400"
+                          : "bg-gradient-to-br from-white to-gray-50 text-gray-800 border-gray-200 hover:border-red-400"
                       }`}
                     >
                       <div className="flex-grow mb-3">
                         <h3
                           className={`font-bold text-lg mb-2 leading-tight overflow-hidden text-ellipsis whitespace-nowrap ${
-                            isDarkMode ? "text-red-400" : "text-red-700"
+                            showMyAds
+                              ? isDarkMode
+                                ? "text-blue-400"
+                                : "text-blue-700"
+                              : isDarkMode
+                              ? "text-red-400"
+                              : "text-red-700"
                           }`}
                         >
                           {t.name ?? ""}{" "}
@@ -1639,7 +1674,11 @@ export default function App() {
                             <button
                               onClick={() => toggleDescriptionExpansion(itemId)}
                               className={`text-sm font-medium mt-2 transition-colors duration-200 ${
-                                isDarkMode
+                                showMyAds
+                                  ? isDarkMode
+                                    ? "text-blue-400 hover:text-blue-300"
+                                    : "text-blue-600 hover:text-blue-700"
+                                  : isDarkMode
                                   ? "text-red-400 hover:text-red-300"
                                   : "text-red-600 hover:text-red-700"
                               }`}
