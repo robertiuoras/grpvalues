@@ -2,15 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
-import Cookies from "js-cookie";
 
 export function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
-  const { isAuthenticated, isLoading, userRole, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
 
   const categories = [
     { name: "Cars", path: "/values/cars", isAdmin: false },
@@ -67,19 +65,6 @@ export function Header() {
     );
   };
 
-  const handleLogout = async (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    console.log("Client: Admin logout clicked, clearing cookies and redirecting.");
-
-    // Clear all authentication cookies
-    Cookies.remove("isAuthenticated");
-    Cookies.remove("authTimestamp");
-    Cookies.remove("userRole");
-    Cookies.remove("userId");
-
-    // Redirect to home page
-    router.push("/");
-  };
 
   return (
     <header className="bg-gray-900 shadow-lg border-b border-gray-700 sticky top-0 z-50">
@@ -114,9 +99,6 @@ export function Header() {
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center space-x-2 px-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 hover:scale-105 transform shadow-lg"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
                 <span>Categories</span>
                 <svg
                   className={`w-4 h-4 transition-transform duration-200 ${
@@ -159,26 +141,6 @@ export function Header() {
               )}
             </div>
 
-            {/* Admin Panel Link - Only show for authenticated admins */}
-            {isAdmin && (
-              <Link
-                href="/admin/active-users"
-                className="px-4 py-2 rounded-lg text-sm font-medium text-yellow-400 hover:text-yellow-300 hover:bg-gray-700 transition-colors duration-200"
-              >
-                🔧 Admin
-              </Link>
-            )}
-
-            {/* Admin Logout - Only show for authenticated admins */}
-            {isAdmin && (
-              <Link
-                href="#"
-                onClick={handleLogout}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-gray-700 transition-colors duration-200"
-              >
-                Log Out
-              </Link>
-            )}
           </div>
         </div>
       </div>

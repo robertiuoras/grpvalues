@@ -41,9 +41,10 @@ export function useAuth() {
         console.log("useAuth: Admin authentication found");
       }
 
-      setIsAuthenticated(userIsAuthenticated);
-      setUserRole(role);
-      setUserId(currentUserId);
+      // Only update state if values have changed to prevent infinite re-renders
+      setIsAuthenticated(prev => prev !== userIsAuthenticated ? userIsAuthenticated : prev);
+      setUserRole(prev => prev !== role ? role : prev);
+      setUserId(prev => prev !== currentUserId ? currentUserId : prev);
       setIsLoading(false);
     };
 
