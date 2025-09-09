@@ -137,6 +137,7 @@ export function HeaderFinal() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => {
+                  alert('Categories button clicked!');
                   console.log('Categories button clicked, current state:', isDropdownOpen);
                   console.log('Setting dropdown to:', !isDropdownOpen);
                   setIsDropdownOpen(!isDropdownOpen);
