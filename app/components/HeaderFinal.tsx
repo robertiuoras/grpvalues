@@ -149,8 +149,11 @@ export function HeaderFinal() {
 
               {/* Dropdown Menu - Better positioning and visibility */}
               {isDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto z-[9999]">
-                  <div className="py-3">
+                <>
+                  {/* Backdrop to ensure visibility */}
+                  <div className="fixed inset-0 z-[99998]" onClick={() => setIsDropdownOpen(false)} />
+                  <div className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto z-[99999]">
+                    <div className="py-3">
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
                         <Link
@@ -183,8 +186,9 @@ export function HeaderFinal() {
                         </Link>
                       );
                     })}
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
 
