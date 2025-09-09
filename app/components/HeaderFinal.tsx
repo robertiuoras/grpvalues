@@ -216,29 +216,49 @@ export function HeaderFinal() {
                 </svg>
               </button>
 
-              {/* Dropdown Menu - Better positioning and visibility */}
+              {/* Dropdown Menu - Fixed positioning for visibility */}
               {isDropdownOpen && (
-                <div 
-                  className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto z-[99999]"
-                  style={{ 
-                    position: 'absolute',
-                    top: '100%',
-                    right: '0',
-                    marginTop: '8px',
-                    width: '320px',
-                    backgroundColor: '#1f2937',
-                    borderRadius: '12px',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                    border: '2px solid #6b7280',
-                    maxHeight: '384px',
-                    overflowY: 'auto',
-                    zIndex: 99999
-                  }}
-                >
-                  <div className="py-3">
-                    <div className="px-4 py-2 text-white font-bold bg-red-500">
-                      DROPDOWN IS RENDERED! Categories: {getCategoriesWithAdmin().length}
-                    </div>
+                <>
+                  {/* Backdrop */}
+                  <div
+                    style={{
+                      position: "fixed",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      zIndex: 99998,
+                    }}
+                    onClick={() => setIsDropdownOpen(false)}
+                  />
+                  
+                  {/* Dropdown */}
+                  <div
+                    style={{
+                      position: "fixed",
+                      top: "80px",
+                      right: "20px",
+                      width: "320px",
+                      backgroundColor: "#1f2937",
+                      borderRadius: "12px",
+                      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                      border: "2px solid #6b7280",
+                      maxHeight: "400px",
+                      overflowY: "auto",
+                      zIndex: 99999,
+                    }}
+                  >
+                    <div className="py-3">
+                      <div className="px-4 py-2 text-white font-bold bg-red-500 flex justify-between items-center">
+                        <span>DROPDOWN IS RENDERED! Categories: {getCategoriesWithAdmin().length}</span>
+                        <button
+                          onClick={() => setIsDropdownOpen(false)}
+                          className="ml-2 text-white hover:text-gray-300"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
                         <Link
@@ -271,8 +291,9 @@ export function HeaderFinal() {
                         </Link>
                       );
                     })}
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
 
