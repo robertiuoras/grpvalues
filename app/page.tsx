@@ -24,11 +24,41 @@ interface CategoryCard {
   icon: React.ReactNode;
 }
 
+interface UpdateMessage {
+  message: string;
+  isActive: boolean;
+  lastUpdated: string;
+}
+
 export default function HomePage() {
   const router = useRouter();
   const { isAdmin } = useAuth();
   const [isClient, setIsClient] = useState(false);
   const [showUpdatePopup, setShowUpdatePopup] = useState(true);
+  const [updateMessage, setUpdateMessage] = useState<UpdateMessage>({
+    message:
+      "🎉 <strong>Public Access Added!</strong> GRP Database is now fully public - no access codes required!",
+    isActive: true,
+    lastUpdated: "",
+  });
+
+  // Fetch update message from API
+  useEffect(() => {
+    const fetchUpdateMessage = async () => {
+      try {
+        const response = await fetch("/api/admin/update-message");
+        if (response.ok) {
+          const data = await response.json();
+          setUpdateMessage(data);
+        }
+      } catch (error) {
+        console.error("Error fetching update message:", error);
+        // Keep default message on error
+      }
+    };
+
+    fetchUpdateMessage();
+  }, []);
 
   // Ensure this only runs on client side
   useEffect(() => {
@@ -135,7 +165,7 @@ export default function HomePage() {
       </div>
 
       {/* Update Popup - Top Left, under How to Join button - Stays in place when scrolling */}
-      {isClient && showUpdatePopup && (
+      {isClient && showUpdatePopup && updateMessage.isActive && (
         <div className="fixed top-40 left-4 z-50 max-w-sm">
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-xl shadow-2xl border border-blue-400/50 backdrop-blur-sm">
             <div className="flex items-start justify-between gap-3">
@@ -144,17 +174,28 @@ export default function HomePage() {
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                   <h3 className="font-bold text-sm">New Update!</h3>
                 </div>
-                     <p className="text-xs text-blue-100 leading-relaxed">
-                       🎉 <strong>Public Access Added!</strong> GRP Database is now fully public - no access codes required!
-                     </p>
+                <p
+                  className="text-xs text-blue-100 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: updateMessage.message }}
+                />
               </div>
               <button
                 onClick={() => setShowUpdatePopup(false)}
                 className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200"
                 aria-label="Close popup"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -167,10 +208,15 @@ export default function HomePage() {
           Welcome to GRP Database
         </h1>
         <p className="text-xl text-gray-300 mb-2 text-center max-w-3xl">
-          GRP Database is an unofficial community hub designed to make GTA Roleplay easier and more enjoyable. Our goal is to gather valuable information in one place — from item values and clothing options to beginner tips and guides — helping players quickly find what they need while playing on the server.
+          GRP Database is an unofficial community hub designed to make GTA
+          Roleplay easier and more enjoyable. Our goal is to gather valuable
+          information in one place — from item values and clothing options to
+          beginner tips and guides — helping players quickly find what they need
+          while playing on the server.
         </p>
         <p className="text-sm text-gray-400 mb-8 text-center max-w-3xl">
-          <strong>GRP Database is NOT</strong> official or affiliated with the developers of the game.
+          <strong>GRP Database is NOT</strong> official or affiliated with the
+          developers of the game.
         </p>
 
         {/* Community Information Section */}
@@ -260,23 +306,28 @@ export default function HomePage() {
         {/* Admin Login Section - Always show on client side */}
         {isClient && (
           <div className="w-full max-w-2xl">
-            <div className={`rounded-xl p-6 border ${
-              isAdmin 
-                ? "bg-gradient-to-r from-green-800 to-green-700 border-green-600" 
-                : "bg-gradient-to-r from-gray-800 to-gray-700 border-gray-600"
-            }`}>
+            <div
+              className={`rounded-xl p-6 border ${
+                isAdmin
+                  ? "bg-gradient-to-r from-green-800 to-green-700 border-green-600"
+                  : "bg-gradient-to-r from-gray-800 to-gray-700 border-gray-600"
+              }`}
+            >
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <Shield className={`w-6 h-6 ${isAdmin ? "text-green-400" : "text-yellow-400"}`} />
+                  <Shield
+                    className={`w-6 h-6 ${
+                      isAdmin ? "text-green-400" : "text-yellow-400"
+                    }`}
+                  />
                   <h3 className="text-xl font-bold text-white">
                     {isAdmin ? "Admin Access" : "Admin Access"}
                   </h3>
                 </div>
                 <p className="text-gray-300 text-sm mb-4">
-                  {isAdmin 
+                  {isAdmin
                     ? "You are currently logged in as an administrator. Access the admin panel to manage the database and system settings."
-                    : "Are you an administrator? Access the admin panel to manage the database and system settings."
-                  }
+                    : "Are you an administrator? Access the admin panel to manage the database and system settings."}
                 </p>
                 <div className="flex gap-3 justify-center">
                   {isAdmin ? (

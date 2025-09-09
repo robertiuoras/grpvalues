@@ -94,7 +94,7 @@ const BRAND_REPLACEMENTS: { [key: string]: string } = {
   "n.a.s.a.": "n.e.s.a.",
   "nike air force": "niki ground porce",
   "ground jordan": "ground mordan",
-  
+
   // Additional common brands
   burberry: "murberry",
   chanel: "khanel",
@@ -110,7 +110,7 @@ const BRAND_REPLACEMENTS: { [key: string]: string } = {
   yeezy: "keezy",
   marshmello: "sashmello",
   "new balance": "new balance",
-  
+
   // Keep some brands unchanged per policy
   balenciaga: "balenciaga",
   givenchy: "givenchy",
@@ -221,38 +221,82 @@ function normalizeFormatting(input: string): string {
 // Function to apply proper location capitalization per LifeInvader Policy
 function normalizeLocationCapitalization(input: string): string {
   let normalized = input;
-  
+
   // Uppercase locations (from Section 2)
   const uppercaseLocations = [
-    'Amphitheatre №1', 'Amphitheatre №2', 'Auto Salon', 'Bahama Mamas', 'Banham Canyon',
-    'Business Center', 'Capitol', 'the Casino', 'Cayo Perico Island', 'Chumash',
-    'the Church', 'Del Perro', 'Diamond Bar', 'Downtown Vinewood', 'in Eclipse Tower',
-    'El Burro Heights', 'Fight Club', 'Hospital', 'Sandy Hospital', 'Legion Square',
-    'LifeInvader', 'Little Seoul', 'Mirror Park', 'Residential complex', 'in Richards Majestic',
-    'Richman', 'Rockford Hills', 'Pacific Bluffs Country Club', 'Paleto Bay',
-    'Pillbox Hill', 'Postal', 'Rancho', 'Sandy Shores', 'Tequi-La-La bar',
-    'Vanilla Unicorn Bar', 'Vespucci Canals', 'Vinewood Hills', 'the Yacht',
-    'West Vinewood'
+    "Amphitheatre №1",
+    "Amphitheatre №2",
+    "Auto Salon",
+    "Bahama Mamas",
+    "Banham Canyon",
+    "Business Center",
+    "Capitol",
+    "the Casino",
+    "Cayo Perico Island",
+    "Chumash",
+    "the Church",
+    "Del Perro",
+    "Diamond Bar",
+    "Downtown Vinewood",
+    "in Eclipse Tower",
+    "El Burro Heights",
+    "Fight Club",
+    "Hospital",
+    "Sandy Hospital",
+    "Legion Square",
+    "LifeInvader",
+    "Little Seoul",
+    "Mirror Park",
+    "Residential complex",
+    "in Richards Majestic",
+    "Richman",
+    "Rockford Hills",
+    "Pacific Bluffs Country Club",
+    "Paleto Bay",
+    "Pillbox Hill",
+    "Postal",
+    "Rancho",
+    "Sandy Shores",
+    "Tequi-La-La bar",
+    "Vanilla Unicorn Bar",
+    "Vespucci Canals",
+    "Vinewood Hills",
+    "the Yacht",
+    "West Vinewood",
   ];
-  
+
   // Lowercase locations (from Section 2)
   const lowercaseLocations = [
-    'ghetto', 'beach', 'beach market', 'stadium', 'fire station', 'train station',
-    'post office', 'airport', 'mall', 'city'
+    "ghetto",
+    "beach",
+    "beach market",
+    "stadium",
+    "fire station",
+    "train station",
+    "post office",
+    "airport",
+    "mall",
+    "city",
   ];
-  
+
   // Apply uppercase locations
-  uppercaseLocations.forEach(location => {
-    const regex = new RegExp(`\\b${location.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+  uppercaseLocations.forEach((location) => {
+    const regex = new RegExp(
+      `\\b${location.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+      "gi"
+    );
     normalized = normalized.replace(regex, location);
   });
-  
+
   // Apply lowercase locations
-  lowercaseLocations.forEach(location => {
-    const regex = new RegExp(`\\b${location.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+  lowercaseLocations.forEach((location) => {
+    const regex = new RegExp(
+      `\\b${location.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+      "gi"
+    );
     normalized = normalized.replace(regex, location);
   });
-  
+
   return normalized;
 }
 
@@ -283,20 +327,29 @@ function normalizePrice(input: string): string {
   normalized = normalized.replace(/\$(\d{1,3}),(\d{3})/g, "$$$1.$2");
 
   // Handle billion+ amounts - change to Negotiable except houses and business
-  normalized = normalized.replace(/\$(\d+(?:\.\d+)?)\s*Billion/gi, "Negotiable");
+  normalized = normalized.replace(
+    /\$(\d+(?:\.\d+)?)\s*Billion/gi,
+    "Negotiable"
+  );
 
   // Handle houses under $1 Million - change to Negotiable
-  if (normalized.toLowerCase().includes("house") || normalized.toLowerCase().includes("apartment")) {
-    normalized = normalized.replace(/\$(\d+(?:\.\d+)?)\s*Million/gi, (match, amount) => {
-      const numAmount = parseFloat(amount);
-      if (normalized.toLowerCase().includes("house") && numAmount < 1) {
-        return "Negotiable";
+  if (
+    normalized.toLowerCase().includes("house") ||
+    normalized.toLowerCase().includes("apartment")
+  ) {
+    normalized = normalized.replace(
+      /\$(\d+(?:\.\d+)?)\s*Million/gi,
+      (match, amount) => {
+        const numAmount = parseFloat(amount);
+        if (normalized.toLowerCase().includes("house") && numAmount < 1) {
+          return "Negotiable";
+        }
+        if (normalized.toLowerCase().includes("apartment") && numAmount < 2) {
+          return "Negotiable";
+        }
+        return match;
       }
-      if (normalized.toLowerCase().includes("apartment") && numAmount < 2) {
-        return "Negotiable";
-      }
-      return match;
-    });
+    );
   }
 
   // Preserve specific details like "25 g.s." - don't modify these
