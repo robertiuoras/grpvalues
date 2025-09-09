@@ -136,20 +136,15 @@ export function HeaderFinal() {
             {/* Categories Dropdown - Bigger and nicer */}
             <div className="relative" ref={dropdownRef}>
               <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                onClick={() => {
                   console.log('Categories button clicked, current state:', isDropdownOpen);
                   console.log('Setting dropdown to:', !isDropdownOpen);
                   setIsDropdownOpen(!isDropdownOpen);
                 }}
-                className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-semibold text-white transition-all duration-200 shadow-lg ${
-                  isDropdownOpen 
-                    ? 'bg-gradient-to-r from-purple-700 to-blue-700' 
-                    : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
-                }`}
+                className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
+                style={{ zIndex: 1000 }}
               >
-                <span>{t('navigation.categories')}</span>
+                <span>Categories</span>
                 <svg
                   className={`w-4 h-4 transition-transform duration-200 ${
                     isDropdownOpen ? "rotate-180" : ""
