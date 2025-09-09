@@ -93,6 +93,9 @@ export const translations: Record<Language, Translation> = {
     'page_titles.suggestions': 'Suggestions',
     'page_titles.improvements': 'Improvements',
     'page_titles.admin_panel': 'Admin Panel',
+    'events.school.title': 'School Event',
+    'events.school.description': 'Chemistry color mixer for school events.',
+    'events.school.chemistry': 'Chemistry',
   },
   de: {
     'welcome.title': 'Willkommen bei GRP Database',
@@ -161,6 +164,9 @@ export const translations: Record<Language, Translation> = {
     'page_titles.suggestions': 'Vorschläge',
     'page_titles.improvements': 'Verbesserungen',
     'page_titles.admin_panel': 'Admin Panel',
+    'events.school.title': 'Schulveranstaltung',
+    'events.school.description': 'Chemie-Farbmischer für Schulveranstaltungen.',
+    'events.school.chemistry': 'Chemie',
   },
   rs: {
     'welcome.title': 'Добродошао у GRP Database',
@@ -229,6 +235,9 @@ export const translations: Record<Language, Translation> = {
     'page_titles.suggestions': 'Предлози',
     'page_titles.improvements': 'Побољшања',
     'page_titles.admin_panel': 'Админ Панел',
+    'events.school.title': 'Школски Догађај',
+    'events.school.description': 'Хемијски мешач боја за школске догађаје.',
+    'events.school.chemistry': 'Хемија',
   },
   it: {
     'welcome.title': 'Benvenuto in GRP Database',
@@ -297,6 +306,9 @@ export const translations: Record<Language, Translation> = {
     'page_titles.suggestions': 'Suggerimenti',
     'page_titles.improvements': 'Miglioramenti',
     'page_titles.admin_panel': 'Pannello Admin',
+    'events.school.title': 'Evento Scolastico',
+    'events.school.description': 'Mescolatore di colori chimici per eventi scolastici.',
+    'events.school.chemistry': 'Chimica',
   },
   fr: {
     'welcome.title': 'Bienvenue sur GRP Database',
@@ -365,6 +377,9 @@ export const translations: Record<Language, Translation> = {
     'page_titles.suggestions': 'Suggestions',
     'page_titles.improvements': 'Améliorations',
     'page_titles.admin_panel': 'Panneau Admin',
+    'events.school.title': 'Événement Scolaire',
+    'events.school.description': 'Mélangeur de couleurs chimiques pour événements scolaires.',
+    'events.school.chemistry': 'Chimie',
   },
   es: {
     'welcome.title': 'Bienvenido a GRP Database',
@@ -433,6 +448,9 @@ export const translations: Record<Language, Translation> = {
     'page_titles.suggestions': 'Sugerencias',
     'page_titles.improvements': 'Mejoras',
     'page_titles.admin_panel': 'Panel Admin',
+    'events.school.title': 'Evento Escolar',
+    'events.school.description': 'Mezclador de colores químicos para eventos escolares.',
+    'events.school.chemistry': 'Química',
   },
   pt: {
     'welcome.title': 'Bem-vindo ao GRP Database',
@@ -501,6 +519,9 @@ export const translations: Record<Language, Translation> = {
     'page_titles.suggestions': 'Sugestões',
     'page_titles.improvements': 'Melhorias',
     'page_titles.admin_panel': 'Painel Admin',
+    'events.school.title': 'Evento Escolar',
+    'events.school.description': 'Misturador de cores químicas para eventos escolares.',
+    'events.school.chemistry': 'Química',
   },
   jp: {
     'welcome.title': 'GRP Databaseへようこそ',
@@ -569,6 +590,9 @@ export const translations: Record<Language, Translation> = {
     'page_titles.suggestions': '提案',
     'page_titles.improvements': '改善',
     'page_titles.admin_panel': '管理パネル',
+    'events.school.title': '学校イベント',
+    'events.school.description': '学校イベント用の化学カラーミキサー。',
+    'events.school.chemistry': '化学',
   },
   ru: {
     'welcome.title': 'Добро пожаловать в GRP Database',
@@ -637,6 +661,9 @@ export const translations: Record<Language, Translation> = {
     'page_titles.suggestions': 'Предложения',
     'page_titles.improvements': 'Улучшения',
     'page_titles.admin_panel': 'Админ Панель',
+    'events.school.title': 'Школьное Событие',
+    'events.school.description': 'Химический смеситель цветов для школьных событий.',
+    'events.school.chemistry': 'Химия',
   },
 };
 

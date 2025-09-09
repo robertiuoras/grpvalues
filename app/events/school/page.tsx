@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useLanguage } from "../../../lib/languageContext";
 
 export default function ColorMixerPage() {
+  const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [targetColorInput, setTargetColorInput] = useState("");
   const [foundMix, setFoundMix] = useState<{
@@ -225,7 +227,7 @@ export default function ColorMixerPage() {
           <span role="img" aria-label="beaker">
             🔬
           </span>
-          Chemistry
+          {t('events.school.chemistry')}
           <span role="img" aria-label="test tube" className="animate-pulse">
             🧪
           </span>

@@ -134,6 +134,12 @@ export default function HomePage() {
       description: t('suggestions.description'),
       icon: <MessageSquare size={40} className="text-green-400" />,
     },
+    {
+      name: t('events.school.title'),
+      path: "/events/school",
+      description: t('events.school.description'),
+      icon: <HelpCircle size={40} className="text-indigo-400" />,
+    },
   ];
 
   return (
