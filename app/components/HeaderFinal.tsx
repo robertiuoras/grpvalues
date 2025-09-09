@@ -32,39 +32,39 @@ export function HeaderFinal() {
   }, [isDropdownOpen]);
 
   const categories = [
-    { name: "Items", path: "/values/items", isAdmin: false },
-    { name: "Cars", path: "/values/cars", isAdmin: false },
-    { name: "Boats", path: "/values/boats", isAdmin: false },
-    { name: "Planes", path: "/values/planes", isAdmin: false },
-    { name: "Helicopters", path: "/values/helicopters", isAdmin: false },
-    { name: "Motorcycles", path: "/values/motorcycles", isAdmin: false },
-    { name: "Clothing List", path: "/values/clothinglist?gender=men&heading=accessory", isAdmin: false },
-    { name: "Masks", path: "/values/masks", isAdmin: false },
+    { name: t('categories.items'), path: "/values/items", isAdmin: false },
+    { name: t('categories.cars'), path: "/values/cars", isAdmin: false },
+    { name: t('categories.boats'), path: "/values/boats", isAdmin: false },
+    { name: t('categories.planes'), path: "/values/planes", isAdmin: false },
+    { name: t('categories.helicopters'), path: "/values/helicopters", isAdmin: false },
+    { name: t('categories.motorcycles'), path: "/values/motorcycles", isAdmin: false },
+    { name: t('categories.clothing_list'), path: "/values/clothinglist?gender=men&heading=accessory", isAdmin: false },
+    { name: t('categories.masks'), path: "/values/masks", isAdmin: false },
     {
-      name: "Luminous Clothing",
+      name: t('categories.luminous_clothing'),
       path: "/values/luminousclothing?type=shirts",
       isAdmin: false,
     },
-    { name: "Illegal Items", path: "/values/illegalitems", isAdmin: false },
+    { name: t('categories.illegal_items'), path: "/values/illegalitems", isAdmin: false },
     {
-      name: "Cropped Collection Shirts",
+      name: t('categories.cropped_collection_shirts'),
       path: "/values/croppcollectionshirt",
       isAdmin: false,
     },
-    { name: "Denim Jackets", path: "/values/denimjacket", isAdmin: false },
-    { name: "Battlepass", path: "/battlepass", isAdmin: false },
-    { name: "Bunker Help", path: "/bunker-help", isAdmin: false },
-    { name: "Pet Timer", path: "/pet-timer", isAdmin: false },
-    { name: "LifeInvader", path: "/lifeinvader", isAdmin: false },
-    { name: "Suggestions", path: "/suggestions", isAdmin: false },
+    { name: t('categories.denim_jackets'), path: "/values/denimjacket", isAdmin: false },
+    { name: t('page_titles.battlepass'), path: "/battlepass", isAdmin: false },
+    { name: t('page_titles.bunker_help'), path: "/bunker-help", isAdmin: false },
+    { name: t('page_titles.pet_timer'), path: "/pet-timer", isAdmin: false },
+    { name: t('page_titles.lifeinvader'), path: "/lifeinvader", isAdmin: false },
+    { name: t('page_titles.suggestions'), path: "/suggestions", isAdmin: false },
   ];
 
   // Create categories with admin button for admin users
   const getCategoriesWithAdmin = () => {
     if (isAdmin) {
       return [
-        { name: "Admin Panel", path: "/admin/active-users", isAdmin: true },
-        { name: "Improvements", path: "/improvements", isAdmin: true },
+        { name: t('page_titles.admin_panel'), path: "/admin/active-users", isAdmin: true },
+        { name: t('page_titles.improvements'), path: "/improvements", isAdmin: true },
         ...categories,
       ];
     }
@@ -102,7 +102,7 @@ export function HeaderFinal() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-              <span>Home</span>
+              <span>{t('navigation.home')}</span>
             </Link>
           </div>
 
@@ -185,7 +185,7 @@ export function HeaderFinal() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                <span>Logout</span>
+                <span>{t('navigation.logout')}</span>
               </button>
             )}
           </div>

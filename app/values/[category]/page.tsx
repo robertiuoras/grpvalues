@@ -7,6 +7,7 @@ import { useAuth } from "../../../hooks/useAuth"; // Corrected path
 import { useRouter } from "next/navigation";
 import FirebaseStorageImage from "../../components/FirebaseStorageImage";
 import Cookies from "js-cookie"; // Import Cookies for reading accessCodeRequired
+import { useLanguage } from "../../../lib/languageContext";
 
 import {
   RefreshCcw,
@@ -178,10 +179,32 @@ export default function CategoryPage({
   params: Promise<{ category: string }>;
 }) {
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const categoryObj = React.use(params);
   const category = categoryObj.category.toLowerCase();
+
+  // Function to get translated category name
+  const getTranslatedCategoryName = (categoryName: string) => {
+    const categoryMap: { [key: string]: string } = {
+      'cars': 'categories.cars',
+      'boats': 'categories.boats',
+      'planes': 'categories.planes',
+      'helicopters': 'categories.helicopters',
+      'motorcycles': 'categories.motorcycles',
+      'items': 'categories.items',
+      'clothinglist': 'categories.clothing_list',
+      'masks': 'categories.masks',
+      'luminousclothing': 'categories.luminous_clothing',
+      'illegalitems': 'categories.illegal_items',
+      'croppcollectionshirt': 'categories.cropped_collection_shirts',
+      'denimjacket': 'categories.denim_jackets',
+    };
+    
+    const translationKey = categoryMap[categoryName.toLowerCase()];
+    return translationKey ? t(translationKey) : formatSlug(categoryName);
+  };
 
   // Redirect old bunkerhelp route to new bunker-help page
   React.useEffect(() => {
@@ -548,9 +571,7 @@ export default function CategoryPage({
   };
 
   // Determine current header name - This is a regular variable assignment.
-  const currentHeaderName =
-    specialCategoryNames[selectedMainCategory.toLowerCase()] ||
-    formatSlug(selectedMainCategory);
+  const currentHeaderName = getTranslatedCategoryName(selectedMainCategory);
   const currentHeaderIconSlug = selectedMainCategory;
 
   const getSortButtonClass = (option: typeof sortOption) => `
