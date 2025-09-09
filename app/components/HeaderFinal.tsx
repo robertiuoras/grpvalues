@@ -21,18 +21,15 @@ export function HeaderFinal() {
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        console.log("Click outside detected, closing dropdown");
         setIsDropdownOpen(false);
       }
     }
 
     if (isDropdownOpen) {
-      console.log("Adding click outside listener");
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      console.log("Removing click outside listener");
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isDropdownOpen]);
@@ -118,14 +115,6 @@ export function HeaderFinal() {
     return categories;
   };
 
-  console.log(
-    "HeaderFinal component rendered, isDropdownOpen:",
-    isDropdownOpen,
-    "isAdmin:",
-    isAdmin
-  );
-  console.log("getCategoriesWithAdmin() result:", getCategoriesWithAdmin());
-  console.log("Categories button text:", t("navigation.categories"));
 
   // Helper function to render home link
   const renderHomeLink = (text: string, className: string) => (
@@ -146,8 +135,8 @@ export function HeaderFinal() {
             )}
           </div>
 
-          {/* Center - Home Button - Temporarily removed for debugging */}
-          {/* <div className="absolute left-1/2 transform -translate-x-1/2">
+          {/* Center - Home Button */}
+          <div className="absolute left-1/2 transform -translate-x-1/2">
             <Link
               href="/"
               className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
@@ -155,9 +144,9 @@ export function HeaderFinal() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-              <span>{t('navigation.home')}</span>
+              <span>{t("navigation.home")}</span>
             </Link>
-          </div> */}
+          </div>
 
           {/* Right side - Navigation and Admin Auth */}
           <div className="flex items-center space-x-4">
@@ -172,33 +161,16 @@ export function HeaderFinal() {
               <span className="sm:hidden">School</span>
             </Link>
 
-            {/* Test Button */}
-            <button
-              onClick={() => {
-                console.log("Test button clicked!");
-                alert("Test button works!");
-              }}
-              className="px-2 py-1 bg-red-500 text-white text-xs rounded mr-2"
-            >
-              TEST
-            </button>
 
             {/* Categories Dropdown - Bigger and nicer */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => {
-                  alert("Categories button clicked!");
-                  console.log(
-                    "Categories button clicked, current state:",
-                    isDropdownOpen
-                  );
-                  console.log("Setting dropdown to:", !isDropdownOpen);
                   setIsDropdownOpen(!isDropdownOpen);
                 }}
                 className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
-                style={{ zIndex: 1000 }}
               >
-                <span>Categories</span>
+                <span>{t("navigation.categories")}</span>
                 <svg
                   className={`w-4 h-4 transition-transform duration-200 ${
                     isDropdownOpen ? "rotate-180" : ""
@@ -250,15 +222,6 @@ export function HeaderFinal() {
                     }}
                   >
                     <div className="py-3">
-                      <div className="px-4 py-2 text-white font-bold bg-red-500 flex justify-between items-center">
-                        <span>DROPDOWN IS RENDERED! Categories: {getCategoriesWithAdmin().length}</span>
-                        <button
-                          onClick={() => setIsDropdownOpen(false)}
-                          className="ml-2 text-white hover:text-gray-300"
-                        >
-                          ✕
-                        </button>
-                      </div>
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
                         <Link
