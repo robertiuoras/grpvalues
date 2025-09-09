@@ -57,6 +57,7 @@ export function HeaderFinal() {
     { name: t('page_titles.pet_timer'), path: "/pet-timer", isAdmin: false },
     { name: t('page_titles.lifeinvader'), path: "/lifeinvader", isAdmin: false },
     { name: t('page_titles.suggestions'), path: "/suggestions", isAdmin: false },
+    { name: t('events.school.title'), path: "/events/school", isAdmin: false },
   ];
 
   // Create categories with admin button for admin users
@@ -108,6 +109,15 @@ export function HeaderFinal() {
 
           {/* Right side - Navigation and Admin Auth */}
           <div className="flex items-center space-x-4">
+            {/* School Event Button */}
+            <Link
+              href="/events/school"
+              className="flex items-center space-x-2 px-4 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
+            >
+              <span role="img" aria-label="beaker">🔬</span>
+              <span>{t('events.school.title')}</span>
+            </Link>
+
             {/* Categories Dropdown - Bigger and nicer */}
             <div className="relative" ref={dropdownRef}>
               <button
@@ -135,9 +145,9 @@ export function HeaderFinal() {
                 </svg>
               </button>
 
-              {/* Dropdown Menu - Using fixed positioning for maximum visibility */}
+              {/* Dropdown Menu - Better positioning and visibility */}
               {isDropdownOpen && (
-                <div className="fixed top-20 right-4 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto" style={{ display: 'block', visibility: 'visible', zIndex: 2147483647 }}>
+                <div className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto z-50">
                   <div className="py-3">
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
