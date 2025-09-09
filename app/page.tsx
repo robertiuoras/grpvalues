@@ -87,43 +87,43 @@ export default function HomePage() {
       icon: <HelpCircle size={40} className="text-red-400" />,
     },
     {
-      name: "Cars",
+      name: t('categories.cars'),
       path: "/values/cars",
       description: t('values.description'),
       icon: <Car size={40} className="text-blue-400" />,
     },
     {
-      name: "Boats",
+      name: t('categories.boats'),
       path: "/values/boats",
       description: t('values.description'),
       icon: <Ship size={40} className="text-teal-400" />,
     },
     {
-      name: "Planes",
+      name: t('categories.planes'),
       path: "/values/planes",
       description: t('values.description'),
       icon: <Plane size={40} className="text-emerald-400" />,
     },
     {
-      name: "Helicopters",
+      name: t('categories.helicopters'),
       path: "/values/helicopters",
       description: t('values.description'),
       icon: <Plane size={40} className="text-purple-400 rotate-90" />,
     },
     {
-      name: "Clothing List",
+      name: t('categories.clothing_list'),
       path: "/values/clothinglist",
       description: t('values.description'),
       icon: <Package size={40} className="text-pink-400" />,
     },
     {
-      name: "Masks",
+      name: t('categories.masks'),
       path: "/values/masks",
       description: t('values.description'),
       icon: <Glasses size={40} className="text-orange-400" />,
     },
     {
-      name: "Luminous Clothing",
+      name: t('categories.luminous_clothing'),
       path: "/values/luminousclothing",
       description: t('values.description'),
       icon: <Shirt size={40} className="text-yellow-400" />,
@@ -246,30 +246,24 @@ export default function HomePage() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-purple-300 mb-2">
-                🎯 AI-Powered Assistance
+                {t('community.ai_powered')}
               </h3>
               <p className="text-sm leading-relaxed">
-                Our advanced AI assistant learns from community feedback to
-                provide better ad formatting and suggestions. Every correction
-                helps improve the system for everyone.
+                {t('community.ai_description')}
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-orange-300 mb-2">
-                🔄 Continuous Improvement
+                {t('community.continuous_improvement')}
               </h3>
               <p className="text-sm leading-relaxed">
-                The platform evolves based on community feedback and needs. New
-                features, categories, and improvements are regularly added to
-                enhance your experience.
+                {t('community.improvement_description')}
               </p>
             </div>
           </div>
           <div className="mt-6 p-4 bg-blue-800/20 rounded-lg border border-blue-600/30">
             <p className="text-center text-sm text-blue-200">
-              <strong>💡 Tip:</strong> Found an outdated value or have a
-              suggestion? Contact robthemaster on discord to help improve the
-              platform for everyone!
+              <strong>{t('community.tip')}</strong> {t('community.tip_text')}
             </p>
           </div>
         </div>
