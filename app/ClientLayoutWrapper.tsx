@@ -6,6 +6,7 @@ import React from "react";
 import { Inter } from "next/font/google"; // Import Inter again if you need its class here directly
 import "./globals.css"; // Ensure your global styles are imported
 import { HeaderFinal as Header } from "./components/HeaderFinal"; // FIX: Changed to HeaderFinal to bypass caching
+import Footer from "./components/Footer";
 import { SpeedInsights } from "@vercel/speed-insights/next"; // Import SpeedInsights
 import { Analytics } from "@vercel/analytics/react"; // Import Analytics
 import { useEffect } from "react";
@@ -44,7 +45,10 @@ export default function ClientLayoutWrapper({
             }}
           >
             <Header />
-            {children}
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
           </div>
         </LanguageProvider>
         <SpeedInsights />

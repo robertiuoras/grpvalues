@@ -96,6 +96,10 @@ export const translations: Record<Language, Translation> = {
     'events.school.title': 'School Event',
     'events.school.description': 'Chemistry color mixer for school events.',
     'events.school.chemistry': 'Chemistry',
+    'footer.description': 'Providing information, tools, and analytics for the GTA Roleplay trading, gaming, and related communities.',
+    'footer.grand_roleplay_trademark': 'Grand Roleplay and its various marks and logos are trademarks of Grand Roleplay.',
+    'footer.gta_v_trademark': 'Grand Theft Auto V is a trademark of Take-Two Interactive Software Inc.',
+    'footer.disclaimer': 'GRP Database is not endorsed, sponsored, or affiliated with GTA V and Grand Roleplay.',
   },
   de: {
     'welcome.title': 'Willkommen bei GRP Database',
@@ -167,6 +171,10 @@ export const translations: Record<Language, Translation> = {
     'events.school.title': 'Schulveranstaltung',
     'events.school.description': 'Chemie-Farbmischer für Schulveranstaltungen.',
     'events.school.chemistry': 'Chemie',
+    'footer.description': 'Bereitstellung von Informationen, Tools und Analysen für die GTA Roleplay-Handels-, Gaming- und verwandten Gemeinschaften.',
+    'footer.grand_roleplay_trademark': 'Grand Roleplay und seine verschiedenen Marken und Logos sind Marken von Grand Roleplay.',
+    'footer.gta_v_trademark': 'Grand Theft Auto V ist eine Marke von Take-Two Interactive Software Inc.',
+    'footer.disclaimer': 'GRP Database wird nicht von GTA V und Grand Roleplay unterstützt, gesponsert oder ist mit ihnen verbunden.',
   },
   rs: {
     'welcome.title': 'Добродошао у GRP Database',
@@ -238,6 +246,10 @@ export const translations: Record<Language, Translation> = {
     'events.school.title': 'Школски Догађај',
     'events.school.description': 'Хемијски мешач боја за школске догађаје.',
     'events.school.chemistry': 'Хемија',
+    'footer.description': 'Пружање информација, алата и аналитика за GTA Roleplay трговину, гејминг и сродне заједнице.',
+    'footer.grand_roleplay_trademark': 'Grand Roleplay и његове разне марке и логоти су заштитни знакови Grand Roleplay-а.',
+    'footer.gta_v_trademark': 'Grand Theft Auto V је заштитни знак Take-Two Interactive Software Inc.',
+    'footer.disclaimer': 'GRP Database није одобрен, спонзорисан или повезан са GTA V и Grand Roleplay.',
   },
   it: {
     'welcome.title': 'Benvenuto in GRP Database',
@@ -309,6 +321,10 @@ export const translations: Record<Language, Translation> = {
     'events.school.title': 'Evento Scolastico',
     'events.school.description': 'Mescolatore di colori chimici per eventi scolastici.',
     'events.school.chemistry': 'Chimica',
+    'footer.description': 'Fornire informazioni, strumenti e analisi per le comunità di trading, gaming e correlate di GTA Roleplay.',
+    'footer.grand_roleplay_trademark': 'Grand Roleplay e i suoi vari marchi e loghi sono marchi di Grand Roleplay.',
+    'footer.gta_v_trademark': 'Grand Theft Auto V è un marchio di Take-Two Interactive Software Inc.',
+    'footer.disclaimer': 'GRP Database non è approvato, sponsorizzato o affiliato con GTA V e Grand Roleplay.',
   },
   fr: {
     'welcome.title': 'Bienvenue sur GRP Database',
@@ -380,6 +396,10 @@ export const translations: Record<Language, Translation> = {
     'events.school.title': 'Événement Scolaire',
     'events.school.description': 'Mélangeur de couleurs chimiques pour événements scolaires.',
     'events.school.chemistry': 'Chimie',
+    'footer.description': 'Fournir des informations, des outils et des analyses pour les communautés de trading, de gaming et connexes de GTA Roleplay.',
+    'footer.grand_roleplay_trademark': 'Grand Roleplay et ses diverses marques et logos sont des marques de Grand Roleplay.',
+    'footer.gta_v_trademark': 'Grand Theft Auto V est une marque de Take-Two Interactive Software Inc.',
+    'footer.disclaimer': 'GRP Database n\'est pas approuvé, sponsorisé ou affilié à GTA V et Grand Roleplay.',
   },
   es: {
     'welcome.title': 'Bienvenido a GRP Database',
@@ -451,6 +471,10 @@ export const translations: Record<Language, Translation> = {
     'events.school.title': 'Evento Escolar',
     'events.school.description': 'Mezclador de colores químicos para eventos escolares.',
     'events.school.chemistry': 'Química',
+    'footer.description': 'Proporcionando información, herramientas y análisis para las comunidades de trading, gaming y relacionadas de GTA Roleplay.',
+    'footer.grand_roleplay_trademark': 'Grand Roleplay y sus varias marcas y logos son marcas registradas de Grand Roleplay.',
+    'footer.gta_v_trademark': 'Grand Theft Auto V es una marca registrada de Take-Two Interactive Software Inc.',
+    'footer.disclaimer': 'GRP Database no está respaldado, patrocinado o afiliado con GTA V y Grand Roleplay.',
   },
   pt: {
     'welcome.title': 'Bem-vindo ao GRP Database',
@@ -522,6 +546,10 @@ export const translations: Record<Language, Translation> = {
     'events.school.title': 'Evento Escolar',
     'events.school.description': 'Misturador de cores químicas para eventos escolares.',
     'events.school.chemistry': 'Química',
+    'footer.description': 'Fornecendo informações, ferramentas e análises para as comunidades de trading, gaming e relacionadas do GTA Roleplay.',
+    'footer.grand_roleplay_trademark': 'Grand Roleplay e suas várias marcas e logos são marcas registradas da Grand Roleplay.',
+    'footer.gta_v_trademark': 'Grand Theft Auto V é uma marca registrada da Take-Two Interactive Software Inc.',
+    'footer.disclaimer': 'GRP Database não é endossado, patrocinado ou afiliado ao GTA V e Grand Roleplay.',
   },
   jp: {
     'welcome.title': 'GRP Databaseへようこそ',
@@ -593,6 +621,10 @@ export const translations: Record<Language, Translation> = {
     'events.school.title': '学校イベント',
     'events.school.description': '学校イベント用の化学カラーミキサー。',
     'events.school.chemistry': '化学',
+    'footer.description': 'GTAロールプレイの取引、ゲーミング、関連コミュニティに情報、ツール、分析を提供。',
+    'footer.grand_roleplay_trademark': 'Grand Roleplayとその各種マークおよびロゴはGrand Roleplayの商標です。',
+    'footer.gta_v_trademark': 'Grand Theft Auto VはTake-Two Interactive Software Inc.の商標です。',
+    'footer.disclaimer': 'GRP DatabaseはGTA VおよびGrand Roleplayによって承認、スポンサー、または提携されていません。',
   },
   ru: {
     'welcome.title': 'Добро пожаловать в GRP Database',
@@ -664,6 +696,10 @@ export const translations: Record<Language, Translation> = {
     'events.school.title': 'Школьное Событие',
     'events.school.description': 'Химический смеситель цветов для школьных событий.',
     'events.school.chemistry': 'Химия',
+    'footer.description': 'Предоставление информации, инструментов и аналитики для сообществ торговли, гейминга и связанных с GTA Roleplay.',
+    'footer.grand_roleplay_trademark': 'Grand Roleplay и его различные знаки и логотипы являются товарными знаками Grand Roleplay.',
+    'footer.gta_v_trademark': 'Grand Theft Auto V является товарным знаком Take-Two Interactive Software Inc.',
+    'footer.disclaimer': 'GRP Database не одобрен, не спонсируется и не связан с GTA V и Grand Roleplay.',
   },
 };
 
