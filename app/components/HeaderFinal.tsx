@@ -87,7 +87,7 @@ export function HeaderFinal() {
   );
 
   return (
-    <header className="bg-gray-900 shadow-lg border-b border-gray-700 sticky top-0 z-50">
+    <header className="bg-gray-900 shadow-lg border-b border-gray-700 sticky top-0 z-50 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left side - Logo/Home link */}
@@ -121,6 +121,17 @@ export function HeaderFinal() {
               <span className="hidden sm:inline">{t('events.school.title')}</span>
               <span className="sm:hidden">School</span>
             </Link>
+
+            {/* Test Button */}
+            <button
+              onClick={() => {
+                console.log('Test button clicked!');
+                alert('Test button works!');
+              }}
+              className="px-2 py-1 bg-red-500 text-white text-xs rounded mr-2"
+            >
+              TEST
+            </button>
 
             {/* Categories Dropdown - Bigger and nicer */}
             <div className="relative" ref={dropdownRef}>
