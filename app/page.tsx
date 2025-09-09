@@ -180,7 +180,7 @@ export default function HomePage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <h3 className="font-bold text-sm">New Update!</h3>
+                  <h3 className="font-bold text-sm">{t('notification.new_update')}</h3>
                 </div>
                 <p
                   className="text-xs text-blue-100 leading-relaxed"
@@ -190,7 +190,7 @@ export default function HomePage() {
               <button
                 onClick={() => setShowUpdatePopup(false)}
                 className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200"
-                aria-label="Close popup"
+                aria-label={t('notification.close')}
               >
                 <svg
                   className="w-4 h-4"

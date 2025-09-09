@@ -64,6 +64,8 @@ export const translations: Record<Language, Translation> = {
     'community.data_description': 'Get accurate, up-to-date market values for vehicles, clothing, and items. Our community ensures the data reflects current market conditions and helps you make informed trading decisions.',
     'navigation.categories': 'Categories',
     'how_to_join': 'How to Join?',
+    'notification.new_update': 'New Update!',
+    'notification.close': 'Close popup',
   },
   de: {
     'welcome.title': 'Willkommen bei GRP Database',
@@ -103,6 +105,8 @@ export const translations: Record<Language, Translation> = {
     'community.data_description': 'Erhalten Sie genaue, aktuelle Marktwerte für Fahrzeuge, Kleidung und Gegenstände. Unsere Gemeinschaft stellt sicher, dass die Daten die aktuellen Marktbedingungen widerspiegeln und Ihnen helfen, fundierte Handelsentscheidungen zu treffen.',
     'navigation.categories': 'Kategorien',
     'how_to_join': 'Wie beitreten?',
+    'notification.new_update': 'Neues Update!',
+    'notification.close': 'Popup schließen',
   },
   rs: {
     'welcome.title': 'Добродошао у GRP Database',
@@ -142,6 +146,8 @@ export const translations: Record<Language, Translation> = {
     'community.data_description': 'Добијте тачне, ажуриране тржишне вредности за возила, одећу и предмете. Наша заједница обезбеђује да подаци одражавају тренутне тржишне услове и помажу вам да доносите информисане трговинске одлуке.',
     'navigation.categories': 'Категорије',
     'how_to_join': 'Како се придружити?',
+    'notification.new_update': 'Ново Ажурирање!',
+    'notification.close': 'Затвори popup',
   },
   it: {
     'welcome.title': 'Benvenuto in GRP Database',
@@ -181,6 +187,8 @@ export const translations: Record<Language, Translation> = {
     'community.data_description': 'Ottieni valori di mercato accurati e aggiornati per veicoli, abbigliamento e oggetti. La nostra comunità garantisce che i dati riflettano le condizioni di mercato attuali e ti aiutino a prendere decisioni commerciali informate.',
     'navigation.categories': 'Categorie',
     'how_to_join': 'Come partecipare?',
+    'notification.new_update': 'Nuovo Aggiornamento!',
+    'notification.close': 'Chiudi popup',
   },
   fr: {
     'welcome.title': 'Bienvenue sur GRP Database',
@@ -220,6 +228,8 @@ export const translations: Record<Language, Translation> = {
     'community.data_description': 'Obtenez des valeurs de marché précises et à jour pour les véhicules, vêtements et objets. Notre communauté garantit que les données reflètent les conditions de marché actuelles et vous aident à prendre des décisions commerciales éclairées.',
     'navigation.categories': 'Catégories',
     'how_to_join': 'Comment rejoindre?',
+    'notification.new_update': 'Nouvelle Mise à Jour!',
+    'notification.close': 'Fermer popup',
   },
   es: {
     'welcome.title': 'Bienvenido a GRP Database',
@@ -259,6 +269,8 @@ export const translations: Record<Language, Translation> = {
     'community.data_description': 'Obtén valores de mercado precisos y actualizados para vehículos, ropa y artículos. Nuestra comunidad asegura que los datos reflejen las condiciones actuales del mercado y te ayuden a tomar decisiones comerciales informadas.',
     'navigation.categories': 'Categorías',
     'how_to_join': '¿Cómo unirse?',
+    'notification.new_update': '¡Nueva Actualización!',
+    'notification.close': 'Cerrar popup',
   },
   pt: {
     'welcome.title': 'Bem-vindo ao GRP Database',
@@ -298,6 +310,8 @@ export const translations: Record<Language, Translation> = {
     'community.data_description': 'Obtenha valores de mercado precisos e atualizados para veículos, roupas e itens. Nossa comunidade garante que os dados reflitam as condições atuais do mercado e ajudem você a tomar decisões comerciais informadas.',
     'navigation.categories': 'Categorias',
     'how_to_join': 'Como participar?',
+    'notification.new_update': 'Nova Atualização!',
+    'notification.close': 'Fechar popup',
   },
   jp: {
     'welcome.title': 'GRP Databaseへようこそ',
@@ -337,6 +351,8 @@ export const translations: Record<Language, Translation> = {
     'community.data_description': '車両、衣装、アイテムの正確で最新の市場価値を取得してください。私たちのコミュニティは、データが現在の市場状況を反映し、情報に基づいた取引決定を下すのに役立つことを保証します。',
     'navigation.categories': 'カテゴリ',
     'how_to_join': '参加方法は？',
+    'notification.new_update': '新しいアップデート！',
+    'notification.close': 'ポップアップを閉じる',
   },
   ru: {
     'welcome.title': 'Добро пожаловать в GRP Database',
@@ -376,6 +392,8 @@ export const translations: Record<Language, Translation> = {
     'community.data_description': 'Получайте точные, актуальные рыночные цены для транспортных средств, одежды и предметов. Наше сообщество гарантирует, что данные отражают текущие рыночные условия и помогают вам принимать обоснованные торговые решения.',
     'navigation.categories': 'Категории',
     'how_to_join': 'Как присоединиться?',
+    'notification.new_update': 'Новое Обновление!',
+    'notification.close': 'Закрыть popup',
   },
 };
 
