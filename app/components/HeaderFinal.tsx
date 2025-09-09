@@ -17,67 +17,115 @@ export function HeaderFinal() {
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        console.log('Click outside detected, closing dropdown');
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        console.log("Click outside detected, closing dropdown");
         setIsDropdownOpen(false);
       }
     }
 
     if (isDropdownOpen) {
-      console.log('Adding click outside listener');
-      document.addEventListener('mousedown', handleClickOutside);
+      console.log("Adding click outside listener");
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      console.log('Removing click outside listener');
-      document.removeEventListener('mousedown', handleClickOutside);
+      console.log("Removing click outside listener");
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isDropdownOpen]);
 
   const categories = [
-    { name: t('categories.items'), path: "/values/items", isAdmin: false },
-    { name: t('categories.cars'), path: "/values/cars", isAdmin: false },
-    { name: t('categories.boats'), path: "/values/boats", isAdmin: false },
-    { name: t('categories.planes'), path: "/values/planes", isAdmin: false },
-    { name: t('categories.helicopters'), path: "/values/helicopters", isAdmin: false },
-    { name: t('categories.motorcycles'), path: "/values/motorcycles", isAdmin: false },
-    { name: t('categories.clothing_list'), path: "/values/clothinglist?gender=men&heading=accessory", isAdmin: false },
-    { name: t('categories.masks'), path: "/values/masks", isAdmin: false },
+    { name: t("categories.items"), path: "/values/items", isAdmin: false },
+    { name: t("categories.cars"), path: "/values/cars", isAdmin: false },
+    { name: t("categories.boats"), path: "/values/boats", isAdmin: false },
+    { name: t("categories.planes"), path: "/values/planes", isAdmin: false },
     {
-      name: t('categories.luminous_clothing'),
+      name: t("categories.helicopters"),
+      path: "/values/helicopters",
+      isAdmin: false,
+    },
+    {
+      name: t("categories.motorcycles"),
+      path: "/values/motorcycles",
+      isAdmin: false,
+    },
+    {
+      name: t("categories.clothing_list"),
+      path: "/values/clothinglist?gender=men&heading=accessory",
+      isAdmin: false,
+    },
+    { name: t("categories.masks"), path: "/values/masks", isAdmin: false },
+    {
+      name: t("categories.luminous_clothing"),
       path: "/values/luminousclothing?type=shirts",
       isAdmin: false,
     },
-    { name: t('categories.illegal_items'), path: "/values/illegalitems", isAdmin: false },
     {
-      name: t('categories.cropped_collection_shirts'),
+      name: t("categories.illegal_items"),
+      path: "/values/illegalitems",
+      isAdmin: false,
+    },
+    {
+      name: t("categories.cropped_collection_shirts"),
       path: "/values/croppcollectionshirt",
       isAdmin: false,
     },
-    { name: t('categories.denim_jackets'), path: "/values/denimjacket", isAdmin: false },
-    { name: t('page_titles.battlepass'), path: "/battlepass", isAdmin: false },
-    { name: t('page_titles.bunker_help'), path: "/bunker-help", isAdmin: false },
-    { name: t('page_titles.pet_timer'), path: "/pet-timer", isAdmin: false },
-    { name: t('page_titles.lifeinvader'), path: "/lifeinvader", isAdmin: false },
-    { name: t('page_titles.suggestions'), path: "/suggestions", isAdmin: false },
-    { name: t('events.school.title'), path: "/events/school", isAdmin: false },
+    {
+      name: t("categories.denim_jackets"),
+      path: "/values/denimjacket",
+      isAdmin: false,
+    },
+    { name: t("page_titles.battlepass"), path: "/battlepass", isAdmin: false },
+    {
+      name: t("page_titles.bunker_help"),
+      path: "/bunker-help",
+      isAdmin: false,
+    },
+    { name: t("page_titles.pet_timer"), path: "/pet-timer", isAdmin: false },
+    {
+      name: t("page_titles.lifeinvader"),
+      path: "/lifeinvader",
+      isAdmin: false,
+    },
+    {
+      name: t("page_titles.suggestions"),
+      path: "/suggestions",
+      isAdmin: false,
+    },
+    { name: t("events.school.title"), path: "/events/school", isAdmin: false },
   ];
 
   // Create categories with admin button for admin users
   const getCategoriesWithAdmin = () => {
     if (isAdmin) {
       return [
-        { name: t('page_titles.admin_panel'), path: "/admin/active-users", isAdmin: true },
-        { name: t('page_titles.improvements'), path: "/improvements", isAdmin: true },
+        {
+          name: t("page_titles.admin_panel"),
+          path: "/admin/active-users",
+          isAdmin: true,
+        },
+        {
+          name: t("page_titles.improvements"),
+          path: "/improvements",
+          isAdmin: true,
+        },
         ...categories,
       ];
     }
     return categories;
   };
 
-  console.log('HeaderFinal component rendered, isDropdownOpen:', isDropdownOpen, 'isAdmin:', isAdmin);
-  console.log('getCategoriesWithAdmin() result:', getCategoriesWithAdmin());
-  console.log('Categories button text:', t('navigation.categories'));
+  console.log(
+    "HeaderFinal component rendered, isDropdownOpen:",
+    isDropdownOpen,
+    "isAdmin:",
+    isAdmin
+  );
+  console.log("getCategoriesWithAdmin() result:", getCategoriesWithAdmin());
+  console.log("Categories button text:", t("navigation.categories"));
 
   // Helper function to render home link
   const renderHomeLink = (text: string, className: string) => (
@@ -118,15 +166,17 @@ export function HeaderFinal() {
               href="/events/school"
               className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
             >
-              <span className="hidden sm:inline">{t('events.school.title')}</span>
+              <span className="hidden sm:inline">
+                {t("events.school.title")}
+              </span>
               <span className="sm:hidden">School</span>
             </Link>
 
             {/* Test Button */}
             <button
               onClick={() => {
-                console.log('Test button clicked!');
-                alert('Test button works!');
+                console.log("Test button clicked!");
+                alert("Test button works!");
               }}
               className="px-2 py-1 bg-red-500 text-white text-xs rounded mr-2"
             >
@@ -137,9 +187,12 @@ export function HeaderFinal() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => {
-                  alert('Categories button clicked!');
-                  console.log('Categories button clicked, current state:', isDropdownOpen);
-                  console.log('Setting dropdown to:', !isDropdownOpen);
+                  alert("Categories button clicked!");
+                  console.log(
+                    "Categories button clicked, current state:",
+                    isDropdownOpen
+                  );
+                  console.log("Setting dropdown to:", !isDropdownOpen);
                   setIsDropdownOpen(!isDropdownOpen);
                 }}
                 className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
@@ -165,8 +218,27 @@ export function HeaderFinal() {
 
               {/* Dropdown Menu - Better positioning and visibility */}
               {isDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto z-[99999]">
+                <div 
+                  className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto z-[99999]"
+                  style={{ 
+                    position: 'absolute',
+                    top: '100%',
+                    right: '0',
+                    marginTop: '8px',
+                    width: '320px',
+                    backgroundColor: '#1f2937',
+                    borderRadius: '12px',
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    border: '2px solid #6b7280',
+                    maxHeight: '384px',
+                    overflowY: 'auto',
+                    zIndex: 99999
+                  }}
+                >
                   <div className="py-3">
+                    <div className="px-4 py-2 text-white font-bold bg-red-500">
+                      DROPDOWN IS RENDERED! Categories: {getCategoriesWithAdmin().length}
+                    </div>
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
                         <Link
@@ -177,7 +249,7 @@ export function HeaderFinal() {
                             category.isAdmin
                               ? "text-yellow-400 font-semibold border-b border-gray-600/50 mb-2 pb-3 hover:text-yellow-300"
                               : "text-gray-200 hover:text-white"
-                          } ${index === 0 && category.isAdmin ? 'mt-0' : ''}`}
+                          } ${index === 0 && category.isAdmin ? "mt-0" : ""}`}
                         >
                           <span className="flex-1 font-medium tracking-wide">
                             {category.isAdmin && "🔧 "}
@@ -210,10 +282,20 @@ export function HeaderFinal() {
                 onClick={logout}
                 className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
                 </svg>
-                <span>{t('navigation.logout')}</span>
+                <span>{t("navigation.logout")}</span>
               </button>
             )}
           </div>
