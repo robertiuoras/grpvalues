@@ -149,7 +149,7 @@ export default function HomePage() {
           >
             <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-white opacity-75"></span>
             <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-            How to Join?
+{t('how_to_join')}
             <svg
               className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200"
               fill="none"

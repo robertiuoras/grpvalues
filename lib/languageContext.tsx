@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export type Language = 'en' | 'de' | 'rs' | 'it' | 'fr' | 'es' | 'pt' | 'jp';
+export type Language = 'en' | 'de' | 'rs' | 'it' | 'fr' | 'es' | 'pt' | 'jp' | 'ru';
 
 export interface LanguageConfig {
   code: Language;
@@ -18,6 +18,7 @@ export const LANGUAGES: LanguageConfig[] = [
   { code: 'es', name: 'Spanish', flag: '🇪🇸', emoji: '🇪🇸' },
   { code: 'pt', name: 'Portuguese', flag: '🇵🇹', emoji: '🇵🇹' },
   { code: 'jp', name: 'Japanese', flag: '🇯🇵', emoji: '🇯🇵' },
+  { code: 'ru', name: 'Russian', flag: '🇷🇺', emoji: '🇷🇺' },
 ];
 
 export interface Translation {
@@ -62,6 +63,7 @@ export const translations: Record<Language, Translation> = {
     'community.real_time_data': '📊 Real-Time Market Data',
     'community.data_description': 'Get accurate, up-to-date market values for vehicles, clothing, and items. Our community ensures the data reflects current market conditions and helps you make informed trading decisions.',
     'navigation.categories': 'Categories',
+    'how_to_join': 'How to Join?',
   },
   de: {
     'welcome.title': 'Willkommen bei GRP Database',
@@ -100,6 +102,7 @@ export const translations: Record<Language, Translation> = {
     'community.real_time_data': '📊 Echtzeit-Marktdaten',
     'community.data_description': 'Erhalten Sie genaue, aktuelle Marktwerte für Fahrzeuge, Kleidung und Gegenstände. Unsere Gemeinschaft stellt sicher, dass die Daten die aktuellen Marktbedingungen widerspiegeln und Ihnen helfen, fundierte Handelsentscheidungen zu treffen.',
     'navigation.categories': 'Kategorien',
+    'how_to_join': 'Wie beitreten?',
   },
   rs: {
     'welcome.title': 'Добродошао у GRP Database',
@@ -138,6 +141,7 @@ export const translations: Record<Language, Translation> = {
     'community.real_time_data': '📊 Подаци о тржишту у реалном времену',
     'community.data_description': 'Добијте тачне, ажуриране тржишне вредности за возила, одећу и предмете. Наша заједница обезбеђује да подаци одражавају тренутне тржишне услове и помажу вам да доносите информисане трговинске одлуке.',
     'navigation.categories': 'Категорије',
+    'how_to_join': 'Како се придружити?',
   },
   it: {
     'welcome.title': 'Benvenuto in GRP Database',
@@ -176,6 +180,7 @@ export const translations: Record<Language, Translation> = {
     'community.real_time_data': '📊 Dati di Mercato in Tempo Reale',
     'community.data_description': 'Ottieni valori di mercato accurati e aggiornati per veicoli, abbigliamento e oggetti. La nostra comunità garantisce che i dati riflettano le condizioni di mercato attuali e ti aiutino a prendere decisioni commerciali informate.',
     'navigation.categories': 'Categorie',
+    'how_to_join': 'Come partecipare?',
   },
   fr: {
     'welcome.title': 'Bienvenue sur GRP Database',
@@ -214,6 +219,7 @@ export const translations: Record<Language, Translation> = {
     'community.real_time_data': '📊 Données de Marché en Temps Réel',
     'community.data_description': 'Obtenez des valeurs de marché précises et à jour pour les véhicules, vêtements et objets. Notre communauté garantit que les données reflètent les conditions de marché actuelles et vous aident à prendre des décisions commerciales éclairées.',
     'navigation.categories': 'Catégories',
+    'how_to_join': 'Comment rejoindre?',
   },
   es: {
     'welcome.title': 'Bienvenido a GRP Database',
@@ -252,6 +258,7 @@ export const translations: Record<Language, Translation> = {
     'community.real_time_data': '📊 Datos de Mercado en Tiempo Real',
     'community.data_description': 'Obtén valores de mercado precisos y actualizados para vehículos, ropa y artículos. Nuestra comunidad asegura que los datos reflejen las condiciones actuales del mercado y te ayuden a tomar decisiones comerciales informadas.',
     'navigation.categories': 'Categorías',
+    'how_to_join': '¿Cómo unirse?',
   },
   pt: {
     'welcome.title': 'Bem-vindo ao GRP Database',
@@ -290,6 +297,7 @@ export const translations: Record<Language, Translation> = {
     'community.real_time_data': '📊 Dados de Mercado em Tempo Real',
     'community.data_description': 'Obtenha valores de mercado precisos e atualizados para veículos, roupas e itens. Nossa comunidade garante que os dados reflitam as condições atuais do mercado e ajudem você a tomar decisões comerciais informadas.',
     'navigation.categories': 'Categorias',
+    'how_to_join': 'Como participar?',
   },
   jp: {
     'welcome.title': 'GRP Databaseへようこそ',
@@ -328,6 +336,46 @@ export const translations: Record<Language, Translation> = {
     'community.real_time_data': '📊 リアルタイム市場データ',
     'community.data_description': '車両、衣装、アイテムの正確で最新の市場価値を取得してください。私たちのコミュニティは、データが現在の市場状況を反映し、情報に基づいた取引決定を下すのに役立つことを保証します。',
     'navigation.categories': 'カテゴリ',
+    'how_to_join': '参加方法は？',
+  },
+  ru: {
+    'welcome.title': 'Добро пожаловать в GRP Database',
+    'welcome.description': 'GRP Database — это неофициальный общественный центр, созданный для того, чтобы сделать GTA Roleplay проще и приятнее. Наша цель — собрать ценную информацию в одном месте — от стоимости предметов и вариантов одежды до советов для новичков и руководств — помогая игрокам быстро найти то, что им нужно, играя на сервере.',
+    'welcome.disclaimer': 'GRP Database НЕ является официальным или связанным с разработчиками игры.',
+    'admin.access': 'Админ Доступ',
+    'admin.panel': 'Админ Панель',
+    'admin.login': 'Админ Вход',
+    'admin.description': 'Вы в настоящее время вошли в систему как администратор. Получите доступ к админ-панели для управления базой данных и системными настройками.',
+    'admin.login_description': 'Вы администратор? Получите доступ к админ-панели для управления базой данных и системными настройками.',
+    'values.title': 'Стоимость Предметов',
+    'values.description': 'Найдите текущие рыночные цены для транспортных средств, одежды и предметов.',
+    'battlepass.title': 'Боевой пропуск',
+    'battlepass.description': 'Отслеживайте свой прогресс и награды боевого пропуска.',
+    'beginner.title': 'Помощь Новичкам',
+    'beginner.description': 'Основные руководства для новых игроков.',
+    'bunker.title': 'Помощь Бункеру',
+    'bunker.description': 'Руководства по управлению бункером и оптимизации.',
+    'events.title': 'События',
+    'events.description': 'Серверные события и активности.',
+    'lifeinvader.title': 'Шаблоны LifeInvader',
+    'lifeinvader.description': 'Предварительно отформатированные шаблоны объявлений для LifeInvader.',
+    'improvements.title': 'Улучшения',
+    'improvements.description': 'Предложите улучшения и сообщите об ошибках.',
+    'suggestions.title': 'Предложения',
+    'suggestions.description': 'Отправьте свои предложения для базы данных.',
+    'treasure.title': 'Помощник Сокровищ',
+    'treasure.description': 'Найдите места сокровищ и награды.',
+    'pet.title': 'Таймер Питомца',
+    'pet.description': 'Отслеживайте график кормления вашего питомца.',
+    'ai.format_my_ad': 'Форматировать мое объявление',
+    'ai.description': 'Используйте ИИ для форматирования ваших объявлений согласно политике.',
+    'community.title': 'Платформа Сообщества',
+    'community.built_by_players': '🤝 Создано Игроками, для Игроков',
+    'community.built_description': 'Эта платформа поддерживается и обновляется сообществом GRP Database. Все ценности, шаблоны и функции вносятся активными игроками, которые понимают рыночную динамику и потребности сообщества.',
+    'community.real_time_data': '📊 Данные Рынка в Реальном Времени',
+    'community.data_description': 'Получайте точные, актуальные рыночные цены для транспортных средств, одежды и предметов. Наше сообщество гарантирует, что данные отражают текущие рыночные условия и помогают вам принимать обоснованные торговые решения.',
+    'navigation.categories': 'Категории',
+    'how_to_join': 'Как присоединиться?',
   },
 };
 
