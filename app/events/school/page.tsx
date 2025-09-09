@@ -209,7 +209,7 @@ export default function ColorMixerPage() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen w-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-4 relative overflow-hidden">
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-4 relative overflow-hidden">
       {/* Subtle, scoped background overlay (won't affect other pages) */}
       <div
         className="pointer-events-none absolute inset-0 opacity-25"
@@ -219,11 +219,12 @@ export default function ColorMixerPage() {
         }}
       />
 
-      <main className="w-full max-w-lg bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-6 sm:p-8 border border-white/30 text-center relative overflow-hidden transition-all duration-300">
+      <div className="flex items-center justify-center min-h-screen py-8">
+        <main className="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-5 sm:p-6 border border-white/30 text-center relative overflow-hidden transition-all duration-300">
         {/* Accent gradient bar */}
         <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500" />
 
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 leading-tight mb-8 drop-shadow-md relative z-10 flex items-center justify-center gap-4">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 leading-tight mb-6 drop-shadow-md relative z-10 flex items-center justify-center gap-3">
           <span role="img" aria-label="beaker">
             🔬
           </span>
@@ -233,10 +234,10 @@ export default function ColorMixerPage() {
           </span>
         </h1>
 
-        <div className="mb-8 relative z-10">
+        <div className="mb-6 relative z-10">
           <label
             htmlFor="targetColor"
-            className="block text-xl font-semibold text-gray-700 mb-4"
+            className="block text-lg font-semibold text-gray-700 mb-3"
           >
             WHAT COLOR DO YOU WANT TO CREATE?
           </label>
@@ -378,7 +379,8 @@ export default function ColorMixerPage() {
             </div>
           </div>
         )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
