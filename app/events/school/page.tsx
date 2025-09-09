@@ -220,11 +220,11 @@ export default function ColorMixerPage() {
       />
 
       <div className="flex items-start sm:items-center justify-center min-h-screen py-2 sm:py-8">
-        <main className="w-full max-w-sm sm:max-w-md md:max-w-lg bg-white/80 backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-4 sm:p-6 border border-white/30 text-center relative overflow-hidden transition-all duration-300 mb-4 sm:mb-0">
+        <main className="w-full max-w-xs sm:max-w-sm md:max-w-md bg-white/80 backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-4 sm:p-6 border border-white/30 text-center relative overflow-hidden transition-all duration-300 mb-4 sm:mb-0">
         {/* Accent gradient bar */}
         <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500" />
 
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 leading-tight mb-6 drop-shadow-md relative z-10 flex items-center justify-center gap-3">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 leading-tight mb-8 drop-shadow-md relative z-10 flex items-center justify-center gap-3">
           <span role="img" aria-label="beaker">
             🔬
           </span>
@@ -234,7 +234,7 @@ export default function ColorMixerPage() {
           </span>
         </h1>
 
-        <div className="mb-6 relative z-10">
+        <div className="mb-8 relative z-10">
           <label
             htmlFor="targetColor"
             className="block text-lg font-semibold text-gray-700 mb-3"
@@ -310,7 +310,7 @@ export default function ColorMixerPage() {
           className="relative z-10 bg-gradient-to-r from-blue-500 to-indigo-500
                      hover:from-blue-600 hover:to-indigo-600 text-white font-bold
                      py-3 px-6 sm:py-4 sm:px-10 rounded-full text-lg sm:text-xl transition-opacity duration-300 hover:opacity-90
-                     focus:outline-none focus:ring-4 focus:ring-blue-400 mb-6 sm:mb-8 w-full sm:w-auto"
+                     focus:outline-none focus:ring-4 focus:ring-blue-400 mb-8 sm:mb-10 w-full sm:w-auto"
         >
           SHOW MIX
         </button>

@@ -121,7 +121,9 @@ export function HeaderFinal() {
             {/* Categories Dropdown - Bigger and nicer */}
             <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   console.log('Categories button clicked, current state:', isDropdownOpen);
                   setIsDropdownOpen(!isDropdownOpen);
                 }}
@@ -147,7 +149,7 @@ export function HeaderFinal() {
 
               {/* Dropdown Menu - Better positioning and visibility */}
               {isDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto z-50">
+                <div className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto z-[9999]">
                   <div className="py-3">
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
