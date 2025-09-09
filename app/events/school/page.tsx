@@ -219,8 +219,8 @@ export default function ColorMixerPage() {
         }}
       />
 
-      <div className="flex items-center justify-center min-h-screen py-8">
-        <main className="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-5 sm:p-6 border border-white/30 text-center relative overflow-hidden transition-all duration-300">
+      <div className="flex items-start sm:items-center justify-center min-h-screen py-2 sm:py-8">
+        <main className="w-full max-w-md sm:max-w-lg bg-white/80 backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] p-4 sm:p-6 border border-white/30 text-center relative overflow-hidden transition-all duration-300 mb-4 sm:mb-0">
         {/* Accent gradient bar */}
         <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500" />
 

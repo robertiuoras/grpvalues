@@ -114,7 +114,6 @@ export function HeaderFinal() {
               href="/events/school"
               className="flex items-center space-x-2 px-4 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
             >
-              <span role="img" aria-label="beaker">🔬</span>
               <span>{t('events.school.title')}</span>
             </Link>
 
