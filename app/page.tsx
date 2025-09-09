@@ -16,6 +16,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../hooks/useAuth";
+import { useLanguage } from "../lib/languageContext";
+import LanguageChooser from "./components/LanguageChooser";
 
 interface CategoryCard {
   name: string;
@@ -33,6 +35,7 @@ interface UpdateMessage {
 export default function HomePage() {
   const router = useRouter();
   const { isAdmin } = useAuth();
+  const { t } = useLanguage();
   const [isClient, setIsClient] = useState(false);
   const [showUpdatePopup, setShowUpdatePopup] = useState(true);
   const [updateMessage, setUpdateMessage] = useState<UpdateMessage>({
@@ -78,57 +81,57 @@ export default function HomePage() {
 
   const categories: CategoryCard[] = [
     {
-      name: "Beginner Help",
+      name: t('beginner.title'),
       path: "/beginner-help",
-      description: "Get started with GRP Database and learn the basics.",
+      description: t('beginner.description'),
       icon: <HelpCircle size={40} className="text-red-400" />,
     },
     {
       name: "Cars",
       path: "/values/cars",
-      description: "Find market values for all types of cars.",
+      description: t('values.description'),
       icon: <Car size={40} className="text-blue-400" />,
     },
     {
       name: "Boats",
       path: "/values/boats",
-      description: "Check values for various boats and yachts.",
+      description: t('values.description'),
       icon: <Ship size={40} className="text-teal-400" />,
     },
     {
       name: "Planes",
       path: "/values/planes",
-      description: "Discover the prices of private planes.",
+      description: t('values.description'),
       icon: <Plane size={40} className="text-emerald-400" />,
     },
     {
       name: "Helicopters",
       path: "/values/helicopters",
-      description: "Browse values for different helicopter models.",
+      description: t('values.description'),
       icon: <Plane size={40} className="text-purple-400 rotate-90" />,
     },
     {
       name: "Clothing List",
       path: "/values/clothinglist",
-      description: "Explore the market values for various clothing items.",
+      description: t('values.description'),
       icon: <Package size={40} className="text-pink-400" />,
     },
     {
       name: "Masks",
       path: "/values/masks",
-      description: "Browse different types of masks.",
+      description: t('values.description'),
       icon: <Glasses size={40} className="text-orange-400" />,
     },
     {
       name: "Luminous Clothing",
       path: "/values/luminousclothing",
-      description: "Check values for luminous shirts and pants.",
+      description: t('values.description'),
       icon: <Shirt size={40} className="text-yellow-400" />,
     },
     {
-      name: "Suggestions",
+      name: t('suggestions.title'),
       path: "/suggestions",
-      description: "Share your ideas and suggestions to improve GRP Database.",
+      description: t('suggestions.description'),
       icon: <MessageSquare size={40} className="text-green-400" />,
     },
   ];
@@ -162,6 +165,11 @@ export default function HomePage() {
             </svg>
           </a>
         </div>
+      </div>
+
+      {/* Language Chooser - Fixed position top right */}
+      <div className="fixed top-24 right-4 z-50">
+        <LanguageChooser />
       </div>
 
       {/* Update Popup - Top Left, under How to Join button - Stays in place when scrolling */}
@@ -205,18 +213,13 @@ export default function HomePage() {
 
       <div className="flex flex-col items-center w-full max-w-7xl mx-auto px-4 py-8 relative">
         <h1 className="text-5xl font-extrabold text-blue-400 mb-6 drop-shadow-lg text-center">
-          Welcome to GRP Database
+          {t('welcome.title')}
         </h1>
         <p className="text-xl text-gray-300 mb-2 text-center max-w-3xl">
-          GRP Database is an unofficial community hub designed to make GTA
-          Roleplay easier and more enjoyable. Our goal is to gather valuable
-          information in one place — from item values and clothing options to
-          beginner tips and guides — helping players quickly find what they need
-          while playing on the server.
+          {t('welcome.description')}
         </p>
         <p className="text-sm text-gray-400 mb-8 text-center max-w-3xl">
-          <strong>GRP Database is NOT</strong> official or affiliated with the
-          developers of the game.
+          <strong>{t('welcome.disclaimer')}</strong>
         </p>
 
         {/* Community Information Section */}
@@ -321,13 +324,11 @@ export default function HomePage() {
                     }`}
                   />
                   <h3 className="text-xl font-bold text-white">
-                    {isAdmin ? "Admin Access" : "Admin Access"}
+                    {t('admin.access')}
                   </h3>
                 </div>
                 <p className="text-gray-300 text-sm mb-4">
-                  {isAdmin
-                    ? "You are currently logged in as an administrator. Access the admin panel to manage the database and system settings."
-                    : "Are you an administrator? Access the admin panel to manage the database and system settings."}
+                  {isAdmin ? t('admin.description') : t('admin.login_description')}
                 </p>
                 <div className="flex gap-3 justify-center">
                   {isAdmin ? (
@@ -336,7 +337,7 @@ export default function HomePage() {
                       className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 hover:scale-105 transform"
                     >
                       <Shield className="w-5 h-5" />
-                      Admin Panel
+                      {t('admin.panel')}
                     </Link>
                   ) : (
                     <Link
@@ -344,7 +345,7 @@ export default function HomePage() {
                       className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-lg transition-colors duration-200 hover:scale-105 transform"
                     >
                       <Shield className="w-5 h-5" />
-                      Admin Login
+                      {t('admin.login')}
                     </Link>
                   )}
                 </div>

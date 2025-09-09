@@ -9,6 +9,7 @@ import { HeaderFinal as Header } from "./components/HeaderFinal"; // FIX: Change
 import { SpeedInsights } from "@vercel/speed-insights/next"; // Import SpeedInsights
 import { Analytics } from "@vercel/analytics/react"; // Import Analytics
 import { useEffect } from "react";
+import { LanguageProvider } from "../lib/languageContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,20 +31,22 @@ export default function ClientLayoutWrapper({
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body suppressHydrationWarning={true}>
-        <div
-          className={`${
-            fontClassName || inter.className
-          } text-white min-h-screen flex flex-col overflow-x-hidden animate-gradient`}
-          style={{
-            background:
-              "linear-gradient(-45deg, #0f172a, #1e293b, #0f172a, #1e3a8a)",
-            backgroundSize: "400% 400%",
-            animation: "gradient 8s ease infinite",
-          }}
-        >
-          <Header />
-          {children}
-        </div>
+        <LanguageProvider>
+          <div
+            className={`${
+              fontClassName || inter.className
+            } text-white min-h-screen flex flex-col overflow-x-hidden animate-gradient`}
+            style={{
+              background:
+                "linear-gradient(-45deg, #0f172a, #1e293b, #0f172a, #1e3a8a)",
+              backgroundSize: "400% 400%",
+              animation: "gradient 8s ease infinite",
+            }}
+          >
+            <Header />
+            {children}
+          </div>
+        </LanguageProvider>
         <SpeedInsights />
         <Analytics debug={true} mode="production" />
       </body>
