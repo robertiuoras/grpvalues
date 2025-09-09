@@ -18,15 +18,18 @@ export function HeaderFinal() {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        console.log('Click outside detected, closing dropdown');
         setIsDropdownOpen(false);
       }
     }
 
     if (isDropdownOpen) {
+      console.log('Adding click outside listener');
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
+      console.log('Removing click outside listener');
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isDropdownOpen]);
@@ -74,6 +77,7 @@ export function HeaderFinal() {
 
   console.log('HeaderFinal component rendered, isDropdownOpen:', isDropdownOpen, 'isAdmin:', isAdmin);
   console.log('getCategoriesWithAdmin() result:', getCategoriesWithAdmin());
+  console.log('Categories button text:', t('navigation.categories'));
 
   // Helper function to render home link
   const renderHomeLink = (text: string, className: string) => (
@@ -125,9 +129,14 @@ export function HeaderFinal() {
                   e.preventDefault();
                   e.stopPropagation();
                   console.log('Categories button clicked, current state:', isDropdownOpen);
+                  console.log('Setting dropdown to:', !isDropdownOpen);
                   setIsDropdownOpen(!isDropdownOpen);
                 }}
-                className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
+                className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-semibold text-white transition-all duration-200 shadow-lg ${
+                  isDropdownOpen 
+                    ? 'bg-gradient-to-r from-purple-700 to-blue-700' 
+                    : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
+                }`}
               >
                 <span>{t('navigation.categories')}</span>
                 <svg
@@ -149,11 +158,8 @@ export function HeaderFinal() {
 
               {/* Dropdown Menu - Better positioning and visibility */}
               {isDropdownOpen && (
-                <>
-                  {/* Backdrop to ensure visibility */}
-                  <div className="fixed inset-0 z-[99998]" onClick={() => setIsDropdownOpen(false)} />
-                  <div className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto z-[99999]">
-                    <div className="py-3">
+                <div className="absolute top-full right-0 mt-2 w-80 bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-500 max-h-96 overflow-y-auto z-[99999]">
+                  <div className="py-3">
                     {getCategoriesWithAdmin().map((category, index) => {
                       return (
                         <Link
@@ -186,9 +192,8 @@ export function HeaderFinal() {
                         </Link>
                       );
                     })}
-                    </div>
                   </div>
-                </>
+                </div>
               )}
             </div>
 
