@@ -225,28 +225,23 @@ export default function HomePage() {
         {/* Community Information Section */}
         <div className="mb-12 p-6 bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-xl border border-blue-700/30 max-w-4xl">
           <h2 className="text-2xl font-bold text-blue-300 mb-4 text-center">
-            🌟 Community-Driven Platform
+            🌟 {t('community.title')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-300">
             <div>
               <h3 className="text-lg font-semibold text-green-300 mb-2">
-                🤝 Built by Players, for Players
+                {t('community.built_by_players')}
               </h3>
               <p className="text-sm leading-relaxed">
-                This platform is maintained and updated by the GRP Database
-                community. All values, templates, and features are contributed
-                by active players who understand the market dynamics and
-                community needs.
+                {t('community.built_description')}
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-yellow-300 mb-2">
-                📊 Real-Time Market Data
+                {t('community.real_time_data')}
               </h3>
               <p className="text-sm leading-relaxed">
-                Get accurate, up-to-date market values for vehicles, clothing,
-                and items. Our community ensures the data reflects current
-                market conditions and helps you make informed trading decisions.
+                {t('community.data_description')}
               </p>
             </div>
             <div>

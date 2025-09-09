@@ -4,11 +4,13 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
+import { useLanguage } from "../../lib/languageContext";
 
 export function HeaderFinal() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const pathname = usePathname();
   const { isAdmin, logout } = useAuth();
+  const { t } = useLanguage();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -115,7 +117,7 @@ export function HeaderFinal() {
                 }}
                 className="flex items-center space-x-2 px-6 py-3 rounded-lg text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
               >
-                <span>Categories</span>
+                <span>{t('navigation.categories')}</span>
                 <svg
                   className={`w-4 h-4 transition-transform duration-200 ${
                     isDropdownOpen ? "rotate-180" : ""
