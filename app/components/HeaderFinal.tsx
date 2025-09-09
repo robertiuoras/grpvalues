@@ -98,8 +98,8 @@ export function HeaderFinal() {
             )}
           </div>
 
-          {/* Center - Home Button - Better centered */}
-          <div className="absolute left-1/2 transform -translate-x-1/2">
+          {/* Center - Home Button - Temporarily removed for debugging */}
+          {/* <div className="absolute left-1/2 transform -translate-x-1/2">
             <Link
               href="/"
               className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
@@ -109,7 +109,7 @@ export function HeaderFinal() {
               </svg>
               <span>{t('navigation.home')}</span>
             </Link>
-          </div>
+          </div> */}
 
           {/* Right side - Navigation and Admin Auth */}
           <div className="flex items-center space-x-4">
