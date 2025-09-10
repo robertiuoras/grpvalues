@@ -843,6 +843,63 @@ export default function ActiveUsersPage() {
           </div>
         </div>
 
+        {/* Car Customizer Section */}
+        <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700">
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <Database className="text-purple-400" />
+            Car Customizer (Admin Only)
+          </h2>
+
+          <div className="space-y-4">
+            {/* Car Customizer Info */}
+            <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold text-white">
+                  Car Customizer Status
+                </h3>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-1 rounded text-xs font-medium bg-yellow-600 text-yellow-100">
+                    In Development
+                  </span>
+                </div>
+              </div>
+              <p className="text-gray-300 text-sm mb-3">
+                The car customizer is currently in development and only visible to admins.
+              </p>
+              <div className="flex gap-2">
+                <a
+                  href="/car-customizer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 text-sm font-medium"
+                >
+                  <Database className="w-4 h-4" />
+                  Open Car Customizer
+                </a>
+              </div>
+            </div>
+
+            {/* Help Text */}
+            <div className="text-sm text-gray-400">
+              <p>
+                <strong>About Car Customizer:</strong>
+              </p>
+              <ul className="list-disc list-inside space-y-1 mt-1">
+                <li>
+                  Currently in development phase with 3D preview features
+                </li>
+                <li>
+                  Includes real-time customization and color picker
+                </li>
+                <li>
+                  Privacy-compliant with local storage only
+                </li>
+                <li>
+                  Will be made public once fully completed
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
         {/* Suggestions Section */}
         <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700">
           <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">

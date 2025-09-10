@@ -92,8 +92,7 @@ export function HeaderFinal() {
       path: "/suggestions",
       isAdmin: false,
     },
-    { name: t("events.school.title"), path: "/events/school", isAdmin: false },
-    { name: t("car_customizer.title"), path: "/car-customizer", isAdmin: false },
+    { name: t("car_customizer.title"), path: "/car-customizer", isAdmin: true },
   ];
 
   // Create categories with admin button for admin users
@@ -160,16 +159,6 @@ export function HeaderFinal() {
 
           {/* Right side - Navigation and Admin Auth */}
           <div className="flex items-center space-x-4">
-            {/* School Event Button */}
-            <Link
-              href="/events/school"
-              className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg"
-            >
-              <span className="hidden sm:inline">
-                {t("events.school.title")}
-              </span>
-              <span className="sm:hidden">School</span>
-            </Link>
 
             {/* Categories Dropdown - Bigger and nicer */}
             <div className="relative" ref={dropdownRef}>
