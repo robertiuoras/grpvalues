@@ -101,7 +101,6 @@ const specialCategoryNames: Record<string, string> = {
   tightmask: "Tight Masks",
   snowboardermask: "Snowboarder Masks",
   motorcycles: "Motorcycles",
-
   items: "Items",
 };
 

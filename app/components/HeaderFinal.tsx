@@ -93,6 +93,7 @@ export function HeaderFinal() {
       isAdmin: false,
     },
     { name: t("events.school.title"), path: "/events/school", isAdmin: false },
+    { name: t("car_customizer.title"), path: "/car-customizer", isAdmin: false },
   ];
 
   // Create categories with admin button for admin users

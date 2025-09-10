@@ -140,6 +140,12 @@ export default function HomePage() {
       description: t('events.school.description'),
       icon: <HelpCircle size={40} className="text-indigo-400" />,
     },
+    {
+      name: t('car_customizer.title'),
+      path: "/car-customizer",
+      description: t('car_customizer.description'),
+      icon: <Car size={40} className="text-red-400" />,
+    },
   ];
 
   return (
