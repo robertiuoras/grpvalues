@@ -19,6 +19,24 @@ export default function Footer() {
           </p>
         </div>
 
+        {/* Links */}
+        <div className="border-t border-gray-700 pt-6 mt-6">
+          <div className="flex justify-center space-x-6 mb-4">
+            <a
+              href="/privacy-policy"
+              className="text-gray-400 hover:text-white transition-colors duration-200 text-sm font-medium"
+            >
+              {t('footer.privacy_policy')}
+            </a>
+            <a
+              href="/contact"
+              className="text-gray-400 hover:text-white transition-colors duration-200 text-sm font-medium"
+            >
+              {t('footer.contact')}
+            </a>
+          </div>
+        </div>
+
         {/* Trademark Information */}
         <div className="border-t border-gray-700 pt-6 mt-6">
           <div className="text-center text-sm text-gray-400 space-y-2">
