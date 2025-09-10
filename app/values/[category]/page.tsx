@@ -235,6 +235,20 @@ export default function CategoryPage({
   const [sortOption, setSortOption] = useState<
     "value-asc" | "value-desc" | "alpha-asc" | "alpha-desc" | null
   >(null);
+  const [hideValueField, setHideValueField] = useState(false);
+
+  // Fetch value visibility setting
+  const fetchValueVisibility = useCallback(async () => {
+    try {
+      const response = await fetch("/api/admin/value-visibility");
+      if (response.ok) {
+        const data = await response.json();
+        setHideValueField(data.hideValueField);
+      }
+    } catch (error) {
+      console.error("Error fetching value visibility setting:", error);
+    }
+  }, []);
 
   const fetchClothingItems = useCallback(
     async (gender: string, heading: string | null) => {
@@ -425,7 +439,10 @@ export default function CategoryPage({
     setItems([]);
     setSearchTerm("");
     setSortOption(null);
-  }, [category]);
+    
+    // Fetch value visibility setting
+    fetchValueVisibility();
+  }, [category, fetchValueVisibility]);
 
   // useEffect to trigger data fetching based on selected states
   useEffect(() => {
@@ -897,14 +914,14 @@ export default function CategoryPage({
                       ${formatNumberWithCommas(item.value) || "N/A"}
                     </span>
                   </>
-                ) : (
+                ) : !hideValueField ? (
                   <>
                     Value:{" "}
                     <span className="font-bold text-emerald-400">
                       {formatNumberWithCommas(item.value) || "N/A"}
                     </span>
                   </>
-                )}
+                ) : null}
               </p>
             </div>
           ))}
