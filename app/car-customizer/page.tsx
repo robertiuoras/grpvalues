@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useLanguage } from "../../lib/languageContext";
-import { Car, Palette, Settings, Download, RotateCcw } from "lucide-react";
+import { Car, Palette, Settings, Download, RotateCcw, RotateCw, ZoomIn, ZoomOut } from "lucide-react";
 
-// Car models based on real-life cars (GTA V style)
+// Car models based on real-life cars (GTA V style) - Updated with more realistic data
 const carModels = [
   {
     id: "adder",
@@ -13,7 +13,7 @@ const carModels = [
     category: "Super",
     basePrice: 1000000,
     image: "/images/cars/adder.jpg",
-    colors: ["Red", "Blue", "Black", "White", "Silver", "Gold"],
+    colors: ["#FF0000", "#0000FF", "#000000", "#FFFFFF", "#C0C0C0", "#FFD700"],
     parts: ["Stock", "Sport", "Racing", "Custom"]
   },
   {
@@ -23,7 +23,7 @@ const carModels = [
     category: "Super",
     basePrice: 725000,
     image: "/images/cars/zentorno.jpg",
-    colors: ["Red", "Blue", "Black", "White", "Silver", "Gold"],
+    colors: ["#FF0000", "#0000FF", "#000000", "#FFFFFF", "#C0C0C0", "#FFD700"],
     parts: ["Stock", "Sport", "Racing", "Custom"]
   },
   {
@@ -33,7 +33,7 @@ const carModels = [
     category: "Super",
     basePrice: 795000,
     image: "/images/cars/entityxf.jpg",
-    colors: ["Red", "Blue", "Black", "White", "Silver", "Gold"],
+    colors: ["#FF0000", "#0000FF", "#000000", "#FFFFFF", "#C0C0C0", "#FFD700"],
     parts: ["Stock", "Sport", "Racing", "Custom"]
   },
   {
@@ -43,7 +43,7 @@ const carModels = [
     category: "Super",
     basePrice: 440000,
     image: "/images/cars/infernus.jpg",
-    colors: ["Red", "Blue", "Black", "White", "Silver", "Gold"],
+    colors: ["#FF0000", "#0000FF", "#000000", "#FFFFFF", "#C0C0C0", "#FFD700"],
     parts: ["Stock", "Sport", "Racing", "Custom"]
   },
   {
@@ -53,7 +53,7 @@ const carModels = [
     category: "Sports",
     basePrice: 105000,
     image: "/images/cars/banshee.jpg",
-    colors: ["Red", "Blue", "Black", "White", "Silver", "Gold"],
+    colors: ["#FF0000", "#0000FF", "#000000", "#FFFFFF", "#C0C0C0", "#FFD700"],
     parts: ["Stock", "Sport", "Racing", "Custom"]
   },
   {
@@ -63,7 +63,7 @@ const carModels = [
     category: "Sports",
     basePrice: 12000,
     image: "/images/cars/sultan.jpg",
-    colors: ["Red", "Blue", "Black", "White", "Silver", "Gold"],
+    colors: ["#FF0000", "#0000FF", "#000000", "#FFFFFF", "#C0C0C0", "#FFD700"],
     parts: ["Stock", "Sport", "Racing", "Custom"]
   }
 ];
@@ -71,22 +71,53 @@ const carModels = [
 export default function CarCustomizerPage() {
   const { t } = useLanguage();
   const [selectedCar, setSelectedCar] = useState(carModels[0]);
-  const [selectedColor, setSelectedColor] = useState("Red");
+  const [selectedColor, setSelectedColor] = useState("#FF0000");
   const [selectedPart, setSelectedPart] = useState("Stock");
   const [customizations, setCustomizations] = useState({
-    color: "Red",
+    color: "#FF0000",
     part: "Stock",
     spoiler: false,
     neon: false,
-    tint: "None"
+    underglow: false,
+    tint: "None",
+    customColor: "#FF0000"
   });
+  
+  // 3D-like view controls
+  const [rotation, setRotation] = useState(0);
+  const [zoom, setZoom] = useState(1);
+  const [isRotating, setIsRotating] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>();
+
+  // Auto-rotation effect
+  useEffect(() => {
+    if (isRotating) {
+      const animate = () => {
+        setRotation(prev => (prev + 1) % 360);
+        animationRef.current = requestAnimationFrame(animate);
+      };
+      animationRef.current = requestAnimationFrame(animate);
+    } else {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    }
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isRotating]);
 
   const handleCarSelect = (car: typeof carModels[0]) => {
     setSelectedCar(car);
     setCustomizations(prev => ({
       ...prev,
       color: car.colors[0],
-      part: car.parts[0]
+      part: car.parts[0],
+      customColor: car.colors[0]
     }));
   };
 
@@ -95,6 +126,31 @@ export default function CarCustomizerPage() {
       ...prev,
       [key]: value
     }));
+  };
+
+  const handleColorChange = (color: string) => {
+    setCustomizations(prev => ({
+      ...prev,
+      color: color,
+      customColor: color
+    }));
+  };
+
+  const toggleRotation = () => {
+    setIsRotating(!isRotating);
+  };
+
+  const handleZoom = (direction: 'in' | 'out') => {
+    setZoom(prev => {
+      const newZoom = direction === 'in' ? prev * 1.1 : prev / 1.1;
+      return Math.max(0.5, Math.min(3, newZoom));
+    });
+  };
+
+  const resetView = () => {
+    setRotation(0);
+    setZoom(1);
+    setIsRotating(false);
   };
 
   const calculateTotalPrice = () => {
@@ -113,6 +169,7 @@ export default function CarCustomizerPage() {
     // Add customization costs
     if (customizations.spoiler) total += 25000;
     if (customizations.neon) total += 15000;
+    if (customizations.underglow) total += 35000;
     if (customizations.tint !== "None") total += 5000;
     
     return total;
@@ -124,7 +181,9 @@ export default function CarCustomizerPage() {
       part: selectedCar.parts[0],
       spoiler: false,
       neon: false,
-      tint: "None"
+      underglow: false,
+      tint: "None",
+      customColor: selectedCar.colors[0]
     });
   };
 
@@ -141,7 +200,75 @@ export default function CarCustomizerPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* 3D Car View */}
+          <div className="lg:col-span-1 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 border border-white/30">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+              <Car className="w-6 h-6" />
+              {t('car_customizer.preview')}
+            </h2>
+            
+            {/* 3D-like Car Display */}
+            <div className="relative bg-gray-100 rounded-lg h-64 mb-4 overflow-hidden">
+              <div 
+                className="absolute inset-0 flex items-center justify-center transition-all duration-300"
+                style={{
+                  transform: `rotateY(${rotation}deg) scale(${zoom})`,
+                  transformStyle: 'preserve-3d'
+                }}
+              >
+                <div 
+                  className="w-32 h-16 rounded-lg shadow-lg border-2 border-gray-300 flex items-center justify-center text-white font-bold text-sm"
+                  style={{ backgroundColor: customizations.customColor }}
+                >
+                  {selectedCar.name}
+                </div>
+              </div>
+              
+              {/* View Controls */}
+              <div className="absolute top-2 right-2 flex gap-2">
+                <button
+                  onClick={toggleRotation}
+                  className={`p-2 rounded-full ${isRotating ? 'bg-blue-500 text-white' : 'bg-white text-gray-600'} shadow-lg`}
+                  title={isRotating ? 'Stop Rotation' : 'Start Rotation'}
+                >
+                  {isRotating ? <RotateCcw className="w-4 h-4" /> : <RotateCw className="w-4 h-4" />}
+                </button>
+                <button
+                  onClick={() => handleZoom('in')}
+                  className="p-2 rounded-full bg-white text-gray-600 shadow-lg"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleZoom('out')}
+                  className="p-2 rounded-full bg-white text-gray-600 shadow-lg"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={resetView}
+                  className="p-2 rounded-full bg-white text-gray-600 shadow-lg"
+                  title="Reset View"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            
+            {/* Customization Preview */}
+            <div className="space-y-2 text-sm text-gray-600">
+              <div><strong>{t('car_customizer.color')}:</strong> <span style={{ color: customizations.customColor }}>●</span> {customizations.customColor}</div>
+              <div><strong>{t('car_customizer.parts')}:</strong> {customizations.part}</div>
+              {customizations.spoiler && <div><strong>{t('car_customizer.spoiler')}:</strong> ✓</div>}
+              {customizations.neon && <div><strong>{t('car_customizer.neon')}:</strong> ✓</div>}
+              {customizations.underglow && <div><strong>{t('car_customizer.underglow')}:</strong> ✓</div>}
+              {customizations.tint !== "None" && <div><strong>{t('car_customizer.tint')}:</strong> {customizations.tint}</div>}
+            </div>
+          </div>
+
           {/* Car Selection */}
           <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 border border-white/30">
             <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
@@ -185,11 +312,11 @@ export default function CarCustomizerPage() {
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 {t('car_customizer.color')}
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2 mb-4">
                 {selectedCar.colors.map((color) => (
                   <button
                     key={color}
-                    onClick={() => handleCustomizationChange('color', color)}
+                    onClick={() => handleColorChange(color)}
                     className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                       customizations.color === color
                         ? 'border-blue-500 bg-blue-50'
@@ -198,11 +325,33 @@ export default function CarCustomizerPage() {
                   >
                     <div 
                       className="w-full h-8 rounded"
-                      style={{ backgroundColor: color.toLowerCase() }}
+                      style={{ backgroundColor: color }}
                     />
                     <span className="text-xs text-gray-600 mt-1">{color}</span>
                   </button>
                 ))}
+              </div>
+              
+              {/* Custom Color Picker */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('car_customizer.custom_color')}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    value={customizations.customColor}
+                    onChange={(e) => handleColorChange(e.target.value)}
+                    className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={customizations.customColor}
+                    onChange={(e) => handleColorChange(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="#FF0000"
+                  />
+                </div>
               </div>
             </div>
 
@@ -250,6 +399,18 @@ export default function CarCustomizerPage() {
                   type="checkbox"
                   checked={customizations.neon}
                   onChange={(e) => handleCustomizationChange('neon', e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">
+                  {t('car_customizer.underglow')}
+                </label>
+                <input
+                  type="checkbox"
+                  checked={customizations.underglow}
+                  onChange={(e) => handleCustomizationChange('underglow', e.target.checked)}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
               </div>

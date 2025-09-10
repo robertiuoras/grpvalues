@@ -147,6 +147,9 @@ export const translations: Record<Language, Translation> = {
     'car_customizer.price_note': 'Prices are based on in-game values and may vary',
     'car_customizer.privacy_notice_title': 'Privacy Notice',
     'car_customizer.privacy_notice_text': 'Your customizations are stored locally in your browser and are not sent to our servers. No personal data is collected during customization.',
+    'car_customizer.preview': '3D Preview',
+    'car_customizer.custom_color': 'Custom Color',
+    'car_customizer.underglow': 'Underglow',
   },
   de: {
     'welcome.title': 'Willkommen bei GRP Database',
@@ -269,6 +272,9 @@ export const translations: Record<Language, Translation> = {
     'car_customizer.price_note': 'Preise basieren auf In-Game-Werten und können variieren',
     'car_customizer.privacy_notice_title': 'Datenschutzhinweis',
     'car_customizer.privacy_notice_text': 'Ihre Anpassungen werden lokal in Ihrem Browser gespeichert und nicht an unsere Server gesendet. Während der Anpassung werden keine persönlichen Daten gesammelt.',
+    'car_customizer.preview': '3D-Vorschau',
+    'car_customizer.custom_color': 'Benutzerdefinierte Farbe',
+    'car_customizer.underglow': 'Unterbodenbeleuchtung',
   },
   rs: {
     'welcome.title': 'Добродошао у GRP Database',
@@ -391,6 +397,9 @@ export const translations: Record<Language, Translation> = {
     'car_customizer.price_note': 'Цене се заснивају на вредностима у игри и могу варирати',
     'car_customizer.privacy_notice_title': 'Обавештење о приватности',
     'car_customizer.privacy_notice_text': 'Ваше прилагођавања се чувају локално у вашем прегледачу и не шаљу се на наше сервере. Током прилагођавања не прикупљају се лични подаци.',
+    'car_customizer.preview': '3D Преглед',
+    'car_customizer.custom_color': 'Прилагођена Боја',
+    'car_customizer.underglow': 'Подсветка',
   },
   it: {
     'welcome.title': 'Benvenuto in GRP Database',
@@ -513,6 +522,9 @@ export const translations: Record<Language, Translation> = {
     'car_customizer.price_note': 'I prezzi si basano sui valori in-game e possono variare',
     'car_customizer.privacy_notice_title': 'Avviso Privacy',
     'car_customizer.privacy_notice_text': 'Le tue personalizzazioni sono memorizzate localmente nel tuo browser e non vengono inviate ai nostri server. Durante la personalizzazione non vengono raccolti dati personali.',
+    'car_customizer.preview': 'Anteprima 3D',
+    'car_customizer.custom_color': 'Colore Personalizzato',
+    'car_customizer.underglow': 'Illuminazione Sottoscocca',
   },
   fr: {
     'welcome.title': 'Bienvenue sur GRP Database',
@@ -635,6 +647,9 @@ export const translations: Record<Language, Translation> = {
     'car_customizer.price_note': 'Les prix sont basés sur les valeurs en jeu et peuvent varier',
     'car_customizer.privacy_notice_title': 'Avis de Confidentialité',
     'car_customizer.privacy_notice_text': 'Vos personnalisations sont stockées localement dans votre navigateur et ne sont pas envoyées à nos serveurs. Aucune donnée personnelle n\'est collectée lors de la personnalisation.',
+    'car_customizer.preview': 'Aperçu 3D',
+    'car_customizer.custom_color': 'Couleur Personnalisée',
+    'car_customizer.underglow': 'Éclairage Sous Châssis',
   },
   es: {
     'welcome.title': 'Bienvenido a GRP Database',
@@ -757,6 +772,9 @@ export const translations: Record<Language, Translation> = {
     'car_customizer.price_note': 'Los precios se basan en valores del juego y pueden variar',
     'car_customizer.privacy_notice_title': 'Aviso de Privacidad',
     'car_customizer.privacy_notice_text': 'Tus personalizaciones se almacenan localmente en tu navegador y no se envían a nuestros servidores. No se recopilan datos personales durante la personalización.',
+    'car_customizer.preview': 'Vista Previa 3D',
+    'car_customizer.custom_color': 'Color Personalizado',
+    'car_customizer.underglow': 'Iluminación Inferior',
   },
   pt: {
     'welcome.title': 'Bem-vindo ao GRP Database',
@@ -879,6 +897,9 @@ export const translations: Record<Language, Translation> = {
     'car_customizer.price_note': 'Os preços são baseados nos valores do jogo e podem variar',
     'car_customizer.privacy_notice_title': 'Aviso de Privacidade',
     'car_customizer.privacy_notice_text': 'Suas personalizações são armazenadas localmente no seu navegador e não são enviadas para nossos servidores. Nenhum dado pessoal é coletado durante a personalização.',
+    'car_customizer.preview': 'Visualização 3D',
+    'car_customizer.custom_color': 'Cor Personalizada',
+    'car_customizer.underglow': 'Iluminação Inferior',
   },
   jp: {
     'welcome.title': 'GRP Databaseへようこそ',
@@ -1001,6 +1022,9 @@ export const translations: Record<Language, Translation> = {
     'car_customizer.price_note': '価格はゲーム内の値に基づいており、変動する場合があります',
     'car_customizer.privacy_notice_title': 'プライバシー通知',
     'car_customizer.privacy_notice_text': 'カスタマイズはブラウザにローカルに保存され、サーバーに送信されません。カスタマイズ中に個人データは収集されません。',
+    'car_customizer.preview': '3Dプレビュー',
+    'car_customizer.custom_color': 'カスタムカラー',
+    'car_customizer.underglow': 'アンダーグロー',
   },
   ru: {
     'welcome.title': 'Добро пожаловать в GRP Database',
@@ -1123,6 +1147,9 @@ export const translations: Record<Language, Translation> = {
     'car_customizer.price_note': 'Цены основаны на игровых значениях и могут варьироваться',
     'car_customizer.privacy_notice_title': 'Уведомление о конфиденциальности',
     'car_customizer.privacy_notice_text': 'Ваши настройки сохраняются локально в вашем браузере и не отправляются на наши серверы. При настройке личные данные не собираются.',
+    'car_customizer.preview': '3D Предпросмотр',
+    'car_customizer.custom_color': 'Пользовательский Цвет',
+    'car_customizer.underglow': 'Подсветка Снизу',
   },
 };
 
