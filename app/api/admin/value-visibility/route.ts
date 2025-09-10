@@ -1,21 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "../../../lib/firebaseAdmin.js";
+import { db } from "../../../lib/firebaseAdmin";
 
 export async function GET() {
   try {
-    const doc = await adminDb.collection("admin_settings").doc("value_visibility").get();
-    
+    const doc = await db
+      .collection("admin_settings")
+      .doc("value_visibility")
+      .get();
+
     if (doc.exists) {
       const data = doc.data();
       return NextResponse.json({
         hideValueField: data?.hideValueField || false,
-        lastUpdated: data?.lastUpdated || null
+        lastUpdated: data?.lastUpdated || null,
       });
     } else {
       // Default to showing values
       return NextResponse.json({
         hideValueField: false,
-        lastUpdated: null
+        lastUpdated: null,
       });
     }
   } catch (error) {
@@ -30,7 +33,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const { hideValueField } = await request.json();
-    
+
     if (typeof hideValueField !== "boolean") {
       return NextResponse.json(
         { error: "hideValueField must be a boolean" },
@@ -38,15 +41,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await adminDb.collection("admin_settings").doc("value_visibility").set({
+    await db.collection("admin_settings").doc("value_visibility").set({
       hideValueField,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     });
 
     return NextResponse.json({
       success: true,
       hideValueField,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Error updating value visibility setting:", error);
