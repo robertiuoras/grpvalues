@@ -199,6 +199,11 @@ export default function CategoryPage({
       'illegalitems': 'categories.illegal_items',
       'croppcollectionshirt': 'categories.cropped_collection_shirts',
       'denimjacket': 'categories.denim_jackets',
+      // Mask categories
+      'desertscarfmask': 'categories.desert_scarf_masks',
+      'bandanamask': 'categories.bandana_masks',
+      'tightmask': 'categories.tight_masks',
+      'snowboardermask': 'categories.snowboarder_masks',
     };
     
     const translationKey = categoryMap[categoryName.toLowerCase()];

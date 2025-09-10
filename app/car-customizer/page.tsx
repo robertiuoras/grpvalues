@@ -88,7 +88,7 @@ export default function CarCustomizerPage() {
   const [zoom, setZoom] = useState(1);
   const [isRotating, setIsRotating] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
 
   // Auto-rotation effect
   useEffect(() => {
