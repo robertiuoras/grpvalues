@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useAuth } from "../../hooks/useAuth"; // Corrected import path for useAuth hook
+import { getClientUUID } from "../../lib/uuid";
 
 // Define the interface for a template item
 interface Template {
@@ -562,7 +563,8 @@ export default function App() {
   const [newAdCategory, setNewAdCategory] = useState(""); // Kept for data structure, but not in form
   const [adFormError, setAdFormError] = useState("");
   const [adFormLoading, setAdFormLoading] = useState(false);
-  const [useLocalStorage, setUseLocalStorage] = useState(false); // Track if using localStorage fallback
+  const [useLocalStorage, setUseLocalStorage] = useState(false);
+  const [clientUUID, setClientUUID] = useState<string>(""); // Track if using localStorage fallback
 
   // localStorage helper functions
   const saveToLocalStorage = useCallback((ads: UserAd[]) => {
@@ -644,8 +646,16 @@ export default function App() {
     setLoadingMyAds(true); // Use loadingMyAds for user ads
     
     try {
+      // Get client UUID for identification
+      const clientUUID = getClientUUID();
+      console.log("fetchMySavedAds: Using client UUID:", clientUUID);
+      
       // Try to fetch from the new saved-ads API first
-      const response = await fetch('/api/saved-ads');
+      const response = await fetch('/api/saved-ads', {
+        headers: {
+          'x-client-uuid': clientUUID,
+        },
+      });
       console.log("fetchMySavedAds: API response status:", response.status); // LOG
       
       if (response.ok) {
@@ -734,6 +744,10 @@ export default function App() {
         url = `/api/saved-ads?adId=${currentAdToEdit.id}`;
       }
 
+      // Get client UUID for identification
+      const clientUUID = getClientUUID();
+      console.log("handleSaveAd: Using client UUID:", clientUUID);
+      
       console.log(
         "handleSaveAd: Sending payload:",
         payload,
@@ -745,7 +759,10 @@ export default function App() {
       
       const response = await fetch(url, {
         method: method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-client-uuid": clientUUID,
+        },
         body: JSON.stringify(payload),
       });
       console.log("handleSaveAd: API response status:", response.status); // LOG
@@ -838,8 +855,16 @@ export default function App() {
       setShowConfirmationModal(false);
       try {
         setLoadingMyAds(true); // Indicate loading when deleting and refetching
+        
+        // Get client UUID for identification
+        const clientUUID = getClientUUID();
+        console.log("Delete ad: Using client UUID:", clientUUID);
+        
         const response = await fetch(`/api/saved-ads?adId=${adId}`, {
           method: "DELETE",
+          headers: {
+            "x-client-uuid": clientUUID,
+          },
         });
 
         if (!response.ok) {
@@ -1147,6 +1172,13 @@ export default function App() {
     initializeData();
   }, []); // Run once on mount to load all data
 
+  // Initialize client UUID on component mount
+  useEffect(() => {
+    const uuid = getClientUUID();
+    setClientUUID(uuid);
+    console.log("LifeInvader: Initialized client UUID:", uuid);
+  }, []);
+
   // Effect to fetch user ads when showMyAds is true
   useEffect(() => {
     console.log("useEffect for fetchMySavedAds. State:", {
@@ -1371,6 +1403,15 @@ export default function App() {
         <h1 className="text-5xl md:text-6xl font-extrabold text-center mb-10 bg-clip-text text-transparent bg-gradient-to-r from-red-600 via-red-800 to-red-900 to-red-900 drop-shadow-lg py-3 rounded-xl">
           {mainTitle}
         </h1>
+        
+        {/* Debug: Client UUID (only show in development) */}
+        {process.env.NODE_ENV === 'development' && clientUUID && (
+          <div className="text-center mb-4">
+            <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+              Client UUID: {clientUUID}
+            </span>
+          </div>
+        )}
         
         {/* Last Sync Time */}
         {lastSyncTime && (

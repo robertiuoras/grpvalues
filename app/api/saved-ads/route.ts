@@ -10,16 +10,26 @@ function normalizeSearchText(text: string): string {
     .trim();
 }
 
-// Helper function to get client identifier (IP + User Agent hash)
+// Helper function to get client identifier (UUID from client or fallback to IP + User Agent hash)
 function getClientIdentifier(request: NextRequest): string {
+  // First, try to get UUID from request body or headers
+  const clientUUID = request.headers.get("x-client-uuid");
+  
+  if (clientUUID && clientUUID.length > 0) {
+    console.log(`[API/saved-ads] Using client UUID: ${clientUUID}`);
+    return clientUUID;
+  }
+  
+  // Fallback to IP + User Agent hash for backward compatibility
   const clientIP = request.headers.get("x-forwarded-for") || 
                    request.headers.get("x-real-ip") || 
                    "unknown";
   const userAgent = request.headers.get("user-agent") || "unknown";
   
-  // Create a simple hash of IP + User Agent for better identification
   const combined = `${clientIP}-${userAgent}`;
-  return Buffer.from(combined).toString('base64').slice(0, 32);
+  const fallbackId = Buffer.from(combined).toString('base64').slice(0, 32);
+  console.log(`[API/saved-ads] Using fallback identifier: ${fallbackId}`);
+  return fallbackId;
 }
 
 export async function GET(request: NextRequest) {
